@@ -45,6 +45,14 @@ def initialize_session_state():
         
     if "fill_fraction" not in st.session_state:
         st.session_state.fill_fraction = 100
+        
+    # Initialize current page if not set
+    if "current_page" not in st.session_state:
+        st.session_state.current_page = "Laser Power at the Sample"
+        
+    # Initialize show_cards preference (default to True - show cards)
+    if "show_cards" not in st.session_state:
+        st.session_state.show_cards = True
 
 def apply_sidebar_styling():
     """Apply custom styling to the sidebar."""
@@ -166,6 +174,63 @@ def apply_sidebar_styling():
         padding-top: 1rem;
         border-top: 1px solid {colors['surface']};
     }}
+    
+    /* Navigation button styling */
+    .nav-button {{
+        background-color: {colors['background']};
+        border: 1px solid {colors['surface']};
+        border-radius: 4px;
+        padding: 0.5rem 1rem;
+        margin-bottom: 0.5rem;
+        text-align: left;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        width: 100%;
+        display: block;
+    }}
+
+    .nav-button:hover {{
+        background-color: {colors['surface']};
+    }}
+
+    .nav-button.active {{
+        border-left: 3px solid {colors['primary']};
+        background-color: rgba(255, 255, 255, 0.05);
+    }}
+    
+    /* Fix button text color */
+    [data-testid="stSidebar"] button {{
+        color: white !important;
+    }}
+    
+    /* Style for the toggle switch */
+    .toggle-container {{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        border-radius: 4px;
+        background-color: rgba(255, 255, 255, 0.05);
+    }}
+    
+    .toggle-label {{
+        font-size: 0.9rem;
+        margin-right: 0.5rem;
+    }}
+    
+    /* Hide cards when needed */
+    .hide-cards .stCard {{
+        border: none !important;
+        box-shadow: none !important;
+        background-color: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }}
+    
+    .hide-cards .element-container {{
+        margin-bottom: 1rem !important;
+    }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -282,24 +347,25 @@ def main():
     # Set page theme
     apply_theme()
     
-    # Define the pages for navigation
+    # Define the pages for navigation with their functions directly
     pages = {
         "Microscope Tools": [
-            st.Page(laser_power_page, title="Laser Power at the Sample", icon="🔍"),
-            st.Page(pulse_width_page, title="Pulse Width Control", icon="⏱️"),
-            st.Page(fluorescence_page, title="Fluorescence Signal Estimation", icon="📊"),
+            {"title": "Laser Power at the Sample", "icon": "🔍", "function": laser_power_page},
+            {"title": "Pulse Width Control", "icon": "⏱️", "function": pulse_width_page},
+            {"title": "Fluorescence Signal Estimation", "icon": "📊", "function": fluorescence_page},
         ],
         "Documentation": [
-            st.Page(rig_log_page, title="Rig Log", icon="📝"),
-            st.Page(reference_page, title="Reference", icon="📚"),
+            {"title": "Rig Log", "icon": "📝", "function": rig_log_page},
+            {"title": "Reference", "icon": "📚", "function": reference_page},
         ]
     }
     
-    # Set up navigation with expanded option for better visibility
-    current_page = st.navigation(pages, position="hidden")
-    
     # Apply custom sidebar styling
     apply_sidebar_styling()
+    
+    # Apply card hiding class if needed
+    if not st.session_state.show_cards:
+        st.markdown('<div class="hide-cards">', unsafe_allow_html=True)
     
     # Render the sidebar with session setup form
     with st.sidebar:
@@ -316,6 +382,17 @@ def main():
         
         st.markdown("---")
         
+        # Add toggle for showing/hiding cards
+        with st.container():
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.markdown("**UI Settings:**")
+            with col2:
+                show_cards = st.toggle("Show Cards", value=st.session_state.show_cards, key="toggle_cards")
+                if show_cards != st.session_state.show_cards:
+                    st.session_state.show_cards = show_cards
+                    st.rerun()
+        
         # Render session setup form
         render_session_setup_form()
         
@@ -331,14 +408,42 @@ def main():
         for section, section_pages in pages.items():
             st.markdown(f"**{section}**")
             for page in section_pages:
-                if st.button(f"{page.icon} {page.title}", key=f"nav_{page.title}", use_container_width=True):
-                    # Switch to the selected page
-                    st.switch_page(page._target)
+                # Check if this is the current page
+                is_active = st.session_state.current_page == page["title"]
+                button_style = "primary" if is_active else "secondary"
+                
+                # Create a button for each page
+                if st.button(
+                    f"{page['icon']} {page['title']}", 
+                    key=f"nav_{page['title']}", 
+                    use_container_width=True,
+                    type=button_style,
+                    disabled=is_active
+                ):
+                    st.session_state.current_page = page["title"]
+                    st.rerun()
         
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Run the current page
-    current_page.run()
+    # Get the function for the current page
+    current_page_function = None
+    for section, section_pages in pages.items():
+        for page in section_pages:
+            if page["title"] == st.session_state.current_page:
+                current_page_function = page["function"]
+                break
+        if current_page_function:
+            break
+    
+    # Run the current page function
+    if current_page_function:
+        current_page_function()
+    else:
+        st.error(f"Page '{st.session_state.current_page}' not found.")
+    
+    # Close the hide-cards div if it was opened
+    if not st.session_state.show_cards:
+        st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()

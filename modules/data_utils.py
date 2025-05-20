@@ -189,7 +189,7 @@ def calculate_statistics(df, value_column):
 
 def linear_regression(x_values, y_values):
     """
-    Perform linear regression on x and y values.
+    Calculate linear regression between x and y values.
     
     Parameters:
     -----------
@@ -203,10 +203,18 @@ def linear_regression(x_values, y_values):
     dict
         Dictionary with slope, intercept, and r_squared
     """
+    # Ensure x_values is 1D
+    if hasattr(x_values, 'shape') and len(x_values.shape) > 1:
+        x_values = x_values.flatten()
+    
+    # Convert to numpy arrays if they aren't already
+    x_values = np.array(x_values)
+    y_values = np.array(y_values)
+    
     # Remove NaN values
     valid_indices = ~(np.isnan(x_values) | np.isnan(y_values))
-    x = np.array(x_values)[valid_indices]
-    y = np.array(y_values)[valid_indices]
+    x = x_values[valid_indices]
+    y = y_values[valid_indices]
     
     if len(x) < 2:
         return {

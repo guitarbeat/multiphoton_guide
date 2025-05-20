@@ -16,13 +16,17 @@ from modules.theme import get_colors
 LASER_POWER_FILE = "laser_power_measurements.csv"
 RIG_LOG_FILE = "rig_log.csv"
 
-def render_laser_power_tab():
-    """Render the laser power measurement tab content."""
+def render_laser_power_tab(use_sidebar_values=False):
+    """Render the laser power measurement tab content.
+    
+    Args:
+        use_sidebar_values: If True, use values from the sidebar instead of showing duplicate form fields.
+    """
     
     create_header("Laser Power at the Sample")
     
     # Create main layout with the measurement form prominently displayed
-    render_simplified_measurement_form()
+    render_simplified_measurement_form(use_sidebar_values)
     
     # Create two columns for theory/procedure and visualization
     col1, col2 = st.columns([1, 1])
@@ -86,8 +90,12 @@ def render_laser_power_theory_and_procedure():
         st.warning("**CRITICAL:** Always measure with the same objective, as transmission efficiency varies between objectives.")
         st.warning("**CRITICAL:** For consistent measurements, use the same measurement mode (stationary or scanning) each time.")
 
-def render_simplified_measurement_form():
-    """Render a simplified, prominent measurement form for laser power."""
+def render_simplified_measurement_form(use_sidebar_values=False):
+    """Render a simplified, prominent measurement form for laser power.
+    
+    Args:
+        use_sidebar_values: If True, use values from the sidebar instead of showing duplicate form fields.
+    """
     
     # Get theme colors
     colors = get_colors()
@@ -116,60 +124,79 @@ def render_simplified_measurement_form():
     numeric_columns = ["Wavelength (nm)", "Fill Fraction (%)", "Modulation (%)", "Measured Power (mW)"]
     laser_power_df = safe_numeric_conversion(laser_power_df, numeric_columns)
     
-  
-    
     # Create a container with a border and background that matches the dark theme
     with st.container():
-
-        
         st.markdown('<div class="measurement-form">', unsafe_allow_html=True)
         
-        # Initialize session state variables before widget creation
-        if 'sensor_model' not in st.session_state:
-            st.session_state.sensor_model = ""
-        
-        if 'measurement_mode' not in st.session_state:
-            st.session_state.measurement_mode = "Stationary"
-        
-        if 'fill_fraction' not in st.session_state:
-            st.session_state.fill_fraction = 100
+        # Display current settings from sidebar if using sidebar values
+        if use_sidebar_values:
+            # Display current settings from sidebar
+            st.subheader("Current Settings")
+            settings_col1, settings_col2, settings_col3 = st.columns([1, 1, 1])
             
-        # Session setup in a compact layout
-        col1, col2, col3 = st.columns([1, 1, 1])
-        
-        with col1:
-            # Use the widget's key for state management
-            sensor_model = st.text_input(
-                "Sensor Model:", 
-                value=st.session_state.sensor_model,
-                key="sensor_model",
-                help="Enter the model of your power meter sensor"
-            )
-        
-        with col2:
-            # Use the widget's key for state management
-            measurement_mode = st.radio(
-                "Measurement Mode:", 
-                ["Stationary", "Scanning"],
-                index=0 if st.session_state.measurement_mode == "Stationary" else 1,
-                key="measurement_mode",
-                help="Stationary: beam fixed at center. Scanning: beam continuously scanning."
-            )
-        
-        with col3:
-            # Fill fraction (only shown if scanning mode is selected)
-            fill_fraction = st.session_state.fill_fraction  # Default from session state
-            if measurement_mode == "Scanning":
-                fill_fraction = st.number_input(
-                    "Fill Fraction (%):", 
-                    min_value=1, max_value=100, 
-                    value=int(st.session_state.fill_fraction),
-                    key="fill_fraction",
-                    help="Percentage of time the beam is 'on' during scanning"
+            with settings_col1:
+                st.info(f"**Sensor Model:** {st.session_state.sensor_model}")
+            
+            with settings_col2:
+                st.info(f"**Measurement Mode:** {st.session_state.measurement_mode}")
+            
+            with settings_col3:
+                if st.session_state.measurement_mode == "Scanning":
+                    st.info(f"**Fill Fraction:** {st.session_state.fill_fraction}%")
+                else:
+                    st.info("**Fill Fraction:** 100%")
+            
+            # Use session state values
+            sensor_model = st.session_state.sensor_model
+            measurement_mode = st.session_state.measurement_mode
+            fill_fraction = st.session_state.fill_fraction if st.session_state.measurement_mode == "Scanning" else 100
+        else:
+            # Initialize session state variables before widget creation
+            if 'sensor_model' not in st.session_state:
+                st.session_state.sensor_model = ""
+            
+            if 'measurement_mode' not in st.session_state:
+                st.session_state.measurement_mode = "Stationary"
+            
+            if 'fill_fraction' not in st.session_state:
+                st.session_state.fill_fraction = 100
+                
+            # Session setup in a compact layout
+            col1, col2, col3 = st.columns([1, 1, 1])
+            
+            with col1:
+                # Use the widget's key for state management
+                sensor_model = st.text_input(
+                    "Sensor Model:", 
+                    value=st.session_state.sensor_model,
+                    key="sensor_model",
+                    help="Enter the model of your power meter sensor"
                 )
-            else:
-                st.info("Fill fraction: 100%")
-                fill_fraction = 100
+            
+            with col2:
+                # Use the widget's key for state management
+                measurement_mode = st.radio(
+                    "Measurement Mode:", 
+                    ["Stationary", "Scanning"],
+                    index=0 if st.session_state.measurement_mode == "Stationary" else 1,
+                    key="measurement_mode",
+                    help="Stationary: beam fixed at center. Scanning: beam continuously scanning."
+                )
+            
+            with col3:
+                # Fill fraction (only shown if scanning mode is selected)
+                fill_fraction = st.session_state.fill_fraction  # Default from session state
+                if measurement_mode == "Scanning":
+                    fill_fraction = st.number_input(
+                        "Fill Fraction (%):", 
+                        min_value=1, max_value=100, 
+                        value=int(st.session_state.fill_fraction),
+                        key="fill_fraction",
+                        help="Percentage of time the beam is 'on' during scanning"
+                    )
+                else:
+                    st.info("Fill fraction: 100%")
+                    fill_fraction = 100
         
         # Horizontal line
         st.markdown(f"<hr style='border-color: {colors['surface']};'>", unsafe_allow_html=True)
@@ -204,171 +231,106 @@ def render_simplified_measurement_form():
                 if power <= 0:
                     st.warning("Power must be greater than 0 mW")
             
-            notes = st.text_input(
+            notes = st.text_area(
                 "Notes:", 
                 key="notes_input",
-                help="Optional notes about this measurement"
+                help="Optional notes about the measurement"
             )
             
-            # Custom styling for the submit button
-            st.markdown(f"""
-            <style>
-            div[data-testid="stForm"] button[kind="formSubmit"] {{
-                background-color: {colors['primary']};
-                color: white;
-                border-radius: 4px;
-                padding: 0.25rem 1rem;
-                font-weight: bold;
-            }}
-            div[data-testid="stForm"] button[kind="formSubmit"]:hover {{
-                background-color: {colors['accent']};
-            }}
-            </style>
-            """, unsafe_allow_html=True)
+            # Submit button
+            submitted = st.form_submit_button("Add Measurement")
             
-            submitted = st.form_submit_button("Add Measurement", use_container_width=True)
+            if submitted:
+                # Validate inputs
+                if power <= 0 or modulation <= 0:
+                    st.error("Please enter valid power and modulation values.")
+                else:
+                    # Create new entry
+                    new_entry = pd.DataFrame({
+                        "Study Name": [st.session_state.study_name],
+                        "Date": [datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
+                        "Wavelength (nm)": [st.session_state.wavelength],
+                        "Sensor Model": [sensor_model],
+                        "Measurement Mode": [measurement_mode],
+                        "Fill Fraction (%)": [fill_fraction],
+                        "Modulation (%)": [modulation],
+                        "Measured Power (mW)": [power],
+                        "Notes": [notes]
+                    })
+                    
+                    # Append to existing data
+                    updated_df = pd.concat([laser_power_df, new_entry], ignore_index=True)
+                    
+                    # Save updated data
+                    save_dataframe(updated_df, LASER_POWER_FILE)
+                    
+                    # Set flag for rig log entry
+                    st.session_state.laser_power_submitted = True
+                    
+                    # Success message
+                    st.success("Measurement added successfully!")
+                    
+                    # Force a rerun to refresh the page with the new data
+                    st.rerun()
         
-        if submitted:
-            if modulation <= 0:
-                st.error("Cannot add measurement: Modulation must be greater than 0%")
-            elif power <= 0:
-                st.error("Cannot add measurement: Power must be greater than 0 mW")
+        # Horizontal line
+        st.markdown(f"<hr style='border-color: {colors['surface']};'>", unsafe_allow_html=True)
+        
+        # Show recent measurements
+        st.subheader("Recent Measurements")
+        
+        if not laser_power_df.empty:
+            # Filter to current study and wavelength
+            filtered_df = filter_dataframe(
+                laser_power_df, 
+                {"Study Name": st.session_state.study_name, 
+                 "Wavelength (nm)": st.session_state.wavelength}
+            )
+            
+            if not filtered_df.empty:
+                # Sort by date (newest first) and select only the most recent measurements
+                filtered_df = filtered_df.sort_values("Date", ascending=False).head(5)
+                
+                # Display the table with selected columns
+                st.dataframe(
+                    filtered_df[["Date", "Modulation (%)", "Measured Power (mW)", "Measurement Mode"]],
+                    hide_index=True,
+                    use_container_width=True
+                )
+                
+                # Calculate and display the power/modulation ratio
+                if len(filtered_df) >= 2:
+                    # Use only measurements with the same measurement mode and fill fraction
+                    mode_filtered = filtered_df[
+                        (filtered_df["Measurement Mode"] == filtered_df["Measurement Mode"].iloc[0]) &
+                        (filtered_df["Fill Fraction (%)"] == filtered_df["Fill Fraction (%)"].iloc[0])
+                    ]
+                    
+                    if len(mode_filtered) >= 2:
+                        # Linear regression
+                        X = mode_filtered["Modulation (%)"].values
+                        y = mode_filtered["Measured Power (mW)"].values
+                        
+                        # Get regression results
+                        regression_result = linear_regression(X, y)
+                        slope = regression_result['slope']
+                        intercept = regression_result['intercept']
+                        r_squared = regression_result['r_squared']
+                        
+                        # Display metrics
+                        metrics = [
+                            {"label": "Power/Modulation Ratio", "value": f"{slope:.4f} mW/%"},
+                            {"label": "R² Value", "value": f"{r_squared:.4f}"},
+                            {"label": "Offset", "value": f"{intercept:.4f} mW"}
+                        ]
+                        
+                        create_metric_row(metrics)
             else:
-                # Create a new measurement row
-                new_measurement = pd.DataFrame({
-                    "Study Name": [st.session_state.study_name],
-                    "Date": [datetime.now().strftime("%Y-%m-%d %H:%M")],
-                    "Wavelength (nm)": [float(st.session_state.wavelength)],
-                    "Sensor Model": [sensor_model],
-                    "Measurement Mode": [measurement_mode],
-                    "Fill Fraction (%)": [float(fill_fraction)],
-                    "Modulation (%)": [float(modulation)],
-                    "Measured Power (mW)": [float(power)],
-                    "Notes": [notes]
-                })
-                
-                # Append to the existing dataframe
-                laser_power_df = pd.concat([laser_power_df, new_measurement], ignore_index=True)
-                
-                # Save the updated dataframe
-                save_dataframe(laser_power_df, LASER_POWER_FILE)
-                
-                # Set flag for rig log entry
-                st.session_state.laser_power_submitted = True
-                
-                # Store the latest measurement in session state for immediate display
-                if 'latest_measurements' not in st.session_state:
-                    st.session_state.latest_measurements = []
-                
-                st.session_state.latest_measurements.append({
-                    "Modulation (%)": float(modulation),
-                    "Measured Power (mW)": float(power),
-                    "Notes": notes
-                })
-                
-                st.success(f"Added measurement: {modulation}% modulation = {power} mW")
-        
-        # Add clear form button
-        if st.button("Clear Form", key="clear_form_button", help="Reset all form fields to their default values"):
-            # Reset form values but keep session settings
-            st.session_state.modulation_input = 10
-            st.session_state.power_input = 0.0
-            st.session_state.notes_input = ""
-            st.experimental_rerun()
+                st.info("No measurements for the current study and wavelength.")
+        else:
+            st.info("No measurements recorded yet.")
         
         st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Display current measurements table
-    st.subheader("Current Measurements")
-    
-    # First check if we have any measurements in the session state
-    has_measurements = False
-    
-    if 'latest_measurements' in st.session_state and st.session_state.latest_measurements:
-        # Convert session state measurements to DataFrame for display
-        session_measurements_df = pd.DataFrame(st.session_state.latest_measurements)
-        has_measurements = True
-    else:
-        # If no session state measurements, try to load from file with proper filtering
-        # Filter for current study and wavelength first
-        current_filters = {
-            "Study Name": st.session_state.study_name,
-            "Wavelength (nm)": float(st.session_state.wavelength)
-        }
-        
-        filtered_df = filter_dataframe(laser_power_df, current_filters)
-        
-        # Then filter for current session parameters
-        session_filters = {
-            "Sensor Model": sensor_model,
-            "Measurement Mode": measurement_mode,
-            "Fill Fraction (%)": float(fill_fraction)
-        }
-        
-        session_df = filter_dataframe(filtered_df, session_filters)
-        
-        if not session_df.empty:
-            # Configure columns for display
-            display_columns = ["Modulation (%)", "Measured Power (mW)", "Notes"]
-            session_measurements_df = session_df[display_columns].copy()
-            has_measurements = True
-        else:
-            session_measurements_df = pd.DataFrame()
-    
-    if not has_measurements:
-        st.info("No measurements recorded for current session. Add measurements using the form above.")
-    else:
-        # Display the table
-        st.dataframe(
-            session_measurements_df.sort_values("Modulation (%)") if "Modulation (%)" in session_measurements_df.columns else session_measurements_df,
-            use_container_width=True,
-            column_config={
-                "Modulation (%)": st.column_config.NumberColumn(
-                    "Modulation (%)",
-                    format="%d %%"
-                ),
-                "Measured Power (mW)": st.column_config.NumberColumn(
-                    "Measured Power (mW)",
-                    format="%.2f mW"
-                )
-            }
-        )
-        
-        # Add clear button with custom styling
-        st.markdown(f"""
-        <style>
-        div.stButton > button:first-child {{
-            background-color: {colors['secondary']};
-            color: white;
-        }}
-        div.stButton > button:hover {{
-            background-color: {colors['info']};
-        }}
-        </style>
-        """, unsafe_allow_html=True)
-        
-        if st.button("Clear Session Measurements"):
-            # Clear session state measurements
-            if 'latest_measurements' in st.session_state:
-                st.session_state.latest_measurements = []
-            
-            # Find rows in the original dataframe that match the current session
-            mask = (
-                (laser_power_df["Study Name"] == st.session_state.study_name) &
-                (laser_power_df["Wavelength (nm)"] == float(st.session_state.wavelength)) &
-                (laser_power_df["Sensor Model"] == sensor_model) &
-                (laser_power_df["Measurement Mode"] == measurement_mode) &
-                (laser_power_df["Fill Fraction (%)"] == float(fill_fraction))
-            )
-            
-            # Remove those rows
-            laser_power_df = laser_power_df[~mask]
-            
-            # Save the updated dataframe
-            save_dataframe(laser_power_df, LASER_POWER_FILE)
-            
-            st.success("All measurements for this session have been cleared.")
-            st.experimental_rerun()
 
 def render_laser_power_visualization():
     """Render visualizations for laser power measurements."""

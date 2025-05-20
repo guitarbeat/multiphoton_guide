@@ -10,4 +10,5 @@ def laser_power_page():
     Page function for the Laser Power at the Sample section.
     This is called by the navigation system.
     """
-    render_laser_power_tab() 
+    # Ensure session state variables are used by the laser power module
+    render_laser_power_tab(use_sidebar_values=True) 
