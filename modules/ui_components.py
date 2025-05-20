@@ -19,19 +19,7 @@ def create_header(title, subtitle=None):
     
     st.markdown("---")
 
-def create_session_badges(study_name, wavelength, researcher):
-    """Create badges for session information."""
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.badge(f"Study: {study_name}")
-    
-    with col2:
-        st.badge(f"Wavelength: {wavelength} nm")
-    
-    with col3:
-        st.badge(f"Researcher: {researcher}")
+
 
 def create_info_box(content):
     """Create an info box with blue styling."""

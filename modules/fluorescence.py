@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 
 from modules.data_utils import load_dataframe, save_dataframe, ensure_columns, safe_numeric_conversion, filter_dataframe, calculate_statistics, linear_regression
-from modules.ui_components import create_header, create_session_badges, create_info_box, create_warning_box, create_success_box, create_metric_row, create_data_editor, create_plot, create_tab_section, create_form_section, display_image, get_image_path
+from modules.ui_components import create_header, create_info_box, create_warning_box, create_success_box, create_metric_row, create_data_editor, create_plot, create_tab_section, create_form_section, display_image, get_image_path
 
 # Constants
 FLUORESCENCE_FILE = "fluorescence_measurements.csv"
@@ -22,11 +22,7 @@ def render_fluorescence_tab():
     """Render the fluorescence signal estimation tab content."""
     
     create_header("Estimating Absolute Magnitudes of Fluorescence Signals")
-    create_session_badges(
-        st.session_state.study_name,
-        st.session_state.wavelength,
-        st.session_state.researcher
-    )
+
     
     # Create two columns for layout
     col1, col2 = st.columns([3, 2])
