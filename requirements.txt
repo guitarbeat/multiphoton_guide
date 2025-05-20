@@ -1,13 +1,15 @@
 # Project dependencies
-streamlit==1.31.0
-streamlit-nested-layout==0.1.1
-streamlit-pdf-viewer==0.0.23
-pandas==1.5.3
-numpy>=1.26.0
-matplotlib==3.7.0
-pillow==9.4.0
-scikit-learn==1.2.0
-pytest==7.3.1
+streamlit>=1.31.0
+streamlit-nested-layout>=0.1.1
+streamlit-pdf-viewer>=0.0.23
+pandas>=1.5.3,<2.0.0
+numpy>=1.24.0
+matplotlib>=3.7.0
+pillow>=9.4.0,<10.0.0
+scikit-learn>=1.2.0
+scipy>=1.10.0
+scikit-image>=0.20.0
+pytest>=7.3.1
 setuptools>=65.5.0
 # Old dependency that's no longer needed:
 # streamlit-pdf-viewer==0.0.3

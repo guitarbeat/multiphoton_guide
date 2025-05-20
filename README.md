@@ -1,97 +1,113 @@
 # Multiphoton Microscopy Guide
 
-An interactive application for standardized measurements and protocols in multiphoton microscopy.
+A comprehensive application for standardized measurements, monitoring, and comparing multiphoton microscope systems.
 
-## Overview
+## Installation Options
 
-This application provides interactive guides, data collection tools, and visualizations for key multiphoton microscopy protocols based on the Nature Protocols article by Lees et al. (2024). It helps researchers maintain consistent microscope performance and ensure reproducible results.
+### Option 1: Using the Setup Script (Recommended for Local Development)
 
-## Features
-
-- **Laser Power Measurement**: Tools for measuring and monitoring laser power at the sample
-- **Pulse Width Optimization**: Interactive GDD optimization for maximum signal
-- **Fluorescence Signal Estimation**: Convert arbitrary units to absolute photon counts
-- **System Change Log**: Track all microscope modifications and maintenance
-- **Reference Materials**: Access to protocol documentation and guides
-
-## Installation
-
-1. Clone or download this repository
-2. Install the required dependencies:
+The easiest way to install locally is using the provided setup script:
 
 ```bash
-pip install -r requirements.txt
-```
+# Make the script executable
+chmod +x setup.sh
 
-3. Run the application:
+# Run the setup script
+./setup.sh
 
-```bash
+# Run the application
+source venv/bin/activate
 streamlit run app.py
 ```
 
-## Project Structure
+### Option 2: Manual Installation
 
-```
-multiphoton_guide/
-├── app.py                  # Main application entry point
-├── README.md               # This file
-├── requirements.txt        # Dependencies
-├── data/                   # Data storage directory
-│   ├── laser_power_measurements.csv
-│   ├── pulse_width_measurements.csv
-│   ├── fluorescence_measurements.csv
-│   └── rig_log.csv
-├── modules/                # Modular components
-│   ├── __init__.py
-│   ├── theme.py            # Theme configuration
-│   ├── data_utils.py       # Data handling utilities
-│   ├── ui_components.py    # Reusable UI elements
-│   ├── laser_power.py      # Laser power measurement module
-│   ├── pulse_width.py      # Pulse width optimization module
-│   ├── fluorescence.py     # Fluorescence signal estimation module
-│   ├── rig_log.py          # System change log module
-│   └── reference.py        # Protocol reference module
-├── tests/                  # Test suite
-│   ├── __init__.py
-│   ├── test_app.py         # Main application tests
-│   └── test_data_utils.py  # Data utilities tests
-└── assets/                 # Static assets
-    └── s41596-024-01120-w.pdf  # Reference protocol document
-```
-
-## Usage
-
-1. Set your study parameters in the sidebar
-2. Navigate between tabs to access different protocols
-3. Record measurements using the interactive tables
-4. Save your data using the form submit buttons
-5. Track all system changes in the Rig Log tab
-6. Access reference materials in the Reference tab
-
-## Testing
-
-Run the test suite to verify application functionality:
+If you prefer to install manually:
 
 ```bash
-pytest tests/
+# Create a virtual environment
+python3 -m venv venv
+
+# Activate the virtual environment
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Run the application
+streamlit run app.py
 ```
 
-## Dependencies
+### Option 3: Using Docker
 
-- streamlit
-- streamlit-pdf-viewer
-- streamlit-nested-layout
-- pandas
-- matplotlib
-- numpy
-- scikit-learn
+If you have Docker installed, you can build and run the application in a container:
 
-## Citation
+```bash
+# Build the Docker image
+docker build -t multiphoton-guide .
 
-This application is based on protocols from:
+# Run the container
+docker run -p 8501:8501 multiphoton-guide
+```
 
-Lees, R.M., Bianco, I.H., Campbell, R.A.A. et al. Standardized measurements for monitoring and comparing multiphoton microscope systems. Nat Protoc (2024). https://doi.org/10.1038/s41596-024-01120-w
+Then visit http://localhost:8501 in your web browser.
+
+### Option 4: Deploying to Streamlit Community Cloud
+
+To deploy this application on Streamlit Community Cloud:
+
+1. Push your code to a GitHub repository
+2. Visit [share.streamlit.io](https://share.streamlit.io)
+3. Sign in with GitHub
+4. Click "New app" and select your repository
+5. Choose the branch and main file path (app.py)
+6. Click "Deploy"
+
+The application includes the necessary configuration files:
+- `requirements.txt` - Python dependencies
+- `packages.txt` - System dependencies
+- `.streamlit/config.toml` - Streamlit configuration
+- `runtime.txt` - Python version specification
+
+## System Requirements
+
+- Python 3.8 or newer (Python 3.10 recommended)
+- System dependencies (automatically installed with Docker or Streamlit Cloud):
+  - libgl1
+  - libglib2.0-0
+  - poppler-utils
+  - libgtk2.0-0
+  - libx11-xcb1
+  - libnss3
+
+## Troubleshooting
+
+If you encounter installation issues:
+
+1. Make sure you're using Python 3.8 or newer
+2. Try using a virtual environment
+3. Update pip before installing requirements: `pip install --upgrade pip`
+4. If specific packages fail, try installing them individually
+5. Consider using the Docker option which handles all dependencies
+
+### Streamlit Cloud Deployment Issues
+
+If you encounter issues deploying to Streamlit Cloud:
+
+1. Check the build logs for specific error messages
+2. Ensure all dependencies are properly listed in requirements.txt
+3. Make sure system dependencies are listed in packages.txt
+4. Try specifying an older Python version in runtime.txt if compatibility issues arise
+5. Consider removing or simplifying complex dependencies
+
+## Features
+
+- Microscope Log: Track maintenance, calibration, and modifications
+- Protocol Reference: View standardized measurement procedures
+- Fluorescence Signal Estimation: Calculate expected signal levels
+- And more...
 
 ## License
 
-MIT License
+[Your license information here]

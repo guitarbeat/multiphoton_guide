@@ -20,8 +20,8 @@ RIG_LOG_FILE = "rig_log.csv"
 def render_rig_log_tab():
     """Render the rig log tab content."""
     
-    create_header("Microscope System Change Log", 
-                 f"Study: {st.session_state.study_name} | Researcher: {st.session_state.researcher}")
+    create_header("Microscope Log", 
+                 f"Track maintenance, calibration, and modifications to ensure reproducibility")
     
     # Load existing data
     rig_log_df = load_dataframe(RIG_LOG_FILE, pd.DataFrame({
@@ -36,76 +36,135 @@ def render_rig_log_tab():
     required_columns = ["Date", "Researcher", "Activity", "Description", "Category"]
     rig_log_df = ensure_columns(rig_log_df, required_columns)
     
-    # Create two columns for layout
-    col1, col2 = st.columns([3, 2])
+    # Create tabs for better organization
+    tab1, tab2 = st.tabs(["📋 View & Filter Log", "📊 Log Analysis"])
     
-    with col1:
-        render_rig_log_introduction()
+    with tab1:
+        # Create two columns for layout
+        info_col, stats_col = st.columns([1, 2])
+        
+        with info_col:
+            render_rig_log_introduction()
+        
+        with stats_col:
+            # Quick stats about the log
+            if not rig_log_df.empty:
+                st.subheader("Log Overview")
+                total_entries = len(rig_log_df)
+                
+                # Calculate days of log history
+                if "Date" in rig_log_df.columns and not rig_log_df["Date"].empty:
+                    try:
+                        dates = pd.to_datetime(rig_log_df["Date"], errors="coerce")
+                        if not dates.empty and not dates.isna().all():
+                            days_tracked = (dates.max() - dates.min()).days + 1
+                        else:
+                            days_tracked = 0
+                    except:
+                        days_tracked = 0
+                else:
+                    days_tracked = 0
+                
+                metrics = [
+                    {"label": "Total Entries", "value": total_entries},
+                    {"label": "Days Tracked", "value": days_tracked if days_tracked > 0 else "N/A"}
+                ]
+                
+                # Count by category if categories exist
+                if "Category" in rig_log_df.columns and not rig_log_df["Category"].empty:
+                    top_category = rig_log_df["Category"].value_counts().idxmax() if not rig_log_df["Category"].isna().all() else "None"
+                    metrics.append({"label": "Top Category", "value": top_category})
+                
+                create_metric_row(metrics)
+            
+            # Add entry button that jumps to the entry form
+            if st.button("➕ Add New Entry", type="primary", use_container_width=True):
+                st.session_state.show_entry_form = True
+        
+        st.markdown("---")
         render_rig_log_table(rig_log_df)
+        st.markdown("---")
+        
+        # Entry form
+        if "show_entry_form" not in st.session_state:
+            st.session_state.show_entry_form = False
+            
+        if st.session_state.show_entry_form:
+            render_rig_log_entry_form(rig_log_df)
+            
+            # Button to hide form
+            if st.button("↑ Hide Form", key="hide_form"):
+                st.session_state.show_entry_form = False
+        else:
+            # Show button to expand form
+            if st.button("📝 Add New Log Entry", key="show_form", use_container_width=True):
+                st.session_state.show_entry_form = True
     
-    with col2:
-        render_rig_log_entry_form(rig_log_df)
+    with tab2:
         render_rig_log_visualization(rig_log_df)
 
 def render_rig_log_introduction():
     """Render the introduction section for the rig log."""
     
-    create_tab_section("📖 Introduction & Importance", lambda: st.markdown("""
-        A comprehensive system change log is critical for maintaining consistent microscope performance and ensuring reproducible results. As noted in the Nature Protocols article:
+    create_tab_section("📖 Why Keep a Microscope Log?", lambda: st.markdown("""
+        A comprehensive microscope log enhances reproducibility and simplifies troubleshooting. As noted in the Nature Protocols article:
 
-        > **CRITICAL:** Keep a shared, dated log of all changes to the microscope system (for example, alignment, calibrations, measurements, software updates and so on) that is easily accessible by all users. A good 'rig log' pays dividends in years to come.
+        > **CRITICAL:** Keep a shared, dated log of all microscope system changes (alignment, calibrations, software updates, etc.) that is accessible to all users. A good 'rig log' pays dividends in years to come.
 
-        **Benefits of maintaining a detailed rig log:**
+        **Benefits:**
 
-        1. **Troubleshooting:** When issues arise, the log provides context about recent changes
-        2. **Reproducibility:** Helps recreate exact conditions for follow-up experiments
-        3. **Maintenance:** Tracks when components were last serviced or calibrated
-        4. **Knowledge Transfer:** Preserves institutional knowledge when team members change
-        5. **Performance Monitoring:** Reveals gradual system degradation over time
+        * **Troubleshooting** - Trace issues to recent microscope changes
+        * **Reproducibility** - Recreate exact conditions for critical experiments
+        * **Knowledge Transfer** - Preserve institutional memory as team members change
+        * **Maintenance Schedule** - Track when components were last serviced
 
-        This log automatically records all measurements and optimizations performed through the application, and allows manual entry of additional system changes.
-    """), expanded=True)
+        This log automatically records measurements and optimizations performed through the application and allows manual entry of additional microscope changes.
+    """), expanded=False)
 
 def render_rig_log_table(rig_log_df):
     """Render the rig log table with filtering options."""
     
-    st.subheader("System Change History")
+    st.subheader("Microscope Change History")
     
-    # Help popover
-    with st.popover("ℹ️ How to use this log", use_container_width=True):
-        st.markdown("""
-        **Features:**
-        1. **Filtering:** Use the dropdowns to filter by date range, category, or researcher
-        2. **Sorting:** Click column headers to sort the table
-        3. **Searching:** Use the search box to find specific entries
-        4. **Adding Entries:** Use the form on the right to add new entries
-        
-        **Categories:**
-        - **Measurement:** Power, resolution, or other quantitative assessments
-        - **Optimization:** GDD, alignment, or other performance tuning
-        - **Maintenance:** Cleaning, component replacement, or repairs
-        - **Calibration:** System calibration procedures
-        - **Software:** Software updates or configuration changes
-        - **Hardware:** Hardware modifications or upgrades
-        """)
+    # Create filter controls in a more compact layout
+    col1, col2, col3, col4 = st.columns([1.5, 1, 1, 0.5])
     
-    # Create filter controls
-    filter_col1, filter_col2, filter_col3 = st.columns(3)
-    
-    with filter_col1:
+    with col1:
         # Date range filter
         date_options = ["All Time", "Today", "Past Week", "Past Month", "Past Year"]
-        date_filter = st.selectbox("Date Range:", date_options, index=0)
+        date_filter = st.selectbox("📅 Date Range:", date_options, index=0)
     
-    with filter_col2:
+    with col2:
         # Category filter
-        categories = ["All Categories"] + sorted(rig_log_df["Category"].unique().tolist())
-        category_filter = st.selectbox("Category:", categories, index=0)
+        unique_categories = rig_log_df["Category"].dropna().unique().tolist()
+        categories = ["All Categories"] + sorted(unique_categories)
+        category_filter = st.selectbox("🏷️ Category:", categories, index=0)
     
-    with filter_col3:
+    with col3:
         # Researcher filter
-        researchers = ["All Researchers"] + sorted(rig_log_df["Researcher"].unique().tolist())
-        researcher_filter = st.selectbox("Researcher:", researchers, index=0)
+        # Filter out NaN values to avoid type error when sorting
+        unique_researchers = rig_log_df["Researcher"].dropna().unique().tolist()
+        researchers = ["All Researchers"] + sorted(unique_researchers)
+        researcher_filter = st.selectbox("👤 Researcher:", researchers, index=0)
+    
+    with col4:
+        # Help popover
+        with st.popover("ℹ️ Help", use_container_width=True):
+            st.markdown("""
+            **How to use this log:**
+            
+            * **Filter:** Use dropdowns to filter entries
+            * **Sort:** Click column headers to sort
+            * **Search:** Use browser search (Ctrl+F/⌘+F)
+            
+            **Categories explained:**
+            * **Measurement:** Power, resolution assessments
+            * **Optimization:** GDD, alignment tuning
+            * **Maintenance:** Cleaning, repairs
+            * **Calibration:** System calibration
+            * **Software:** Updates, configurations
+            * **Hardware:** Modifications, upgrades
+            """)
     
     # Apply filters
     filtered_df = rig_log_df.copy()
@@ -157,16 +216,17 @@ def render_rig_log_table(rig_log_df):
             help="Detailed description of the change",
             width="large"
         ),
-        "Category": st.column_config.TextColumn(
+        "Category": st.column_config.SelectboxColumn(
             "Category",
             help="Type of change",
-            width="small"
+            width="small",
+            options=["Measurement", "Optimization", "Maintenance", "Calibration", "Software", "Hardware"]
         )
     }
     
     # Display the filtered data
     if filtered_df.empty:
-        st.info("No log entries match the selected filters.")
+        st.info("📭 No log entries match the selected filters.")
     else:
         # Sort by date (newest first)
         filtered_df = filtered_df.sort_values("Date", ascending=False)
@@ -179,39 +239,55 @@ def render_rig_log_table(rig_log_df):
             use_container_width=True
         )
         
-        st.caption(f"Showing {len(filtered_df)} of {len(rig_log_df)} total entries")
+        # More visible status message with emoji
+        filter_status = "Showing all entries" if len(filtered_df) == len(rig_log_df) else f"Filtered: {len(filtered_df)} of {len(rig_log_df)} entries"
+        st.caption(f"📊 {filter_status}")
 
 def render_rig_log_entry_form(rig_log_df):
     """Render the form for adding new rig log entries."""
     
-    st.subheader("Add New Log Entry")
+    st.subheader("📝 Add New Log Entry")
+    
+    # Create cleaner form layout
+    form_col1, form_col2 = st.columns([2, 1])
     
     with st.form(key="rig_log_entry_form"):
-        # Activity
-        activity = st.text_input("Activity:", 
-                               placeholder="e.g., Laser alignment, Objective cleaning",
-                               help="Brief title for the activity performed")
+        with form_col1:
+            # Activity and description
+            activity = st.text_input("Activity:", 
+                                placeholder="e.g., Laser alignment, Objective cleaning",
+                                help="Brief title for the activity performed")
+            
+            description = st.text_area("Description:", 
+                                    placeholder="What was changed and why? Include any measurements or settings.",
+                                    help="Detailed description of what was done and why",
+                                    height=100)
         
-        # Description
-        description = st.text_area("Description:", 
-                                 placeholder="Provide detailed information about the change...",
-                                 help="Detailed description of what was done and why")
-        
-        # Category
-        category_options = ["Measurement", "Optimization", "Maintenance", "Calibration", "Software", "Hardware"]
-        category = st.selectbox("Category:", category_options, index=2)
+        with form_col2:
+            # Category and date options
+            category_options = ["Measurement", "Optimization", "Maintenance", "Calibration", "Software", "Hardware"]
+            category = st.selectbox("Category:", category_options, index=2)
+            
+            # Add researcher field (default to session state)
+            researcher = st.text_input("Researcher:", 
+                                    value=st.session_state.researcher,
+                                    help="Person making the change")
         
         # Submit button
-        submitted = st.form_submit_button("Add Log Entry")
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            submitted = st.form_submit_button("Add Entry", use_container_width=True, type="primary")
+        with col2:
+            st.markdown("") # Empty space for layout balance
     
     if submitted:
         if not activity or not description:
-            st.warning("Please provide both an activity and description.")
+            st.warning("⚠️ Please provide both an activity and description.")
         else:
             # Create new entry
             new_entry = pd.DataFrame({
                 "Date": [datetime.now().strftime("%Y-%m-%d %H:%M")],
-                "Researcher": [st.session_state.researcher],
+                "Researcher": [researcher],
                 "Activity": [activity],
                 "Description": [description],
                 "Category": [category]
@@ -223,88 +299,127 @@ def render_rig_log_entry_form(rig_log_df):
             # Save updated log
             save_dataframe(updated_log, RIG_LOG_FILE)
             
-            st.success("Log entry added successfully!")
+            st.success("✅ Log entry added successfully!")
+            
+            # Hide the form after successful submission
+            st.session_state.show_entry_form = False
+            # Force a rerun to refresh the page with the new entry
+            st.rerun()
 
 def render_rig_log_visualization(rig_log_df):
     """Render visualizations for the rig log data."""
     
-    st.subheader("Log Analysis")
-    
     if rig_log_df.empty:
-        st.info("Add log entries to see analysis")
+        st.info("📊 Add log entries to see analysis and trends")
         return
     
-    # Create activity by category plot
-    def plot_activity_by_category(fig, ax):
-        # Count entries by category
-        category_counts = rig_log_df["Category"].value_counts()
-        
-        # Create horizontal bar chart
-        y_pos = np.arange(len(category_counts.index))
-        ax.barh(y_pos, category_counts.values, color='#4BA3C4', alpha=0.7)
-        
-        # Add labels
-        ax.set_yticks(y_pos)
-        ax.set_yticklabels(category_counts.index)
-        ax.set_xlabel('Number of Entries')
-        ax.set_title('Activities by Category')
-        
-        # Add count labels on bars
-        for i, v in enumerate(category_counts.values):
-            ax.text(v + 0.1, i, str(v), va='center')
-        
-        # Add grid
-        ax.grid(True, linestyle='--', alpha=0.7, axis='x')
+    viz_col1, viz_col2 = st.columns(2)
     
-    # Display the plot
-    category_plot = create_plot(plot_activity_by_category)
-    st.pyplot(category_plot)
+    with viz_col1:
+        st.subheader("Activity by Category")
+        # Create activity by category plot
+        def plot_activity_by_category(fig, ax):
+            # Count entries by category
+            category_counts = rig_log_df["Category"].value_counts()
+            
+            # Create horizontal bar chart with better colors
+            colors = ['#4BA3C4', '#6BBFDB', '#89CBE5', '#A8D7EE', '#C6E3F6', '#E5F0FD']
+            y_pos = np.arange(len(category_counts.index))
+            bars = ax.barh(y_pos, category_counts.values, 
+                         color=colors[:len(category_counts)] if len(category_counts) <= len(colors) else colors, 
+                         alpha=0.8)
+            
+            # Add labels
+            ax.set_yticks(y_pos)
+            ax.set_yticklabels(category_counts.index)
+            ax.set_xlabel('Number of Entries')
+            
+            # Add count labels on bars with better positioning
+            for i, v in enumerate(category_counts.values):
+                ax.text(max(v - 0.9, 0.1) if v > 5 else v + 0.1, 
+                       i, 
+                       str(v), 
+                       va='center', 
+                       ha='right' if v > 5 else 'left',
+                       color='white' if v > 5 else 'black',
+                       fontweight='bold')
+            
+            # Add grid but make it less prominent
+            ax.grid(True, linestyle='--', alpha=0.3, axis='x')
+            
+            # Remove top and right spines
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+        
+        # Display the plot
+        category_plot = create_plot(plot_activity_by_category)
+        st.pyplot(category_plot)
     
     # Create activity timeline plot if enough data
     if len(rig_log_df) >= 5:
-        def plot_activity_timeline(fig, ax):
-            # Convert dates to datetime
-            rig_log_df["Date_DT"] = pd.to_datetime(rig_log_df["Date"], errors="coerce")
+        with viz_col2:
+            st.subheader("Activity Timeline")
+            def plot_activity_timeline(fig, ax):
+                # Convert dates to datetime
+                rig_log_df["Date_DT"] = pd.to_datetime(rig_log_df["Date"], errors="coerce")
+                
+                # Group by date and count
+                timeline_df = rig_log_df.groupby(rig_log_df["Date_DT"].dt.date).size().reset_index(name="count")
+                timeline_df = timeline_df.sort_values("Date_DT")
+                
+                # Plot timeline with improved styling
+                ax.plot(timeline_df["Date_DT"], timeline_df["count"], 
+                       marker='o', linestyle='-', 
+                       color='#BF5701', linewidth=2, markersize=6)
+                
+                # Fill area under the curve
+                ax.fill_between(timeline_df["Date_DT"], timeline_df["count"], 
+                               alpha=0.2, color='#BF5701')
+                
+                # Add labels
+                ax.set_xlabel('Date')
+                ax.set_ylabel('Number of Activities')
+                
+                # Format x-axis dates
+                fig.autofmt_xdate()
+                
+                # Add grid but make it less prominent
+                ax.grid(True, linestyle='--', alpha=0.3)
+                
+                # Remove top and right spines
+                ax.spines['top'].set_visible(False)
+                ax.spines['right'].set_visible(False)
             
-            # Group by date and count
-            timeline_df = rig_log_df.groupby(rig_log_df["Date_DT"].dt.date).size().reset_index(name="count")
-            timeline_df = timeline_df.sort_values("Date_DT")
-            
-            # Plot timeline
-            ax.plot(timeline_df["Date_DT"], timeline_df["count"], 'o-', color='#BF5701', linewidth=2, markersize=6)
-            
-            # Add labels
-            ax.set_xlabel('Date')
-            ax.set_ylabel('Number of Activities')
-            ax.set_title('Activity Timeline')
-            
-            # Format x-axis dates
-            fig.autofmt_xdate()
-            
-            # Add grid
-            ax.grid(True, linestyle='--', alpha=0.7)
-        
-        # Display the plot
-        timeline_plot = create_plot(plot_activity_timeline)
-        st.pyplot(timeline_plot)
+            # Display the plot
+            timeline_plot = create_plot(plot_activity_timeline)
+            st.pyplot(timeline_plot)
     
-    # Add explanation
-    with st.expander("📊 Understanding These Plots"):
+    # Add explanation in a cleaner format
+    st.subheader("📊 Insights")
+    cols = st.columns(2)
+    
+    with cols[0]:
         st.markdown("""
-        These visualizations help you understand system maintenance patterns:
+        **Activities by Category Chart**
         
-        **Activities by Category:**
-        - Shows the distribution of different types of system changes
-        - Helps identify if certain categories are over or under-represented
-        - Maintenance-heavy logs might indicate aging equipment
+        This visualization shows the distribution of maintenance activities:
         
-        **Activity Timeline:**
-        - Shows the frequency of system changes over time
-        - Clusters may indicate intensive troubleshooting periods
-        - Regular, evenly-spaced activities suggest good maintenance practices
+        * **Balanced categories** indicate comprehensive system care
+        * **High maintenance counts** might signal aging equipment
+        * **Low calibration counts** could suggest missed opportunities for optimization
         
-        **Best practices:**
-        - Aim for regular, preventative maintenance rather than reactive fixes
-        - Document all changes, even minor ones
-        - Include enough detail that future users understand what was done and why
+        Aim for regular, preventative maintenance across all categories.
+        """)
+    
+    with cols[1]:
+        st.markdown("""
+        **Activity Timeline Chart**
+        
+        The timeline reveals maintenance patterns over time:
+        
+        * **Regular spacing** indicates good maintenance practices
+        * **Clusters** often represent troubleshooting periods
+        * **Gaps** may indicate periods when logging was overlooked
+        
+        Record all changes consistently, even minor ones, to build a complete history.
         """)

@@ -15,7 +15,7 @@ def create_header(title, subtitle=None):
     st.title(title)
     
     if subtitle:
-        st.caption(subtitle)
+        st.caption(subtitle, help="Important context for this section")
     
     st.markdown("---")
 
@@ -59,10 +59,16 @@ def create_metric_row(metrics):
     
     for i, metric in enumerate(metrics):
         with cols[i]:
+            delta_color = "normal"
+            if "delta_color" in metric:
+                delta_color = metric["delta_color"]
+                
             st.metric(
                 label=metric["label"],
                 value=metric["value"],
-                delta=metric.get("delta", None)
+                delta=metric.get("delta", None),
+                delta_color=delta_color,
+                help=metric.get("help", None)
             )
 
 def create_data_editor(df, key, column_config=None, num_rows="fixed", height=None):
@@ -101,10 +107,13 @@ def create_plot(plot_function, figsize=(10, 6), dpi=100):
         Matplotlib figure
     """
     
-    fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+    fig, ax = plt.subplots(figsize=figsize, dpi=100)
     
-    # Set style
+    # Set style with more modern elements
     plt.style.use('seaborn-v0_8-whitegrid')
+    
+    # Set background color to transparent
+    fig.patch.set_alpha(0.0)
     
     # Call the plot function
     plot_function(fig, ax)
@@ -125,6 +134,9 @@ def create_tab_section(title, content_function, expanded=False):
     
     with st.expander(title, expanded=expanded):
         content_function()
+        
+    # Add a small gap after the expander
+    st.markdown("<div style='margin-bottom: 10px'></div>", unsafe_allow_html=True)
 
 def create_form_section(title, form_key, submit_label="Submit", clear_form=True):
     """Create a form section with a title and optional clear button.
