@@ -1,0 +1,11 @@
+Wavelength (nm),Average Power (mW),Modulation (%),Transmission (%),Notes,Study Name,Date,Sensor Model,Measurement Mode,Fill Fraction (%),Measured Power (mW)
+800.0,10.5,25.0,42.0,Initial measurement,,,,,,
+850.0,12.3,30.0,41.0,,,,,,,
+900.0,15.7,35.0,44.9,,,,,,,
+950.0,18.2,40.0,45.5,Peak efficiency,,,,,,
+1000.0,16.8,45.0,37.3,,,,,,,
+1050.0,14.5,50.0,29.0,,,,,,,
+1100.0,12.1,55.0,22.0,,,,,,,
+920.0,,25.0,,Initial calibration measurement,Default Study,2025-05-19 22:38,Thorlabs PM100D,Stationary,100.0,5.2
+920.0,,15.0,,,Default Study,2025-05-19 23:12,,Stationary,100.0,3.0
+920.0,,25.0,,,Default Study,2025-05-19 23:12,,Stationary,100.0,3.2

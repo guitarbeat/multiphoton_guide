@@ -1,0 +1,10 @@
+Date,Researcher,Activity,Description,Category
+2025-05-01 09:15,John Smith,Laser Alignment,Realigned Ti:Sapphire laser for optimal beam profile,Maintenance
+2025-05-03 14:30,Sarah Johnson,GDD Optimization,Optimized GDD values for 920nm wavelength,Optimization
+2025-05-07 11:20,John Smith,PMT Replacement,Replaced PMT #2 due to decreased sensitivity,Hardware
+2025-05-10 16:45,Maria Garcia,Software Update,Updated ScanImage to version 2025.1.2,Software
+2025-05-15 10:00,Sarah Johnson,Power Calibration,Measured and calibrated laser power at sample,Calibration
+2025-05-18 13:25,John Smith,Objective Cleaning,Cleaned 25x objective with lens paper and solution,Maintenance
+2025-05-19 22:38,,Laser Power Measurement,Measured laser power at 920 nm using Thorlabs PM100D,Measurement
+2025-05-19 23:12,Anonymous Researcher,Laser Power Measurement,Measured laser power at 920 nm using ,Measurement
+2025-05-19 23:12,Anonymous Researcher,Laser Power Measurement,Measured laser power at 920 nm using ,Measurement
