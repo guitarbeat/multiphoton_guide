@@ -49,10 +49,6 @@ def initialize_session_state():
     # Initialize current page if not set
     if "current_page" not in st.session_state:
         st.session_state.current_page = "Laser Power at the Sample"
-        
-    # Initialize show_cards preference (default to True - show cards)
-    if "show_cards" not in st.session_state:
-        st.session_state.show_cards = True
 
 def apply_sidebar_styling():
     """Apply custom styling to the sidebar."""
@@ -202,35 +198,6 @@ def apply_sidebar_styling():
     [data-testid="stSidebar"] button {{
         color: white !important;
     }}
-    
-    /* Style for the toggle switch */
-    .toggle-container {{
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-        padding: 0.5rem;
-        border-radius: 4px;
-        background-color: rgba(255, 255, 255, 0.05);
-    }}
-    
-    .toggle-label {{
-        font-size: 0.9rem;
-        margin-right: 0.5rem;
-    }}
-    
-    /* Hide cards when needed */
-    .hide-cards .stCard {{
-        border: none !important;
-        box-shadow: none !important;
-        background-color: transparent !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }}
-    
-    .hide-cards .element-container {{
-        margin-bottom: 1rem !important;
-    }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -363,10 +330,6 @@ def main():
     # Apply custom sidebar styling
     apply_sidebar_styling()
     
-    # Apply card hiding class if needed
-    if not st.session_state.show_cards:
-        st.markdown('<div class="hide-cards">', unsafe_allow_html=True)
-    
     # Render the sidebar with session setup form
     with st.sidebar:
         # Display logo at the top of the sidebar
@@ -381,17 +344,6 @@ def main():
         st.caption("Standardized measurements for monitoring and comparing multiphoton microscope systems")
         
         st.markdown("---")
-        
-        # Add toggle for showing/hiding cards
-        with st.container():
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.markdown("**UI Settings:**")
-            with col2:
-                show_cards = st.toggle("Show Cards", value=st.session_state.show_cards, key="toggle_cards")
-                if show_cards != st.session_state.show_cards:
-                    st.session_state.show_cards = show_cards
-                    st.rerun()
         
         # Render session setup form
         render_session_setup_form()
@@ -440,10 +392,6 @@ def main():
         current_page_function()
     else:
         st.error(f"Page '{st.session_state.current_page}' not found.")
-    
-    # Close the hide-cards div if it was opened
-    if not st.session_state.show_cards:
-        st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
