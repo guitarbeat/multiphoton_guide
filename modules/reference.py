@@ -16,8 +16,9 @@ def render_reference_tab():
     create_header("Protocol Reference", 
                  "Standardized measurements for monitoring and comparing multiphoton microscope systems")
     
-    # Path to the PDF file
-    pdf_path = "s41596-024-01120-w.pdf"
+    # Path to the PDF file - use absolute path
+    base_dir = Path(__file__).parent.parent
+    pdf_path = str(base_dir / "assets" / "s41596-024-01120-w.pdf")
     
     # Check if the PDF exists
     if not os.path.exists(pdf_path):
@@ -74,7 +75,10 @@ def render_reference_tab():
     
     # Display the PDF
     st.markdown("### Protocol Document")
-    pdf_viewer(pdf_path, height=600)
+    
+    # Using the streamlit-pdf-viewer package to display the PDF
+    # Setting width to 100% for responsive display and height to 600 pixels
+    pdf_viewer(pdf_path, width="100%", height=600, render_text=True)
     
     # Add citation information
     with st.expander("📚 Citation Information"):

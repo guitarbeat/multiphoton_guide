@@ -6,14 +6,11 @@ Implements protocols for measuring and recording laser power at the sample.
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from datetime import datetime
-import os
-from pathlib import Path
 
 from modules.data_utils import load_dataframe, save_dataframe, ensure_columns, safe_numeric_conversion, filter_dataframe, calculate_statistics, linear_regression
-from modules.ui_components import create_header, create_info_box, create_warning_box, create_success_box, create_metric_row, create_data_editor, create_plot, create_tab_section, create_form_section, display_image, get_image_path
-from modules.theme import get_colors, create_text_input, create_number_input, create_select_box, create_radio_buttons
+from modules.ui_components import create_header, create_metric_row, create_plot
+from modules.theme import get_colors
 
 # Constants
 LASER_POWER_FILE = "laser_power_measurements.csv"

@@ -112,6 +112,30 @@ gatherUsageStats = false
             color: {COLORS['primary']};
             text-decoration: underline;
         }}
+        
+        /* Logo container */
+        .logo-container {{
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }}
+        .logo-container img {{
+            max-width: 100%;
+            height: auto;
+        }}
+        
+        /* Image display */
+        img {{
+            display: block;
+            max-width: 100%;
+        }}
+        
+        /* PDF viewer */
+        iframe {{
+            width: 100%;
+            border: 1px solid {COLORS['on_surface']};
+            border-radius: 4px;
+        }}
     </style>
     """, unsafe_allow_html=True)
 

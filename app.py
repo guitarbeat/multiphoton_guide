@@ -4,6 +4,7 @@ import numpy as np
 from datetime import datetime
 import os
 from pathlib import Path
+import base64
 
 # Set page title and icon - must be the first Streamlit command
 st.set_page_config(
@@ -19,6 +20,11 @@ from modules.fluorescence import render_fluorescence_tab
 from modules.rig_log import render_rig_log_tab
 from modules.reference import render_reference_tab
 from modules.theme import apply_theme, get_colors
+
+def get_image_base64(image_path):
+    """Get base64 encoding of an image file."""
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode()
 
 def main():
     """Main application entry point."""
@@ -48,6 +54,14 @@ def main():
     
     # Create sidebar
     with st.sidebar:
+        # Display logo at the top of the sidebar
+        base_dir = Path(__file__).parent
+        logo_path = str(base_dir / "assets" / "images" / "logo.svg")
+        
+        if os.path.exists(logo_path):
+            with st.container():
+                st.image(logo_path, use_container_width=True)
+        
         st.title("Multiphoton Microscopy Guide")
         st.caption("Standardized measurements for monitoring and comparing multiphoton microscope systems")
         
