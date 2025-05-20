@@ -8,5 +8,6 @@ matplotlib==3.7.0
 pillow==9.4.0
 scikit-learn==1.2.0
 pytest==7.3.1
+setuptools>=65.5.0
 # Old dependency that's no longer needed:
 # streamlit-pdf-viewer==0.0.3
