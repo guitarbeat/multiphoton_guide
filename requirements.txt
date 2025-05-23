@@ -11,5 +11,9 @@ scipy>=1.10.0
 scikit-image>=0.20.0
 pytest>=7.3.1
 setuptools>=65.5.0
+rich==14.0.0
+markdown-it-py==3.0.0
+pygments==2.19.1
+mdurl==0.1.2
 # Old dependency that's no longer needed:
 # streamlit-pdf-viewer==0.0.3
