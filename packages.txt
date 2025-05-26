@@ -4,3 +4,4 @@ poppler-utils
 libgtk2.0-0
 libx11-xcb1
 libnss3 
+cmake
