@@ -1,3 +1,10 @@
+from modules.pages.usaf_analyzer_page import usaf_analyzer_page
+from modules.pages.reference_page import reference_page
+from modules.pages.rig_log_page import rig_log_page
+from modules.pages.fluorescence_page import fluorescence_page
+from modules.pages.pulse_width_page import pulse_width_page
+from modules.pages.laser_power_page import laser_power_page
+from modules.theme import apply_theme, get_colors
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -14,47 +21,43 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-from modules.theme import apply_theme, get_colors
-from modules.pages.laser_power_page import laser_power_page
-from modules.pages.pulse_width_page import pulse_width_page
-from modules.pages.fluorescence_page import fluorescence_page
-from modules.pages.rig_log_page import rig_log_page
-from modules.pages.reference_page import reference_page
 
 def get_image_base64(image_path):
     """Get base64 encoding of an image file."""
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode()
 
+
 def initialize_session_state():
     """Initialize session state variables if they don't exist."""
     if "study_name" not in st.session_state:
         st.session_state.study_name = "Default Study"
-    
+
     if "wavelength" not in st.session_state:
         st.session_state.wavelength = 920
-    
+
     if "researcher" not in st.session_state:
         st.session_state.researcher = "Anonymous Researcher"
-        
+
     if "sensor_model" not in st.session_state:
         st.session_state.sensor_model = ""
-        
+
     if "measurement_mode" not in st.session_state:
         st.session_state.measurement_mode = "Stationary"
-        
+
     if "fill_fraction" not in st.session_state:
         st.session_state.fill_fraction = 100
-        
+
     # Initialize current page if not set
     if "current_page" not in st.session_state:
         st.session_state.current_page = "Laser Power at the Sample"
+
 
 def apply_sidebar_styling():
     """Apply custom styling to the sidebar."""
     # Get theme colors
     colors = get_colors()
-    
+
     # Apply custom CSS for sidebar styling
     st.markdown(f"""
     <style>
@@ -201,6 +204,7 @@ def apply_sidebar_styling():
     </style>
     """, unsafe_allow_html=True)
 
+
 def render_session_info():
     """Render the session info display with enhanced styling."""
     st.markdown("""
@@ -230,65 +234,66 @@ def render_session_info():
         mode=st.session_state.measurement_mode
     ), unsafe_allow_html=True)
 
+
 def render_session_setup_form():
     """Render the session setup form."""
     with st.form(key="study_setup_form"):
         st.subheader("Session Setup")
-        
+
         study_name = st.text_input(
-            "Study Name:", 
+            "Study Name:",
             value=st.session_state.study_name,
             key="Study Name:",
             help="Enter a name for your study or experiment"
         )
-        
+
         wavelength = st.number_input(
-            "Wavelength (nm):", 
-            min_value=700, 
-            max_value=1100, 
+            "Wavelength (nm):",
+            min_value=700,
+            max_value=1100,
             value=int(st.session_state.wavelength),
             step=10,
             key="Wavelength (nm):",
             help="Enter the laser wavelength in nanometers (typical range: 700-1100 nm)"
         )
-        
+
         researcher = st.text_input(
-            "Researcher:", 
+            "Researcher:",
             value=st.session_state.researcher,
             key="Researcher:",
             help="Enter your name or identifier for record keeping"
         )
-        
+
         # Add sensor model to sidebar
         sensor_model = st.text_input(
-            "Sensor Model:", 
+            "Sensor Model:",
             value=st.session_state.sensor_model,
             key="Sidebar_Sensor_Model",
             help="Enter the model of your power meter sensor"
         )
-        
+
         # Add measurement mode to sidebar
         measurement_mode = st.radio(
-            "Measurement Mode:", 
+            "Measurement Mode:",
             ["Stationary", "Scanning"],
             index=0 if st.session_state.measurement_mode == "Stationary" else 1,
             key="Sidebar_Measurement_Mode",
             help="Stationary: beam fixed at center. Scanning: beam continuously scanning."
         )
-        
+
         # Add fill fraction to sidebar (only shown if scanning mode is selected)
         fill_fraction = st.session_state.fill_fraction  # Default from session state
         if measurement_mode == "Scanning":
             fill_fraction = st.number_input(
-                "Fill Fraction (%):", 
-                min_value=1, max_value=100, 
+                "Fill Fraction (%):",
+                min_value=1, max_value=100,
                 value=int(st.session_state.fill_fraction),
                 key="Sidebar_Fill_Fraction",
                 help="Percentage of time the beam is 'on' during scanning"
             )
-        
+
         submitted = st.form_submit_button("Update Session")
-        
+
         if submitted:
             # Validate inputs
             if not study_name.strip():
@@ -303,59 +308,68 @@ def render_session_setup_form():
                 st.session_state.sensor_model = sensor_model
                 st.session_state.measurement_mode = measurement_mode
                 st.session_state.fill_fraction = fill_fraction
-                
+
                 st.success("Session updated successfully!")
+
 
 def main():
     """Main application entry point."""
     # Initialize session state
     initialize_session_state()
-    
+
     # Set page theme
     apply_theme()
-    
+
     # Define the pages for navigation with their functions directly
     pages = {
         "Microscope Tools": [
-            {"title": "Laser Power at the Sample", "icon": "🔍", "function": laser_power_page},
-            {"title": "Pulse Width Control", "icon": "⏱️", "function": pulse_width_page},
-            {"title": "Fluorescence Signal Estimation", "icon": "📊", "function": fluorescence_page},
+            {"title": "Laser Power at the Sample",
+                "icon": "🔍", "function": laser_power_page},
+            {"title": "Pulse Width Control", "icon": "⏱️",
+                "function": pulse_width_page},
+            {"title": "Fluorescence Signal Estimation",
+                "icon": "📊", "function": fluorescence_page},
+        ],
+        "Analysis Tools": [
+            {"title": "USAF Target Analyzer", "icon": "🎯",
+                "function": usaf_analyzer_page},
         ],
         "Documentation": [
             {"title": "Rig Log", "icon": "📝", "function": rig_log_page},
             {"title": "Reference", "icon": "📚", "function": reference_page},
         ]
     }
-    
+
     # Apply custom sidebar styling
     apply_sidebar_styling()
-    
+
     # Render the sidebar with session setup form
     with st.sidebar:
         # Display logo at the top of the sidebar
         base_dir = Path(__file__).parent
         logo_path = str(base_dir / "assets" / "images" / "logo.svg")
-        
+
         if os.path.exists(logo_path):
             with st.container():
                 st.image(logo_path, use_container_width=True)
-        
+
         st.title("Multiphoton Microscopy Guide")
-        st.caption("Standardized measurements for monitoring and comparing multiphoton microscope systems")
-        
+        st.caption(
+            "Standardized measurements for monitoring and comparing multiphoton microscope systems")
+
         st.markdown("---")
-        
+
         # Render session setup form
         render_session_setup_form()
-        
+
         # Add session info display with enhanced styling
         st.markdown("---")
         render_session_info()
-        
+
         # Add navigation at the bottom of the sidebar
         st.markdown('<div class="nav-container">', unsafe_allow_html=True)
         st.subheader("Navigation")
-        
+
         # Create custom navigation links
         for section, section_pages in pages.items():
             st.markdown(f"**{section}**")
@@ -363,20 +377,20 @@ def main():
                 # Check if this is the current page
                 is_active = st.session_state.current_page == page["title"]
                 button_style = "primary" if is_active else "secondary"
-                
+
                 # Create a button for each page
                 if st.button(
-                    f"{page['icon']} {page['title']}", 
-                    key=f"nav_{page['title']}", 
+                    f"{page['icon']} {page['title']}",
+                    key=f"nav_{page['title']}",
                     use_container_width=True,
                     type=button_style,
                     disabled=is_active
                 ):
                     st.session_state.current_page = page["title"]
                     st.rerun()
-        
+
         st.markdown('</div>', unsafe_allow_html=True)
-    
+
     # Get the function for the current page
     current_page_function = None
     for section, section_pages in pages.items():
@@ -386,12 +400,13 @@ def main():
                 break
         if current_page_function:
             break
-    
+
     # Run the current page function
     if current_page_function:
         current_page_function()
     else:
         st.error(f"Page '{st.session_state.current_page}' not found.")
+
 
 if __name__ == "__main__":
     main()

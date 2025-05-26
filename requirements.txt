@@ -12,3 +12,6 @@ imageio==2.31.1
 requests==2.31.0
 streamlit-nested-layout==0.1.4
 streamlit-pdf-viewer==0.0.23
+opencv-python==4.8.1.78
+tifffile==2023.7.10
+streamlit-image-coordinates==0.1.6

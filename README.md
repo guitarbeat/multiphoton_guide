@@ -103,10 +103,22 @@ If you encounter issues deploying to Streamlit Cloud:
 
 ## Features
 
-- Microscope Log: Track maintenance, calibration, and modifications
-- Protocol Reference: View standardized measurement procedures
-- Fluorescence Signal Estimation: Calculate expected signal levels
-- And more...
+### Microscope Tools
+- **Laser Power at the Sample**: Calculate and measure laser power delivery
+- **Pulse Width Control**: Optimize temporal pulse characteristics
+- **Fluorescence Signal Estimation**: Calculate expected signal levels
+
+### Analysis Tools
+- **USAF Target Analyzer**: Comprehensive analysis tool for USAF 1951 resolution targets
+  - Automated line pair detection and measurement
+  - Pixel size calibration from known targets
+  - Image processing with contrast enhancement
+  - ROI selection and rotation capabilities
+  - Export analysis results to CSV
+
+### Documentation
+- **Rig Log**: Track maintenance, calibration, and modifications
+- **Reference**: View standardized measurement procedures
 
 ## License
 
