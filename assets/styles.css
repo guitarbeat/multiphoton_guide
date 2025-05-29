@@ -1,0 +1,207 @@
+/* Sidebar background and padding */
+[data-testid="stSidebar"] {
+    background-color: var(--background-color); /* Replaced with CSS variable */
+    padding: 1rem 0.5rem;
+    border-right: 1px solid var(--surface-color); /* Replaced with CSS variable */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Sidebar title styling */
+[data-testid="stSidebar"] h1 {
+    color: var(--primary-color); /* Replaced with CSS variable */
+    font-size: 1.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.2rem;
+}
+
+/* Sidebar caption styling */
+[data-testid="stSidebar"] .stCaption {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+/* Divider styling */
+[data-testid="stSidebar"] hr {
+    margin: 1rem 0;
+    border-color: var(--surface-color); /* Replaced with CSS variable */
+}
+
+/* Form container styling */
+[data-testid="stSidebar"] div[data-testid="stForm"] {
+    border: 1px solid var(--surface-color); /* Replaced with CSS variable */
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Form title styling */
+[data-testid="stSidebar"] div[data-testid="stForm"] h3 {
+    color: var(--primary-color); /* Replaced with CSS variable */
+    font-size: 1.2rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--surface-color); /* Replaced with CSS variable */
+    padding-bottom: 0.5rem;
+}
+
+/* Form submit button styling */
+[data-testid="stSidebar"] div[data-testid="stForm"] button[kind="formSubmit"] {
+    background-color: var(--primary-color); /* Replaced with CSS variable */
+    color: white;
+    border-radius: 4px;
+    padding: 0.25rem 1rem;
+    font-weight: bold;
+    width: 100%;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+[data-testid="stSidebar"] div[data-testid="stForm"] button[kind="formSubmit"]:hover {
+    background-color: var(--accent-color); /* Replaced with CSS variable */
+    transform: translateY(-1px);
+}
+
+/* Session info styling */
+.session-info {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 0.8rem;
+    margin-top: 0.5rem;
+    border-left: 3px solid var(--primary-color); /* Replaced with CSS variable */
+}
+
+.session-info-title {
+    color: var(--primary-color); /* Replaced with CSS variable */
+    font-weight: bold;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.session-info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.2rem 0;
+    font-size: 0.85rem;
+}
+
+.session-info-label {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.session-info-value {
+    font-weight: bold;
+}
+
+/* Navigation styling - improve spacing and highlight current page */
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+    gap: 0.5rem;
+}
+
+/* Make the logo container more compact */
+[data-testid="stSidebar"] [data-testid="stImage"] {
+    margin-bottom: 0.5rem;
+}
+
+/* Custom class for navigation container */
+.nav-container {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--surface-color); /* Replaced with CSS variable */
+}
+
+/* Navigation button styling */
+.nav-button {
+    background-color: var(--background-color); /* Replaced with CSS variable */
+    border: 1px solid var(--surface-color); /* Replaced with CSS variable */
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+    display: block;
+}
+
+.nav-button:hover {
+    background-color: var(--surface-color); /* Replaced with CSS variable */
+}
+
+.nav-button.active {
+    border-left: 3px solid var(--primary-color); /* Replaced with CSS variable */
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Fix button text color */
+[data-testid="stSidebar"] button {
+    color: white !important;
+}
+
+/* USAF Analyzer specific styles */
+.usaf-analysis-caption {
+    text-align: center;
+    font-family: "Times New Roman", Times, serif;
+}
+
+.usaf-analysis-caption-title {
+    margin-bottom: 0.3rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.usaf-analysis-caption-details {
+    margin-top: 0;
+    font-size: 1.0rem;
+    color: #333;
+}
+
+.usaf-analysis-caption-highlight {
+    color: #0074D9; /* Blue color for highlighting method */
+}
+
+.usaf-analysis-caption-emphasis {
+    color: #FF4500; /* Orange-red for light-to-dark transitions */
+}
+
+.usaf-line-pair-info {
+    text-align: center;
+}
+
+.control-panel {
+    border: 1px solid var(--surface-color);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* UI Components specific styles */
+.bottom-margin-small {
+    margin-bottom: 10px;
+}
+
+.tooltip {
+    border-bottom: 1px dotted #999;
+    cursor: help;
+}
+
+.technical-term {
+    border-bottom: 1px dotted #999;
+    cursor: help;
+    font-weight: bold;
+}
+
+/* Clear button styling */
+div.stButton > button.clear-form-button {
+    background-color: var(--secondary-color); /* Use theme color */
+    color: white; /* Ensure text is readable */
+    border-radius: 4px; /* Consistent with other buttons */
+    margin-top: 10px; /* Add some space above the button */
+}
+
+div.stButton > button.clear-form-button:hover {
+    background-color: var(--info-color); /* Use a different theme color for hover */
+}
