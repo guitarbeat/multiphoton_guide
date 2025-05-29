@@ -124,7 +124,7 @@ def create_tab_section(title, content_function, expanded=False):
         content_function()
         
     # Add a small gap after the expander
-    st.markdown("<div style='margin-bottom: 10px'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='bottom-margin-small'></div>", unsafe_allow_html=True)
 
 def create_form_section(title, form_key, submit_label="Submit", clear_form=True):
     """Create a form section with a title and optional clear button.
@@ -144,21 +144,9 @@ def create_form_section(title, form_key, submit_label="Submit", clear_form=True)
     form = st.form(key=form_key)
     submitted = form.form_submit_button(submit_label)
     
-    if clear_form:
-        colors = get_colors()
-        st.markdown(f"""
-        <style>
-        div.stButton > button.clear-form {{
-            background-color: {colors['secondary']};
-            color: white;
-            border-radius: 4px;
-            margin-top: 10px;
-        }}
-        div.stButton > button.clear-form:hover {{
-            background-color: {colors['info']};
-        }}
-        </style>
-        """, unsafe_allow_html=True)
+    # Clear button styling is now handled by assets/styles.css
+    # The create_clear_button function can be used within the form if needed,
+    # or a regular st.button can be styled with the 'clear-form-button' class.
     
     return form, submitted
 
@@ -171,7 +159,7 @@ def create_tooltip(text, tooltip_text):
     """
     
     st.markdown(f"""
-    <span title="{tooltip_text}" style="border-bottom: 1px dotted #999; cursor: help;">{text}</span>
+    <span title="{tooltip_text}" class="tooltip">{text}</span>
     """, unsafe_allow_html=True)
 
 def get_image_path(image_name):
@@ -216,20 +204,16 @@ def create_clear_button(label="Clear Form", key=None):
         Button click state
     """
     
-    colors = get_colors()
-    st.markdown(f"""
-    <style>
-    div.stButton > button.clear-form {{
-        background-color: {colors['secondary']};
-        color: white;
-        border-radius: 4px;
-        margin-top: 10px;
-    }}
-    div.stButton > button.clear-form:hover {{
-        background-color: {colors['info']};
-    }}
-    </style>
-    """, unsafe_allow_html=True)
+    # The class 'clear-form-button' should be applied to the button for styling via assets/styles.css
+    # Streamlit's st.button does not directly support adding a class name in the Python API.
+    # One way to achieve this is to wrap it in a div with a class and use CSS selectors,
+    # or rely on the button's label/key if unique enough for specific targeting if needed.
+    # For a general clear button, direct styling via CSS using attributes like type or a more specific selector is better.
+    # However, the provided CSS targets `button.clear-form`, which is not directly settable.
+    # A workaround is to use markdown for the button, but that changes its behavior.
+    # For now, we assume that the global CSS for buttons or a more specific selector will handle it,
+    # or the user will manually wrap this in a div if they need this specific class styling.
+    # The redundant style injection is removed.
     
     return st.button(label, key=key, help="Reset all form fields to their default values")
 
@@ -242,5 +226,5 @@ def create_technical_term(term, definition):
     """
     
     st.markdown(f"""
-    <span title="{definition}" style="border-bottom: 1px dotted #999; cursor: help; font-weight: bold;">{term}</span>
+    <span title="{definition}" class="technical-term">{term}</span>
     """, unsafe_allow_html=True)
