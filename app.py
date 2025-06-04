@@ -1,9 +1,9 @@
-from modules.pages.usaf_analyzer_page import usaf_analyzer_page
-from modules.pages.reference_page import reference_page
-from modules.pages.rig_log_page import rig_log_page
-from modules.pages.fluorescence_page import fluorescence_page
-from modules.pages.pulse_width_page import pulse_width_page
-from modules.pages.laser_power_page import laser_power_page
+from modules.laser_power import render_laser_power_tab
+from modules.pulse_width import render_pulse_width_tab
+from modules.fluorescence import render_fluorescence_tab
+from modules.rig_log import render_rig_log_tab
+from modules.reference import render_reference_tab
+from modules.usaf_analyzer import run_usaf_analyzer
 from modules.theme import apply_theme, get_colors
 import streamlit as st
 import pandas as pd
@@ -207,19 +207,19 @@ def main():
     pages = {
         "Microscope Tools": [
             {"title": "Laser Power at the Sample",
-                "icon": "🔍", "function": laser_power_page},
+                "icon": "🔍", "function": lambda: render_laser_power_tab(use_sidebar_values=True)},
             {"title": "Pulse Width Control", "icon": "⏱️",
-                "function": pulse_width_page},
+                "function": render_pulse_width_tab},
             {"title": "Fluorescence Signal Estimation",
-                "icon": "📊", "function": fluorescence_page},
+                "icon": "📊", "function": render_fluorescence_tab},
         ],
         "Analysis Tools": [
             {"title": "USAF Target Analyzer", "icon": "🎯",
-                "function": usaf_analyzer_page},
+                "function": run_usaf_analyzer},
         ],
         "Documentation": [
-            {"title": "Rig Log", "icon": "📝", "function": rig_log_page},
-            {"title": "Reference", "icon": "📚", "function": reference_page},
+            {"title": "Rig Log", "icon": "📝", "function": render_rig_log_tab},
+            {"title": "Reference", "icon": "📚", "function": render_reference_tab},
         ]
     }
 

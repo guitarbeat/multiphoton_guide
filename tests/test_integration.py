@@ -63,12 +63,6 @@ class TestImports:
             assert callable(run_usaf_analyzer), "run_usaf_analyzer should be callable"
         except ImportError as e:
             pytest.fail(f"Failed to import USAF analyzer: {e}")
-            
-        try:
-            from modules.pages.usaf_analyzer_page import usaf_analyzer_page
-            assert callable(usaf_analyzer_page), "usaf_analyzer_page should be callable"
-        except ImportError as e:
-            pytest.fail(f"Failed to import USAF analyzer page: {e}")
 
 
 @pytest.mark.integration
