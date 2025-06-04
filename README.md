@@ -2,104 +2,140 @@
 
 A comprehensive application for standardized measurements, monitoring, and comparing multiphoton microscope systems.
 
-## Installation Options
+## Quick Start
 
-### Option 1: Using the Setup Script (Recommended for Local Development)
+### Local Development (Recommended)
 
-The easiest way to install locally is using the provided setup script:
+The easiest way to get started is using the provided setup script:
 
 ```bash
-# Make the script executable
-chmod +x setup.sh
+# Clone or download the repository
+# Navigate to the project directory
 
-# Run the setup script
+# Run the setup script (handles everything automatically)
 ./setup.sh
 
-# Run the application
-source venv/bin/activate
-streamlit run app.py
+# Or run with specific options:
+./setup.sh setup    # Setup environment only
+./setup.sh run      # Setup (if needed) and run application
+./setup.sh help     # Show all options
 ```
 
-### Option 2: Manual Installation
+The script will:
+- Check Python version (3.8+ required, 3.10 recommended)
+- Create a virtual environment
+- Install all dependencies
+- Launch the application
 
-If you prefer to install manually:
+### Development Setup
+
+For developers who want to contribute or run tests:
 
 ```bash
-# Create a virtual environment
-python3 -m venv venv
+# Setup with development dependencies (testing, linting, etc.)
+./setup.sh dev-setup
 
-# Activate the virtual environment
+# Run tests
+./setup.sh test
+
+# Or run tests with coverage reporting
+python tests/run_tests.py
+```
+
+**Development dependencies include:**
+- `pytest` - Testing framework
+- `pytest-cov` - Coverage reporting
+- `black` - Code formatting
+- `flake8` - Code linting
+- `isort` - Import sorting
+
+**All dependencies are managed in `pyproject.toml`** for simplified project configuration.
+
+### Manual Installation
+
+If you prefer manual setup:
+
+```bash
+# Create and activate virtual environment
+python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install --upgrade pip
-pip install -r requirements.txt
+pip install -e .
+
+# For development (optional)
+pip install -e ".[dev]"
 
 # Run the application
 streamlit run app.py
 ```
 
-### Option 3: Using Docker
+## Dependency Management
 
-If you have Docker installed, you can build and run the application in a container:
+**All dependencies are managed in `pyproject.toml`** for simplified project configuration.
+
+### Local Development
+- Production dependencies: `pip install -e .`
+- Development dependencies: `pip install -e ".[dev]"`
+
+### For Deployment Platforms
+Some platforms still require `requirements.txt`. Generate one if needed:
 
 ```bash
-# Build the Docker image
-docker build -t multiphoton-guide .
+# Option 1: Using pip-tools (recommended)
+pip install pip-tools
+pip-compile pyproject.toml
 
-# Run the container
-docker run -p 8501:8501 multiphoton-guide
+# Option 2: Using our utility script
+pip install tomli
+python scripts/generate_requirements.py
 ```
 
-Then visit http://localhost:8501 in your web browser.
+**Benefits of pyproject.toml approach:**
+- Single source of truth for all project metadata
+- Modern Python packaging standard
+- Optional dependency groups for development tools
+- No need to maintain multiple requirements files
 
-### Option 4: Deploying to Streamlit Community Cloud
+### Streamlit Community Cloud
 
-To deploy this application on Streamlit Community Cloud:
+This application is optimized for Streamlit Community Cloud deployment:
 
 1. Push your code to a GitHub repository
 2. Visit [share.streamlit.io](https://share.streamlit.io)
-3. Sign in with GitHub
-4. Click "New app" and select your repository
-5. Choose the branch and main file path (app.py)
-6. Click "Deploy"
+3. Sign in with GitHub and deploy
 
-The application includes the necessary configuration files:
-- `requirements.txt` - Python dependencies
-- `packages.txt` - System dependencies
-- `.streamlit/config.toml` - Streamlit configuration
-- `runtime.txt` - Python version specification
+**Required files for Streamlit Cloud:**
+- `packages.txt` - System dependencies  
+- `runtime.txt` - Python version (3.10)
+
+**Note:** Streamlit Cloud requires a `requirements.txt` file. If needed, generate one from pyproject.toml:
+```bash
+pip install pip-tools
+pip-compile pyproject.toml
+```
+
+All dependencies are defined in `pyproject.toml` but can be exported to `requirements.txt` for deployment platforms that require it.
+
+### Docker Deployment
+
+For containerized deployment:
+
+```bash
+# Build and run with Docker
+docker build -t multiphoton-guide .
+docker run -p 8501:8501 multiphoton-guide
+```
+
+Then visit http://localhost:8501
 
 ## System Requirements
 
-- Python 3.8 or newer (Python 3.10 recommended)
-- System dependencies (automatically installed with Docker or Streamlit Cloud):
-  - libgl1
-  - libglib2.0-0
-  - poppler-utils
-  - libgtk2.0-0
-  - libx11-xcb1
-  - libnss3
-
-## Troubleshooting
-
-If you encounter installation issues:
-
-1. Make sure you're using Python 3.8 or newer
-2. Try using a virtual environment
-3. Update pip before installing requirements: `pip install --upgrade pip`
-4. If specific packages fail, try installing them individually
-5. Consider using the Docker option which handles all dependencies
-
-### Streamlit Cloud Deployment Issues
-
-If you encounter issues deploying to Streamlit Cloud:
-
-1. Check the build logs for specific error messages
-2. Ensure all dependencies are properly listed in requirements.txt
-3. Make sure system dependencies are listed in packages.txt
-4. Try specifying an older Python version in runtime.txt if compatibility issues arise
-5. Consider removing or simplifying complex dependencies
+- **Python**: 3.8+ (3.10 recommended)
+- **System Dependencies** (auto-installed on Streamlit Cloud/Docker):
+  - libgl1, libglib2.0-0, poppler-utils
+  - libgtk2.0-0, libx11-xcb1, libnss3
 
 ## Features
 
@@ -120,6 +156,59 @@ If you encounter issues deploying to Streamlit Cloud:
 - **Rig Log**: Track maintenance, calibration, and modifications
 - **Reference**: View standardized measurement procedures
 
+## Contributing
+
+1. Fork the repository
+2. Set up development environment: `./setup.sh dev-setup`
+3. Run tests to ensure everything works: `./setup.sh test`
+4. Make your changes
+5. Run tests again to ensure nothing breaks
+6. Submit a pull request
+
+## Troubleshooting
+
+### Local Development Issues
+- Ensure Python 3.8+ is installed
+- Use the provided `./setup.sh` script for automated setup
+- Try manual installation if the script fails
+
+### Streamlit Cloud Issues
+- Check build logs for specific errors
+- All dependencies are in `pyproject.toml` (generate `requirements.txt` if needed)
+- System dependencies should be in `packages.txt`
+- Python version is specified in `runtime.txt`
+
+### Common Solutions
+- Update pip: `pip install --upgrade pip`
+- Clear cache: Delete `venv` folder and re-run setup
+- Check Python version: `python3 --version`
+
 ## License
 
 [Your license information here]
+
+## Testing
+
+The project includes a comprehensive test suite:
+
+```bash
+# Quick test run
+./setup.sh test
+
+# Detailed test run with coverage
+python tests/run_tests.py
+
+# Run specific test files
+pytest tests/test_data_utils.py -v
+pytest tests/test_integration.py -v
+```
+
+**Test Coverage:**
+- Unit tests for data utilities
+- Integration tests for module imports
+- Streamlit app testing
+- End-to-end workflow testing
+
+## Deployment Options
+
+### Streamlit Community Cloud

@@ -24,6 +24,13 @@ var/
 venv/
 ENV/
 
+# Testing & Coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+tests/coverage_html/
+
 # IDE
 .idea/
 .vscode/
@@ -36,6 +43,10 @@ ENV/
 # OS specific
 .DS_Store
 Thumbs.db
+
+# Tool-specific directories
+.qodo/
+.mypy_cache/
 
 # Data files
 *.csv

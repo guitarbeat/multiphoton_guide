@@ -44,6 +44,7 @@ def test_data_dir(tmp_path):
     return data_dir
 
 # Test data utilities
+@pytest.mark.unit
 def test_ensure_columns(test_dataframe):
     """Test that ensure_columns adds missing columns with default values."""
     required_columns = ["Study Name", "Wavelength (nm)", "Modulation (%)", "Measured Power (mW)", "Notes"]
@@ -55,6 +56,7 @@ def test_ensure_columns(test_dataframe):
     assert result["Notes"].iloc[0] == ""
     assert len(result.columns) == 5
 
+@pytest.mark.unit
 def test_safe_numeric_conversion(test_dataframe):
     """Test that safe_numeric_conversion properly converts string values to numeric."""
     # Add a string value that should be converted
@@ -70,6 +72,7 @@ def test_safe_numeric_conversion(test_dataframe):
     assert result["Modulation (%)"].iloc[3] == 30
     assert result["Measured Power (mW)"].iloc[3] == 5.5
 
+@pytest.mark.unit
 def test_filter_dataframe(test_dataframe):
     """Test that filter_dataframe correctly filters based on column values."""
     filters = {"Study Name": "Test Study"}
@@ -86,6 +89,7 @@ def test_filter_dataframe(test_dataframe):
     assert all(result["Study Name"] == "Test Study")
     assert all(result["Wavelength (nm)"] == 920)
 
+@pytest.mark.unit
 def test_calculate_statistics(test_dataframe):
     """Test that calculate_statistics correctly computes basic statistics."""
     stats = calculate_statistics(test_dataframe, "Measured Power (mW)")
@@ -96,6 +100,7 @@ def test_calculate_statistics(test_dataframe):
     assert stats["max"] == 4.5
     assert stats["count"] == 3
 
+@pytest.mark.unit
 def test_linear_regression():
     """Test that linear_regression correctly computes regression parameters."""
     x = [1, 2, 3, 4, 5]
@@ -107,7 +112,56 @@ def test_linear_regression():
     assert round(result["intercept"], 1) == 0.0
     assert round(result["r_squared"], 1) == 1.0
 
+@pytest.mark.unit
+def test_linear_regression_edge_cases():
+    """Test linear regression with edge cases."""
+    # Test with single point
+    result = linear_regression([1], [2])
+    assert result["slope"] == 0
+    assert result["intercept"] == 0
+    assert result["r_squared"] == 0
+    
+    # Test with NaN values
+    x = [1, 2, np.nan, 4, 5]
+    y = [2, 4, np.nan, 8, 10]
+    result = linear_regression(x, y)
+    assert result["slope"] > 0  # Should still compute with valid points
+    
+    # Test with empty arrays
+    result = linear_regression([], [])
+    assert result["slope"] == 0
+    assert result["intercept"] == 0
+    assert result["r_squared"] == 0
+
+@pytest.mark.unit
+def test_filter_dataframe_edge_cases():
+    """Test filter_dataframe with edge cases."""
+    # Test with empty dataframe
+    empty_df = pd.DataFrame()
+    result = filter_dataframe(empty_df, {"column": "value"})
+    assert result.empty
+    
+    # Test with non-existent column
+    test_df = pd.DataFrame({"A": [1, 2, 3], "B": ["x", "y", "z"]})
+    result = filter_dataframe(test_df, {"nonexistent": "value"})
+    assert len(result) == len(test_df)  # Should return original if column doesn't exist
+
+@pytest.mark.unit
+def test_safe_numeric_conversion_edge_cases(test_dataframe):
+    """Test safe_numeric_conversion with problematic data."""
+    # Add some problematic data
+    problematic_df = test_dataframe.copy()
+    problematic_df.loc[len(problematic_df)] = ["Test", "not_a_number", "also_not_number", "definitely_not"]
+    
+    result = safe_numeric_conversion(problematic_df, ["Wavelength (nm)", "Modulation (%)", "Measured Power (mW)"])
+    
+    # Should convert what it can and set others to NaN
+    assert pd.isna(result["Wavelength (nm)"].iloc[-1])
+    assert pd.isna(result["Modulation (%)"].iloc[-1])
+    assert pd.isna(result["Measured Power (mW)"].iloc[-1])
+
 # Test file operations
+@pytest.mark.unit
 def test_save_and_load_dataframe(test_dataframe, test_data_dir):
     """Test that save_dataframe and load_dataframe work correctly."""
     file_path = test_data_dir / "test.csv"
@@ -121,6 +175,7 @@ def test_save_and_load_dataframe(test_dataframe, test_data_dir):
     # Check that the loaded dataframe matches the original
     pd.testing.assert_frame_equal(test_dataframe, loaded_df)
 
+@pytest.mark.unit
 def test_load_dataframe_with_default(test_data_dir):
     """Test that load_dataframe returns the default dataframe when file doesn't exist."""
     file_path = test_data_dir / "nonexistent.csv"
