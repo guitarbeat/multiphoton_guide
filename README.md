@@ -81,6 +81,29 @@ streamlit run app.py
 - Building with `poetry build` produces a wheel containing both the
   `multiphoton_guide` and `modules` packages.
 
+### Using Poetry
+Poetry is an all-in-one tool for dependency management and packaging.  The
+repository includes a `poetry.lock` file so you can recreate the exact
+environment used during development.  If you prefer to use Poetry instead of the
+`pip` commands above:
+
+```bash
+# Install Poetry (if not already installed)
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Install dependencies and create a virtual environment
+poetry install
+
+# Run the Streamlit application
+poetry run streamlit run app.py
+
+# Build a distributable wheel
+poetry build
+```
+
+Using Poetry is optional, but it provides reproducible installs and simplifies
+publishing packages from the `pyproject.toml` configuration.
+
 ### For Deployment Platforms
 Some platforms still require `requirements.txt`. Generate one if needed:
 
