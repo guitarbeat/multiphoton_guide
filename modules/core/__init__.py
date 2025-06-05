@@ -5,4 +5,4 @@ Core infrastructure and utilities for the Multiphoton Microscopy Guide applicati
 # Import all core utilities for easy access
 
 # Version information
-__version__ = "6.0" 
+__version__ = "6.0"

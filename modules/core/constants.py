@@ -40,13 +40,13 @@ RIG_LOG_COLUMNS = ["Date", "Researcher", "Activity", "Description", "Category"]
 
 # Laser power measurement columns
 LASER_POWER_COLUMNS = BASE_MEASUREMENT_COLUMNS + [
-    "Sensor Model", "Measurement Mode", "Fill Fraction (%)", 
+    "Sensor Model", "Measurement Mode", "Fill Fraction (%)",
     "Modulation (%)", "Measured Power (mW)", "Notes"
 ]
 
 # Fluorescence measurement columns
 FLUORESCENCE_COLUMNS = BASE_MEASUREMENT_COLUMNS + [
-    "Sample Type", "Mean Intensity", "Variance", 
+    "Sample Type", "Mean Intensity", "Variance",
     "Photon Sensitivity", "Notes"
 ]
 
@@ -61,11 +61,11 @@ PULSE_WIDTH_COLUMNS = BASE_MEASUREMENT_COLUMNS + [
 
 # Default category values for rig log entries
 RIG_LOG_CATEGORIES = [
-    "Measurement", 
-    "Optimization", 
-    "Maintenance", 
-    "Calibration", 
-    "Software", 
+    "Measurement",
+    "Optimization",
+    "Maintenance",
+    "Calibration",
+    "Software",
     "Hardware"
 ]
 
@@ -128,4 +128,4 @@ FILE_MAPPINGS = {
     "laser_power": LASER_POWER_FILE,
     "fluorescence": FLUORESCENCE_FILE,
     "pulse_width": PULSE_WIDTH_FILE
-} 
+}

@@ -46,7 +46,7 @@ __organization_version__ = "reorganized"
 # Module structure information
 __structure__ = {
     "core": ["constants", "shared_utils", "validation_utils", "data_utils"],
-    "ui": ["components", "theme", "templates"], 
+    "ui": ["components", "theme", "templates"],
     "measurements": ["laser_power", "fluorescence", "pulse_width", "rig_log"],
     "analysis": ["usaf_analyzer", "reference"],
     "tests": ["testing_utils (available separately)"]
