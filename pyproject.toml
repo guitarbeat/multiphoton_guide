@@ -68,7 +68,6 @@ multiphoton-guide = "app:main"
 
 [tool.poetry]
 packages = [
-  { include = "multiphoton_guide" },
   { include = "modules" }
 ]
 
