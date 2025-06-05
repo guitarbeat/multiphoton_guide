@@ -7,38 +7,42 @@ import streamlit as st
 import numpy as np
 
 from modules.ui.components import create_header, create_plot
-from modules.core.shared_utils import create_two_column_layout
+
 
 def render_fluorescence_tab():
     """Render the fluorescence signal estimation tab content."""
-    
+
     create_header("Estimating Absolute Magnitudes of Fluorescence Signals")
-    
+
     # Render content in a single column layout
     render_fluorescence_theory_and_procedure()
     render_fluorescence_visualization()
     render_fluorescence_tips()
 
+
 def render_fluorescence_theory_and_procedure():
     """Render the theory and procedure sections for fluorescence signal estimation using expandable sections."""
-    
+
     with st.expander("📖 Introduction & Theory", expanded=True):
-        st.markdown("""
+        st.markdown(
+            """
             Fluorescence signals are commonly expressed in arbitrary units or relative scales (like dF/F ratio), masking any degradation in signal magnitude. This can lead to vastly different signal strengths between laboratories following similar protocols, without realizing the discrepancy.
 
             Low signal magnitudes lead to noisier, less precise measurements. Without a method to evaluate quantitative signal magnitudes, laboratories may miss opportunities for improving primary data quality.
 
             We suggest reporting fluorescence signals in absolute physical units such as **detected photon counts per second**. This standardized method offers a consistent way to demonstrate signal levels, making it invaluable for:
-            
+
             1. Longitudinal system performance monitoring
             2. Comparisons between different imaging systems
             3. Establishing quantitative benchmarks across laboratories
-            
+
             While direct photon counting requires specialized electronics, we can use signal-noise statistics to accurately estimate detector photon sensitivity and translate detected signals into estimated photon counts.
-        """)
-        
+        """
+        )
+
         with st.expander("🔬 Photon Transfer Curve Theory Details"):
-            st.markdown("""
+            st.markdown(
+                """
                 ### Understanding the Photon Transfer Curve (PTC)
 
                 The Photon Transfer Curve (PTC) is a powerful tool for characterizing imaging detectors. It exploits the fundamental relationship between signal and noise in photon-limited imaging.
@@ -52,19 +56,21 @@ def render_fluorescence_theory_and_procedure():
                 **Mathematical Relationship:**
 
                 For a detector with photon sensitivity K (digital units per photon):
-                
+
                 Variance = K × Mean
-                
+
                 Where:
                 - Variance is the pixel-to-pixel or frame-to-frame variance
                 - Mean is the average signal intensity
                 - K is the photon sensitivity (digital units per photon)
 
                 By measuring pairs of mean and variance values and plotting them, we can determine K from the slope of the linear fit. Once K is known, we can convert any measured signal from arbitrary units to absolute photon counts.
-            """)
-    
+            """
+            )
+
     with st.expander("📋 Measurement Procedure", expanded=True):
-        st.markdown("""
+        st.markdown(
+            """
             ### Step-by-Step Procedure for Estimating Absolute Fluorescence Signals
 
             1. **Prepare a fluorescent sample**
@@ -92,97 +98,124 @@ def render_fluorescence_theory_and_procedure():
                - For any measured signal (S), the photon count (N) is:
                - N = S / K
                - This gives absolute photon counts, independent of detector settings
-        """)
-        
-        st.warning("**CRITICAL:** Ensure the detector is operating in its linear range. Saturation will cause the variance to decrease at high intensities.")
-        st.warning("**CRITICAL:** For accurate measurements, acquire multiple frames of the same field to separate temporal noise from spatial variations.")
+        """
+        )
+
+        st.warning(
+            "**CRITICAL:** Ensure the detector is operating in its linear range. Saturation will cause the variance to decrease at high intensities."
+        )
+        st.warning(
+            "**CRITICAL:** For accurate measurements, acquire multiple frames of the same field to separate temporal noise from spatial variations."
+        )
+
 
 def render_fluorescence_visualization():
     """Render visualizations for fluorescence signal estimation."""
-    
+
     st.subheader("Photon Transfer Curve Example")
-    
+
     # Create example PTC plot
     def plot_ptc_example(fig, ax):
         # Example data
         x = np.array([100, 200, 300, 400, 500, 600, 700, 800])
         y = np.array([25, 50, 75, 100, 125, 150, 175, 200])
-        
+
         # Linear regression
         slope, intercept = 0.25, 0
         x_line = np.linspace(0, 900, 100)
         y_line = slope * x_line + intercept
-        
+
         # Plot data points
-        ax.scatter(x, y, color='#4BA3C4', s=80, alpha=0.7, label='Measurements')
-        
+        ax.scatter(x, y, color="#4BA3C4", s=80, alpha=0.7, label="Measurements")
+
         # Plot regression line
-        ax.plot(x_line, y_line, color='#BF5701', linewidth=2, 
-               label=f'Linear Fit (K = {slope:.2f})')
-        
+        ax.plot(
+            x_line,
+            y_line,
+            color="#BF5701",
+            linewidth=2,
+            label=f"Linear Fit (K = {slope:.2f})",
+        )
+
         # Add labels and title
-        ax.set_xlabel('Mean Intensity (a.u.)')
-        ax.set_ylabel('Variance')
-        ax.set_title('Example Photon Transfer Curve')
-        
+        ax.set_xlabel("Mean Intensity (a.u.)")
+        ax.set_ylabel("Variance")
+        ax.set_title("Example Photon Transfer Curve")
+
         # Add grid and legend
-        ax.grid(True, linestyle='--', alpha=0.7)
+        ax.grid(True, linestyle="--", alpha=0.7)
         ax.legend()
-        
+
         # Add text annotation
-        ax.text(600, 50, f"Photon Sensitivity (K) = {slope:.2f}\nZero Level = {intercept:.1f}", 
-               bbox=dict(facecolor='white', alpha=0.7, boxstyle='round,pad=0.5'))
-    
+        ax.text(
+            600,
+            50,
+            f"Photon Sensitivity (K) = {slope:.2f}\nZero Level = {intercept:.1f}",
+            bbox=dict(facecolor="white", alpha=0.7, boxstyle="round,pad=0.5"),
+        )
+
     # Display the plot
     ptc_plot = create_plot(plot_ptc_example)
     st.pyplot(ptc_plot)
-    
+
     # Add explanation
     with st.popover("📊 Understanding This Plot", use_container_width=True):
-        st.markdown("""
+        st.markdown(
+            """
         The Photon Transfer Curve (PTC) plots variance against mean intensity:
-        
+
         **Key features:**
         - The linear relationship confirms photon-limited detection
         - The slope (K) is the photon sensitivity in digital units per photon
         - The x-intercept represents the true zero-intensity level
-        
+
         **Using the results:**
         - To convert any intensity value to photon counts: Photons = Intensity / K
         - For example, with K = 0.25, an intensity of 100 represents 400 photons
         - Higher K values mean more digital units per photon (more sensitive detection)
-        """)
-    
+        """
+        )
+
     # Add photon calculator
     with st.popover("🧮 Photon Count Calculator", use_container_width=True):
         st.markdown("### Convert Intensity to Photon Count")
-        
+
         col1, col2 = st.columns(2)
         with col1:
-            k_value = st.number_input("Photon Sensitivity (K):", 
-                                     min_value=0.01, max_value=10.0, value=0.25, step=0.01)
+            k_value = st.number_input(
+                "Photon Sensitivity (K):",
+                min_value=0.01,
+                max_value=10.0,
+                value=0.25,
+                step=0.01,
+            )
         with col2:
-            intensity = st.number_input("Intensity Value:", 
-                                       min_value=0, max_value=10000, value=100, step=10)
-        
+            intensity = st.number_input(
+                "Intensity Value:", min_value=0, max_value=10000, value=100, step=10
+            )
+
         photon_count = intensity / k_value if k_value > 0 else 0
-        
+
         st.metric("Estimated Photon Count", f"{photon_count:.1f} photons")
-        
-        st.markdown("""
+
+        st.markdown(
+            """
         **Formula:** Photons = Intensity / K
-        
+
         This calculator helps you convert arbitrary intensity units to absolute photon counts
         using the photon sensitivity (K) determined from your PTC analysis.
-        """)
+        """
+        )
+
 
 def render_fluorescence_tips():
     """Render tips and best practices for fluorescence signal estimation."""
-    
+
     st.subheader("Tips & Best Practices")
-    
+
     with st.expander("🔍 Data Collection", expanded=True):
-        st.markdown("""
+        st.markdown(
+            """
         ### Collecting Quality Data for PTC Analysis
 
         For accurate photon sensitivity estimation:
@@ -203,10 +236,12 @@ def render_fluorescence_tips():
              - Mean = [½X' + ½X]
              - Variance = ½(X' - X)²
            - This approach eliminates correlated noise sources
-        """)
-    
+        """
+        )
+
     with st.expander("⚠️ Common Issues"):
-        st.markdown("""
+        st.markdown(
+            """
         ### Troubleshooting PTC Analysis
 
         **Non-linear PTC:**
@@ -224,10 +259,12 @@ def render_fluorescence_tips():
         - Signal processing or filtering
         - Pixel binning
         - Detector non-linearity
-        """)
-    
+        """
+        )
+
     with st.expander("📝 Applications"):
-        st.markdown("""
+        st.markdown(
+            """
         ### Using Absolute Fluorescence Measurements
 
         **System monitoring:**
@@ -244,6 +281,8 @@ def render_fluorescence_tips():
         - Convert dF/F to absolute photon flux
         - Estimate signal-to-noise ratio from first principles
         - Compare signals across different imaging sessions
-        """)
+        """
+        )
+
 
 # add_to_rig_log function moved to modules/shared_utils.py to eliminate duplication
