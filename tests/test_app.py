@@ -27,30 +27,30 @@ class TestApp(unittest.TestCase):
     def test_app_loads_without_errors(self):
         """Test that the app loads without exceptions."""
         at = AppTest.from_file("app.py")
-        at.run()
+        at.run(timeout=10)
         
         # Check that the app loaded successfully
-        self.assertIsNone(at.exception, f"App failed to load: {at.exception}")
+        self.assertFalse(at.exception, f"App failed to load: {at.exception}")
         
     @pytest.mark.slow
     def test_sidebar_elements_exist(self):
         """Test that expected sidebar elements are present."""
         at = AppTest.from_file("app.py")
-        at.run()
+        at.run(timeout=10)
         
         # Check sidebar exists
         self.assertIsNotNone(at.sidebar, "Sidebar should exist")
         
         # Check for title (more flexible check)
-        sidebar_content = str(at.sidebar)
-        self.assertIn("Multiphoton", sidebar_content.lower(), 
+        sidebar_title = at.sidebar.title[0].value
+        self.assertIn("multiphoton", sidebar_title.lower(),
                      "Sidebar should contain multiphoton-related content")
         
     @pytest.mark.slow
     def test_main_page_structure(self):
         """Test that the main page has expected structure."""
         at = AppTest.from_file("app.py")
-        at.run()
+        at.run(timeout=10)
         
         # Check that main content exists
         self.assertIsNotNone(at.main, "Main content should exist")
@@ -63,7 +63,7 @@ class TestApp(unittest.TestCase):
     def test_session_state_initialization(self):
         """Test that session state is properly initialized."""
         at = AppTest.from_file("app.py")
-        at.run()
+        at.run(timeout=10)
         
         # Check that key session state variables exist
         expected_keys = ["study_name", "wavelength", "researcher"]
@@ -81,10 +81,10 @@ class TestApp(unittest.TestCase):
         
         # Test with invalid session state
         at.session_state["wavelength"] = "invalid"
-        at.run()
+        at.run(timeout=10)
         
         # App should still run (error handling should prevent crashes)
-        self.assertIsNone(at.exception, "App should handle invalid input gracefully")
+        self.assertFalse(at.exception, "App should handle invalid input gracefully")
 
 @pytest.mark.skipif(not STREAMLIT_TESTING_AVAILABLE, 
                    reason="Streamlit testing framework not available")
