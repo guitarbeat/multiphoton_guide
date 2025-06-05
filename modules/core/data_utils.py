@@ -9,18 +9,23 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-# Define data directory
+from .database_utils import (
+    load_dataframe_from_table,
+    save_dataframe_to_table,
+)
+
+# Define data directory (legacy compatibility for table name conversion)
 DATA_DIR = Path("data")
 
 
 def ensure_data_dir():
-    """Ensure the data directory exists."""
+    """Ensure the data directory exists (retained for backward compatibility)."""
     os.makedirs(DATA_DIR, exist_ok=True)
 
 
 def save_dataframe(df, filename):
     """
-    Save a dataframe to CSV.
+    Save a dataframe to a SQL table.
 
     Parameters:
     -----------
@@ -34,15 +39,13 @@ def save_dataframe(df, filename):
     str
         Path to the saved file
     """
-    ensure_data_dir()
-    file_path = DATA_DIR / filename
-    df.to_csv(file_path, index=False)
-    return file_path
+    save_dataframe_to_table(df, filename)
+    return filename
 
 
 def load_dataframe(filename, default_df=None):
     """
-    Load a dataframe from CSV or return a default if file doesn't exist.
+    Load a dataframe from a SQL table or return a default if it doesn't exist.
 
     Parameters:
     -----------
@@ -56,15 +59,12 @@ def load_dataframe(filename, default_df=None):
     pandas.DataFrame
         The loaded or default dataframe
     """
-    ensure_data_dir()
-    file_path = DATA_DIR / filename
-
-    if os.path.exists(file_path):
-        return pd.read_csv(file_path)
-    elif default_df is not None:
+    df = load_dataframe_from_table(filename)
+    if not df.empty:
+        return df
+    if default_df is not None:
         return default_df
-    else:
-        return pd.DataFrame()
+    return pd.DataFrame()
 
 
 def ensure_columns(df, required_columns, defaults=None):

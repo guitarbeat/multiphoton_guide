@@ -120,6 +120,28 @@ pip-compile pyproject.toml
 
 All dependencies are defined in `pyproject.toml` but can be exported to `requirements.txt` for deployment platforms that require it.
 
+## Database Setup
+
+Measurement data is stored in a SQL database. By default the app tries to use a
+`postgresql` connection defined in `streamlit` secrets. If that connection is
+not available, the URL from the `DATABASE_URL` environment variable (or the
+`database_url` entry in secrets) is used. For local testing you can rely on a
+SQLite database:
+
+```toml
+[postgresql]
+user = "myuser"
+password = "mypassword"
+host = "localhost"
+database = "multiphoton"
+
+# Or provide a full URL
+database_url = "sqlite:///data.db"
+```
+
+Set these credentials in `.streamlit/secrets.toml` or as environment variables
+so `get_connection()` can establish a connection.
+
 ### Docker Deployment
 
 For containerized deployment:
