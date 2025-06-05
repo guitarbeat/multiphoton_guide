@@ -1,16 +1,22 @@
-from modules.measurements import render_laser_power_tab, render_pulse_and_fluorescence_tab, render_rig_log_tab
-from modules.analysis import run_usaf_analyzer
-from modules.ui.theme import apply_theme, get_colors
-import streamlit as st
-import os
 import base64
+import os
+
+import streamlit as st
+
+from modules.analysis import run_usaf_analyzer
+from modules.measurements import (
+    render_laser_power_tab,
+    render_pulse_and_fluorescence_tab,
+    render_rig_log_tab,
+)
+from modules.ui.theme import apply_theme, get_colors
 
 # Set page title and icon - must be the first Streamlit command
 st.set_page_config(
     page_title="Multiphoton Microscopy Guide",
     page_icon="🔬",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
 
@@ -75,7 +81,8 @@ def apply_sidebar_styling():
 
 def render_session_info():
     """Render the session info display with enhanced styling."""
-    st.markdown("""
+    st.markdown(
+        """
     <div class="session-info">
         <div class="session-info-title">Current Session</div>
         <div class="session-info-item">
@@ -92,10 +99,12 @@ def render_session_info():
         </div>
     </div>
     """.format(
-        study_name=st.session_state.study_name,
-        researcher=st.session_state.researcher,
-        mode=st.session_state.measurement_mode
-    ), unsafe_allow_html=True)
+            study_name=st.session_state.study_name,
+            researcher=st.session_state.researcher,
+            mode=st.session_state.measurement_mode,
+        ),
+        unsafe_allow_html=True,
+    )
 
 
 def render_study_inputs():
@@ -104,13 +113,13 @@ def render_study_inputs():
         "Study Name:",
         value=st.session_state.study_name,
         key="Study Name:",
-        help="Enter a name for your study or experiment"
+        help="Enter a name for your study or experiment",
     )
     researcher = st.text_input(
         "Researcher:",
         value=st.session_state.researcher,
         key="Researcher:",
-        help="Enter your name or identifier for record keeping"
+        help="Enter your name or identifier for record keeping",
     )
     return study_name, researcher
 
@@ -129,10 +138,11 @@ def render_measurement_inputs():
         if st.session_state.measurement_mode == "Scanning":
             fill_fraction = st.number_input(
                 "Fill Fraction (%):",
-                min_value=1, max_value=100,
+                min_value=1,
+                max_value=100,
                 value=int(st.session_state.fill_fraction),
                 key="Sidebar_Fill_Fraction",
-                help="Percentage of time the beam is 'on' during scanning"
+                help="Percentage of time the beam is 'on' during scanning",
             )
         return fill_fraction
     else:
@@ -149,9 +159,9 @@ def render_session_setup_form():
         # Add sensor model input
         sensor_model = st.text_input(
             "Sensor Model (optional):",
-            value=st.session_state.get('sensor_model', ''),
+            value=st.session_state.get("sensor_model", ""),
             key="Session_Sensor_Model",
-            help="Enter the model of your power meter sensor (optional)"
+            help="Enter the model of your power meter sensor (optional)",
         )
         fill_fraction = render_measurement_inputs()
 
@@ -162,7 +172,9 @@ def render_session_setup_form():
                 st.error("Study name cannot be empty")
             else:
                 st.session_state.study_name = study_name
-                st.session_state.researcher = researcher if researcher.strip() else "Anonymous Researcher"
+                st.session_state.researcher = (
+                    researcher if researcher.strip() else "Anonymous Researcher"
+                )
                 st.session_state.sensor_model = sensor_model
                 st.session_state.fill_fraction = fill_fraction
                 st.success("Session updated successfully!")
@@ -179,18 +191,27 @@ def main():
     # Define the pages for navigation with their functions directly
     pages = {
         "Microscope Tools": [
-            {"title": "Laser Power Measurements",
-                "icon": "🔍", "function": lambda: render_laser_power_tab(use_sidebar_values=True)},
-            {"title": "Signal Optimization Protocols",
-                "icon": "⚡", "function": render_pulse_and_fluorescence_tab},
+            {
+                "title": "Laser Power Measurements",
+                "icon": "🔍",
+                "function": lambda: render_laser_power_tab(use_sidebar_values=True),
+            },
+            {
+                "title": "Signal Optimization Protocols",
+                "icon": "⚡",
+                "function": render_pulse_and_fluorescence_tab,
+            },
         ],
         "Analysis Tools": [
-            {"title": "USAF Target Analyzer", "icon": "🎯",
-                "function": run_usaf_analyzer},
+            {
+                "title": "USAF Target Analyzer",
+                "icon": "🎯",
+                "function": run_usaf_analyzer,
+            },
         ],
         "Documentation": [
             {"title": "Rig Log", "icon": "📝", "function": render_rig_log_tab},
-        ]
+        ],
     }
 
     # Apply custom sidebar styling
@@ -208,7 +229,8 @@ def main():
                 st.image(logo_path, use_container_width=True)
 
         st.caption(
-            "Standardized measurements for monitoring and comparing multiphoton microscope systems")
+            "Standardized measurements for monitoring and comparing multiphoton microscope systems"
+        )
 
         st.markdown("---")
 
@@ -233,12 +255,12 @@ def main():
                     key=f"nav_{page['title']}",
                     use_container_width=True,
                     type=button_style,
-                    disabled=is_active
+                    disabled=is_active,
                 ):
                     st.session_state.current_page = page["title"]
                     st.rerun()
 
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
     # Only render session setup form on Laser Power Measurements page
     if st.session_state.current_page == "Laser Power Measurements":
