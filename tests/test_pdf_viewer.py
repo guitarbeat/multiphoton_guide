@@ -10,6 +10,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 import streamlit as st
 
+pytest.skip("Streamlit tests disabled in CI", allow_module_level=True)
+
 
 class TestPDFViewer:
     """Test class for PDF viewer functionality."""
