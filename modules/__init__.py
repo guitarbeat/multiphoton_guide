@@ -25,6 +25,12 @@ from modules.ui_components import (
     create_tab_section,
     create_form_section
 )
+from modules.shared_utils import (
+    add_to_rig_log,
+    get_default_rig_log_df,
+    get_common_dataframe_columns,
+    create_default_dataframe
+)
 
 # Version information
 __version__ = "5.0"

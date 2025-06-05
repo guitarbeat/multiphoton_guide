@@ -13,6 +13,7 @@ from pathlib import Path
 
 from modules.data_utils import load_dataframe, save_dataframe, ensure_columns, safe_numeric_conversion, filter_dataframe, calculate_statistics, linear_regression
 from modules.ui_components import create_header, create_info_box, create_warning_box, create_success_box, create_metric_row, create_data_editor, create_plot, create_tab_section, create_form_section, display_image, get_image_path
+from modules.shared_utils import add_to_rig_log
 
 # Constants
 FLUORESCENCE_FILE = "fluorescence_measurements.csv"
@@ -263,29 +264,4 @@ def render_fluorescence_tips():
         - Compare signals across different imaging sessions
         """)
 
-def add_to_rig_log(activity, description):
-    """Add an entry to the rig log."""
-    
-    # Load existing rig log
-    rig_log_df = load_dataframe(RIG_LOG_FILE, pd.DataFrame({
-        "Date": [],
-        "Researcher": [],
-        "Activity": [],
-        "Description": [],
-        "Category": []
-    }))
-    
-    # Create new entry
-    new_entry = pd.DataFrame({
-        "Date": [datetime.now().strftime("%Y-%m-%d %H:%M")],
-        "Researcher": [st.session_state.researcher],
-        "Activity": [activity],
-        "Description": [description],
-        "Category": ["Measurement"]
-    })
-    
-    # Append new entry
-    rig_log_df = pd.concat([rig_log_df, new_entry], ignore_index=True)
-    
-    # Save updated log
-    save_dataframe(rig_log_df, RIG_LOG_FILE)
+# add_to_rig_log function moved to modules/shared_utils.py to eliminate duplication

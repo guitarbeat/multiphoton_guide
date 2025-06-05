@@ -11,6 +11,7 @@ from datetime import datetime
 from modules.data_utils import load_dataframe, save_dataframe, ensure_columns, safe_numeric_conversion, filter_dataframe, calculate_statistics, linear_regression
 from modules.ui_components import create_header, create_metric_row, create_plot
 from modules.theme import get_colors
+from modules.shared_utils import add_to_rig_log
 
 # Constants
 LASER_POWER_FILE = "laser_power_measurements.csv"
@@ -40,7 +41,8 @@ def render_laser_power_tab(use_sidebar_values=False):
     # Add entry to rig log if measurements were taken
     if st.session_state.get('laser_power_submitted', False):
         add_to_rig_log("Laser Power Measurement", 
-                      f"Measured laser power at {st.session_state.wavelength} nm using {st.session_state.get('sensor_model', 'unknown sensor')}")
+                      f"Measured laser power at {st.session_state.wavelength} nm using {st.session_state.get('sensor_model', 'unknown sensor')}",
+                      "Measurement")
         # Reset the flag
         st.session_state.laser_power_submitted = False
 
@@ -437,29 +439,4 @@ def render_laser_power_visualization():
         - Significant changes may indicate alignment issues or component degradation
         """)
 
-def add_to_rig_log(activity, description):
-    """Add an entry to the rig log."""
-    
-    # Load existing rig log
-    rig_log_df = load_dataframe(RIG_LOG_FILE, pd.DataFrame({
-        "Date": [],
-        "Researcher": [],
-        "Activity": [],
-        "Description": [],
-        "Category": []
-    }))
-    
-    # Create new entry
-    new_entry = pd.DataFrame({
-        "Date": [datetime.now().strftime("%Y-%m-%d %H:%M")],
-        "Researcher": [st.session_state.researcher or "Unknown Researcher"],
-        "Activity": [activity],
-        "Description": [description],
-        "Category": ["Measurement"]
-    })
-    
-    # Append new entry
-    rig_log_df = pd.concat([rig_log_df, new_entry], ignore_index=True)
-    
-    # Save updated log
-    save_dataframe(rig_log_df, RIG_LOG_FILE)
+# add_to_rig_log function moved to modules/shared_utils.py to eliminate duplication
