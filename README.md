@@ -131,6 +131,7 @@ in Streamlit secrets.  If that connection is not available, the URL from the
 `DATABASE_URL` environment variable (or the `database_url` entry in secrets) is
 used.  For local testing you can rely on a SQLite database:
 
+
 ```toml
 [postgresql]
 user = "myuser"
@@ -148,6 +149,7 @@ To use a public Google Sheet instead of SQL, configure secrets like this:
 [connections.gsheets]
 spreadsheet = "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit"
 ```
+
 
 Set these credentials in `.streamlit/secrets.toml` or as environment variables
 so `get_connection()` can establish a connection.

@@ -36,6 +36,7 @@ def get_connection(url: str | None = None):
         conn = st.connection("postgresql")
         if hasattr(conn, "engine"):
             return conn.engine
+
         return create_engine(conn.url)
     except Exception:
         db_url = url or st.secrets.get("database_url") or os.environ.get(
@@ -69,6 +70,7 @@ def load_dataframe_from_table(table_name: str) -> pd.DataFrame:
         except Exception:
             return pd.DataFrame()
     engine = get_connection()
+
     try:
         return pd.read_sql(f"SELECT * FROM {tbl}", engine)
     except Exception:

@@ -56,6 +56,7 @@ def in_memory_db(monkeypatch):
     engine = create_engine("sqlite:///:memory:")
     monkeypatch.setattr(database_utils, "get_connection", lambda url=None: engine)
     monkeypatch.setattr(database_utils, "get_gsheets_connection", lambda: None)
+
     return engine
 
 
