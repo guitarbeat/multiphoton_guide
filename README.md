@@ -22,7 +22,7 @@ The easiest way to get started is using the provided setup script:
 ```
 
 The script will:
-- Check Python version (3.8+ required, 3.10 recommended)
+ - Check Python version (3.8+ required, 3.10 recommended; 3.9.7 not supported)
 - Create a virtual environment
 - Install all dependencies
 - Launch the application
@@ -108,7 +108,7 @@ This application is optimized for Streamlit Community Cloud deployment:
 
 **Required files for Streamlit Cloud:**
 - `packages.txt` - System dependencies  
-- `runtime.txt` - Python version (3.10)
+ - `runtime.txt` - Python version (3.10; Python 3.9.7 is unsupported)
 
 **Note:** Streamlit Cloud requires a `requirements.txt` file. If needed, generate one from pyproject.toml:
 ```bash
@@ -132,7 +132,7 @@ Then visit http://localhost:8501
 
 ## System Requirements
 
-- **Python**: 3.8+ (3.10 recommended)
+- **Python**: 3.8+ (3.10 recommended; 3.9.7 not supported)
 - **System Dependencies** (auto-installed on Streamlit Cloud/Docker):
   - libgl1, libglib2.0-0, poppler-utils
   - libgtk2.0-0, libx11-xcb1, libnss3
@@ -168,7 +168,7 @@ Then visit http://localhost:8501
 ## Troubleshooting
 
 ### Local Development Issues
-- Ensure Python 3.8+ is installed
+- Ensure Python 3.8+ is installed (except 3.9.7)
 - Use the provided `./setup.sh` script for automated setup
 - Try manual installation if the script fails
 
