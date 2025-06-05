@@ -7,6 +7,7 @@ import pytest
 
 pytest.skip("Streamlit tests disabled in CI", allow_module_level=True)
 
+
 # Add parent directory to path to import modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -43,6 +44,7 @@ class TestApp(unittest.TestCase):
         at = AppTest.from_file("app.py")
         at.run()
 
+
         # Check sidebar exists
         self.assertIsNotNone(at.sidebar, "Sidebar should exist")
 
@@ -59,6 +61,7 @@ class TestApp(unittest.TestCase):
         """Test that the main page has expected structure."""
         at = AppTest.from_file("app.py")
         at.run()
+
 
         # Check that main content exists
         self.assertIsNotNone(at.main, "Main content should exist")
@@ -92,8 +95,9 @@ class TestApp(unittest.TestCase):
         at.session_state["wavelength"] = "invalid"
         at.run()
 
+
         # App should still run (error handling should prevent crashes)
-        self.assertIsNone(at.exception, "App should handle invalid input gracefully")
+        self.assertFalse(at.exception, "App should handle invalid input gracefully")
 
 
 @pytest.mark.skipif(
