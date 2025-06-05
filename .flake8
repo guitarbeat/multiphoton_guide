@@ -1,0 +1,4 @@
+[flake8]
+max-line-length = 120
+exclude = .git, __pycache__, venv, */venv/*, *.egg-info, build, dist, runtime, multiphoton_guide.egg-info
+extend-ignore = E203,E712,E722,E501,W291,W293,F401,F841,F811,F541,E402
