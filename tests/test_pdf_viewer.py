@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import streamlit as st
+import streamlit_pdf_viewer
 
 
 class TestPDFViewer:
@@ -32,7 +33,7 @@ class TestPDFViewer:
     def test_pdf_viewer_annotations_parameter(self):
         """Test that pdf_viewer can be called with annotations parameter."""
         try:
-            from streamlit_pdf_viewer import pdf_viewer
+            import streamlit_pdf_viewer
         except ImportError:
             pytest.skip("streamlit-pdf-viewer not installed")
 
@@ -42,9 +43,9 @@ class TestPDFViewer:
 
             # This should not raise "annotations must be a list of dictionaries" error
             try:
-                pdf_viewer(
-                    str(self.test_pdf_path), width=700, height=800, annotations=[]
-                )
+
+                streamlit_pdf_viewer.pdf_viewer(str(self.test_pdf_path), width=700, height=800, annotations=[])
+
                 mock_pdf_viewer.assert_called_once_with(
                     str(self.test_pdf_path), width=700, height=800, annotations=[]
                 )
@@ -57,13 +58,14 @@ class TestPDFViewer:
     def test_pdf_viewer_invalid_annotations(self):
         """Test that pdf_viewer properly handles invalid annotations parameter."""
         try:
-            from streamlit_pdf_viewer import pdf_viewer
+            import streamlit_pdf_viewer
         except ImportError:
             pytest.skip("streamlit-pdf-viewer not installed")
 
         # Test that invalid annotations parameter raises expected error
         with patch("streamlit_pdf_viewer.pdf_viewer") as mock_pdf_viewer:
             # Simulate the actual error that would be raised
+
             mock_pdf_viewer.side_effect = TypeError(
                 "annotations must be a list of dictionaries"
             )
@@ -78,10 +80,11 @@ class TestPDFViewer:
                     annotations="invalid",
                 )
 
+
     def test_pdf_viewer_valid_annotations_format(self):
         """Test that pdf_viewer accepts properly formatted annotations."""
         try:
-            from streamlit_pdf_viewer import pdf_viewer
+            import streamlit_pdf_viewer
         except ImportError:
             pytest.skip("streamlit-pdf-viewer not installed")
 
@@ -100,6 +103,7 @@ class TestPDFViewer:
                 height=800,
                 annotations=valid_annotations,
             )
+
             mock_pdf_viewer.assert_called_once_with(
                 str(self.test_pdf_path),
                 width=700,
@@ -113,21 +117,17 @@ class TestPDFViewer:
         from modules.measurements.pulse_and_fluorescence import render_reference_content
 
         # Mock streamlit components to avoid actual rendering
-        with patch("streamlit.columns") as mock_columns, patch(
-            "streamlit.subheader"
-        ) as mock_subheader, patch("streamlit.markdown") as mock_markdown, patch(
-            "streamlit.expander"
-        ) as mock_expander, patch(
-            "streamlit.text_area"
-        ) as mock_text_area, patch(
-            "streamlit.button"
-        ) as mock_button, patch(
-            "streamlit.download_button"
-        ) as mock_download_button, patch(
-            "streamlit_pdf_viewer.pdf_viewer"
-        ) as mock_pdf_viewer, patch(
-            "builtins.open", create=True
-        ) as mock_open:
+
+        with patch('streamlit.columns') as mock_columns, \
+             patch('streamlit.subheader') as mock_subheader, \
+             patch('streamlit.markdown') as mock_markdown, \
+             patch('streamlit.expander') as mock_expander, \
+             patch('streamlit.text_area') as mock_text_area, \
+             patch('streamlit.button') as mock_button, \
+             patch('streamlit.download_button') as mock_download_button, \
+             patch('modules.measurements.pulse_and_fluorescence.pdf_viewer') as mock_pdf_viewer, \
+             patch('builtins.open', create=True) as mock_open:
+            
 
             # Set up mocks
             mock_columns.return_value = [MagicMock(), MagicMock()]
@@ -163,7 +163,9 @@ class TestPDFViewer:
 def test_pdf_viewer_error_detection():
     """Standalone test function to detect PDF viewer annotation errors."""
     try:
-        from streamlit_pdf_viewer import pdf_viewer
+
+        import streamlit_pdf_viewer
+        
 
         # Test path
         test_path = Path(__file__).parent.parent / "assets" / "s41596-024-01120-w.pdf"
@@ -174,7 +176,8 @@ def test_pdf_viewer_error_detection():
         # This should work without raising TypeError about annotations
         with patch("streamlit_pdf_viewer.pdf_viewer") as mock_viewer:
             mock_viewer.return_value = None
-            pdf_viewer(str(test_path), width=700, height=800, annotations=[])
+
+            streamlit_pdf_viewer.pdf_viewer(str(test_path), width=700, height=800, annotations=[])
 
         return True
 
