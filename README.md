@@ -78,6 +78,8 @@ streamlit run app.py
 ### Local Development
 - Production dependencies: `pip install -e .`
 - Development dependencies: `pip install -e ".[dev]"`
+- Building with `poetry build` produces a wheel containing both the
+  `multiphoton_guide` and `modules` packages.
 
 ### For Deployment Platforms
 Some platforms still require `requirements.txt`. Generate one if needed:
