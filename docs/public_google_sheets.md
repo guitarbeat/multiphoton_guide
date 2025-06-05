@@ -31,7 +31,9 @@ spreadsheet = "https://docs.google.com/spreadsheets/d/XXXXXX/edit#gid=0"
 
 ## 3. Read data from the Sheet in your app
 
-Use `st.connection` to create a connection and call `.read()` to retrieve the data:
+Use `st.connection` to create a connection and call `.read()` to retrieve the data or
+`conn.update()` to write data back:
+
 
 ```python
 import streamlit as st
@@ -40,12 +42,18 @@ from streamlit_gsheets import GSheetsConnection
 # Create a connection object
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# Read the entire sheet
-df = conn.read()
+# Read a worksheet by name
+df = conn.read(worksheet="Sheet1")
 
 # Display the results
 for row in df.itertuples():
     st.write(f"{row.name} has a :{row.pet}:")
+## 4. Write data back to the Sheet
+
+```python
+new_df = pd.DataFrame({"name": ["Lucia"], "pet": ["dog"]})
+conn.update(worksheet="Sheet1", data=new_df)
+
 ```
 
 ## Optional: customize caching and range
@@ -63,7 +71,7 @@ df = conn.read(
 
 Set `ttl=0` to disable caching entirely if needed.
 
-## 4. Deploying on Streamlit Community Cloud
+## 5. Deploying on Streamlit C
 
 When deploying to Streamlit Community Cloud:
 

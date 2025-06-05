@@ -41,6 +41,7 @@ dependencies = [
     "opencv-python>=4.8.0",
     "tifffile>=2023.7.0",
     "streamlit-image-coordinates>=0.1.6",
+    "st-gsheets-connection>=0.1.0",
 ]
 
 [project.optional-dependencies]

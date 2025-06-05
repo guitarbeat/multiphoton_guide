@@ -122,11 +122,15 @@ All dependencies are defined in `pyproject.toml` but can be exported to `require
 
 ## Database Setup
 
-Measurement data is stored in a SQL database. By default the app tries to use a
-`postgresql` connection defined in `streamlit` secrets. If that connection is
-not available, the URL from the `DATABASE_URL` environment variable (or the
-`database_url` entry in secrets) is used. For local testing you can rely on a
-SQLite database:
+Measurement data can be stored either in a SQL database **or** in a public
+Google Sheet.  If a `[connections.gsheets]` section exists in
+`.streamlit/secrets.toml` the application will read and write data to that
+spreadsheet (see `docs/public_google_sheets.md`).  Otherwise the app falls back
+to a SQL database.  By default it tries to use a `postgresql` connection defined
+in Streamlit secrets.  If that connection is not available, the URL from the
+`DATABASE_URL` environment variable (or the `database_url` entry in secrets) is
+used.  For local testing you can rely on a SQLite database:
+
 
 ```toml
 [postgresql]
@@ -138,6 +142,14 @@ database = "multiphoton"
 # Or provide a full URL
 database_url = "sqlite:///data.db"
 ```
+
+To use a public Google Sheet instead of SQL, configure secrets like this:
+
+```toml
+[connections.gsheets]
+spreadsheet = "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit"
+```
+
 
 Set these credentials in `.streamlit/secrets.toml` or as environment variables
 so `get_connection()` can establish a connection.
