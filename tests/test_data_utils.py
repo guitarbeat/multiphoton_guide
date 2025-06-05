@@ -14,6 +14,9 @@ import pytest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Import data utilities for testing
+from sqlalchemy import create_engine
+
+from modules.core import database_utils
 from modules.core.data_utils import (
     calculate_statistics,
     ensure_columns,
@@ -45,6 +48,14 @@ def test_data_dir(tmp_path):
     data_dir = tmp_path / "data"
     data_dir.mkdir()
     return data_dir
+
+
+@pytest.fixture
+def in_memory_db(monkeypatch):
+    """Provide an in-memory SQLite engine and patch database connection."""
+    engine = create_engine("sqlite:///:memory:")
+    monkeypatch.setattr(database_utils, "get_connection", lambda url=None: engine)
+    return engine
 
 
 # Test data utilities
@@ -189,27 +200,26 @@ def test_safe_numeric_conversion_edge_cases(test_dataframe):
 
 # Test file operations
 @pytest.mark.unit
-def test_save_and_load_dataframe(test_dataframe, test_data_dir):
-    """Test that save_dataframe and load_dataframe work correctly."""
-    file_path = test_data_dir / "test.csv"
+def test_save_and_load_dataframe(test_dataframe, in_memory_db):
+    """Test saving and loading a dataframe via the database helpers."""
+    table_name = "test_table"
 
     # Save the dataframe
-    save_dataframe(test_dataframe, file_path)
+    save_dataframe(test_dataframe, table_name)
 
     # Load the dataframe
-    loaded_df = load_dataframe(file_path)
+    loaded_df = load_dataframe(table_name)
 
     # Check that the loaded dataframe matches the original
     pd.testing.assert_frame_equal(test_dataframe, loaded_df)
 
 
 @pytest.mark.unit
-def test_load_dataframe_with_default(test_data_dir):
-    """Test that load_dataframe returns the default dataframe when file doesn't exist."""
-    file_path = test_data_dir / "nonexistent.csv"
+def test_load_dataframe_with_default(in_memory_db):
+    """Test that load_dataframe returns the default dataframe when table doesn't exist."""
     default_df = pd.DataFrame({"A": [1, 2, 3]})
 
-    loaded_df = load_dataframe(file_path, default_df)
+    loaded_df = load_dataframe("missing_table", default_df)
 
     # Check that the loaded dataframe matches the default
     pd.testing.assert_frame_equal(default_df, loaded_df)
