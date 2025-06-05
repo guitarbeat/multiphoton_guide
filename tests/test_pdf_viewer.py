@@ -45,7 +45,7 @@ class TestPDFViewer:
 
             # This should not raise "annotations must be a list of dictionaries" error
             try:
-                pdf_viewer(
+                streamlit_pdf_viewer.pdf_viewer(
                     str(self.test_pdf_path), width=700, height=800, annotations=[]
                 )
 
@@ -76,13 +76,12 @@ class TestPDFViewer:
             with pytest.raises(
                 TypeError, match="annotations must be a list of dictionaries"
             ):
-                pdf_viewer(
+                streamlit_pdf_viewer.pdf_viewer(
                     str(self.test_pdf_path),
                     width=700,
                     height=800,
                     annotations="invalid",
                 )
-
 
     def test_pdf_viewer_valid_annotations_format(self):
         """Test that pdf_viewer accepts properly formatted annotations."""
@@ -100,7 +99,7 @@ class TestPDFViewer:
         with patch("streamlit_pdf_viewer.pdf_viewer") as mock_pdf_viewer:
             mock_pdf_viewer.return_value = None
 
-            pdf_viewer(
+            streamlit_pdf_viewer.pdf_viewer(
                 str(self.test_pdf_path),
                 width=700,
                 height=800,
@@ -117,21 +116,24 @@ class TestPDFViewer:
     def test_render_reference_content_integration(self):
         """Integration test for the render_reference_content function."""
         # Import the function we're testing
-        from modules.measurements.pulse_and_fluorescence import render_reference_content
+        from modules.measurements.pulse_and_fluorescence import \
+            render_reference_content
 
         # Mock streamlit components to avoid actual rendering
 
-
-        with patch('streamlit.columns') as mock_columns, \
-             patch('streamlit.subheader') as mock_subheader, \
-             patch('streamlit.markdown') as mock_markdown, \
-             patch('streamlit.expander') as mock_expander, \
-             patch('streamlit.text_area') as mock_text_area, \
-             patch('streamlit.button') as mock_button, \
-             patch('streamlit.download_button') as mock_download_button, \
-             patch('modules.measurements.pulse_and_fluorescence.pdf_viewer') as mock_pdf_viewer, \
-             patch('builtins.open', create=True) as mock_open:
-
+        with (
+            patch("streamlit.columns") as mock_columns,
+            patch("streamlit.subheader") as mock_subheader,
+            patch("streamlit.markdown") as mock_markdown,
+            patch("streamlit.expander") as mock_expander,
+            patch("streamlit.text_area") as mock_text_area,
+            patch("streamlit.button") as mock_button,
+            patch("streamlit.download_button") as mock_download_button,
+            patch(
+                "modules.measurements.pulse_and_fluorescence.pdf_viewer"
+            ) as mock_pdf_viewer,
+            patch("builtins.open", create=True) as mock_open,
+        ):
 
             # Set up mocks
             mock_columns.return_value = [MagicMock(), MagicMock()]
@@ -169,7 +171,6 @@ def test_pdf_viewer_error_detection():
     try:
         from streamlit_pdf_viewer import pdf_viewer
 
-
         # Test path
         test_path = Path(__file__).parent.parent / "assets" / "s41596-024-01120-w.pdf"
 
@@ -180,7 +181,6 @@ def test_pdf_viewer_error_detection():
         with patch("streamlit_pdf_viewer.pdf_viewer") as mock_viewer:
             mock_viewer.return_value = None
             pdf_viewer(str(test_path), width=700, height=800, annotations=[])
-
 
         return True
 
