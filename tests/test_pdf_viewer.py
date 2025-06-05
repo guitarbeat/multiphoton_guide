@@ -142,9 +142,3 @@ def test_pdf_viewer_error_detection():
             pytest.fail(f"PDF viewer annotations error still occurring: {e}")
         else:
             raise e
-
-
-if __name__ == "__main__":
-    # Run the test when script is executed directly
-    test_result = test_pdf_viewer_error_detection()
-    print(f"PDF viewer test passed: {test_result}") 
