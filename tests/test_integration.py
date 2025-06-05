@@ -177,7 +177,7 @@ class TestEndToEndWorkflow:
     
     def test_data_workflow(self):
         """Test a complete data workflow."""
-        from modules.core.data_utils import save_dataframe, load_dataframe, ensure_data_dir
+        from modules.core.data_utils import save_dataframe, load_dataframe
         import pandas as pd
         import tempfile
         from pathlib import Path

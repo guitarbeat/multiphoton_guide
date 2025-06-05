@@ -8,18 +8,16 @@ import pandas as pd
 import numpy as np
 import os
 import sys
-from pathlib import Path
 
 # Add parent directory to path to import modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Import data utilities for testing
 from modules.core.data_utils import (
-    ensure_data_dir, 
     load_dataframe, 
     save_dataframe, 
     ensure_columns, 
-    safe_numeric_conversion,
+    safe_numeric_conversion, 
     filter_dataframe,
     calculate_statistics,
     linear_regression

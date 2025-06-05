@@ -13,6 +13,21 @@ LASER_POWER_FILE = "laser_power_measurements.csv"
 FLUORESCENCE_FILE = "fluorescence_measurements.csv"
 PULSE_WIDTH_FILE = "pulse_width_measurements.csv"
 
+# Source Power Measurement
+SOURCE_POWER_FILE = "data/source_power_measurements.csv"
+SOURCE_POWER_COLUMNS = [
+    "Study Name",
+    "Date",
+    "Wavelength (nm)",
+    "Pump Current (mA)",
+    "Temperature (°C)",
+    "Measured Power (W)",
+    "Pulse Width (fs)",
+    "Grating Position",
+    "Fan Status",
+    "Notes"
+]
+
 # =============================================================================
 # COMMON DATAFRAME COLUMN SCHEMAS
 # =============================================================================

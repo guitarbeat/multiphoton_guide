@@ -4,11 +4,11 @@ This module provides standardized templates and patterns for creating measuremen
 """
 
 import streamlit as st
-from typing import Callable, Dict, Any, Optional, List
+from typing import Callable, Dict, Any, List
 from abc import ABC, abstractmethod
 
 from modules.core.shared_utils import create_two_column_layout, add_to_rig_log, load_measurement_dataframe
-from modules.ui.components import create_header, create_info_box, create_warning_box, create_success_box
+from modules.ui.components import create_header, create_info_box
 from modules.core.validation_utils import validate_form_data, display_form_validation_results, safe_execute
 
 class BaseMeasurementModule(ABC):
@@ -34,17 +34,14 @@ class BaseMeasurementModule(ABC):
     @abstractmethod
     def render_theory_and_procedure(self) -> None:
         """Render the theory and procedure section."""
-        pass
     
     @abstractmethod
     def render_visualization(self) -> None:
         """Render the visualization section."""
-        pass
     
     @abstractmethod
     def render_measurement_form(self) -> None:
         """Render the measurement input form."""
-        pass
     
     def render_tips(self) -> None:
         """Render tips and best practices (optional override)."""
@@ -217,7 +214,7 @@ def _save_measurement_data(df_type: str, form_data: Dict[str, Any]) -> bool:
     """Save measurement data using standardized approach."""
     def save_operation():
         # Load existing data
-        df = load_measurement_dataframe(df_type)
+        load_measurement_dataframe(df_type)
         
         # Create new entry
         new_entry = {**form_data}

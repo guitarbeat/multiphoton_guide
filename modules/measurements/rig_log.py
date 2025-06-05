@@ -6,14 +6,11 @@ Implements a comprehensive system change tracking feature.
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
-import os
-from pathlib import Path
 
-from modules.core.data_utils import load_dataframe, save_dataframe, ensure_columns
-from modules.ui.components import create_header, create_info_box, create_warning_box, create_success_box, create_metric_row, create_data_editor, create_plot, create_tab_section, create_form_section
-from modules.core.shared_utils import load_measurement_dataframe, create_default_dataframe
+from modules.core.data_utils import save_dataframe, ensure_columns
+from modules.ui.components import create_header, create_metric_row, create_plot, create_tab_section
+from modules.core.shared_utils import load_measurement_dataframe
 from modules.core.constants import RIG_LOG_FILE, RIG_LOG_COLUMNS, RIG_LOG_CATEGORIES
 
 def render_rig_log_tab():

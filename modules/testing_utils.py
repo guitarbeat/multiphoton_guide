@@ -9,8 +9,8 @@ from typing import Dict, Any, List, Callable
 import time
 from datetime import datetime
 
-from modules.core.constants import COLUMN_SCHEMAS, FILE_MAPPINGS
-from modules.core.shared_utils import create_default_dataframe, load_measurement_dataframe
+from modules.constants import COLUMN_SCHEMAS, FILE_MAPPINGS
+from modules.shared_utils import create_default_dataframe, load_measurement_dataframe
 
 class TestResult:
     """Class to represent the result of a test operation."""
@@ -42,6 +42,7 @@ class ModuleTester:
         self._test_dataframe_schemas()
         self._test_template_functions()
         self._test_validation_functions()
+        self._test_pdf_viewer_functionality()
         
         return self._generate_test_summary()
     
@@ -156,7 +157,7 @@ class ModuleTester:
         start_time = time.time()
         
         try:
-            from modules.core.validation_utils import (
+            from modules.validation_utils import (
                 validate_numeric_input, validate_wavelength, 
                 validate_power, validate_required_field
             )
@@ -200,6 +201,72 @@ class ModuleTester:
                 "Validation Functions", 
                 False, 
                 f"Validation function test failed: {str(e)}",
+                execution_time
+            ))
+    
+    def _test_pdf_viewer_functionality(self) -> None:
+        """Test PDF viewer functionality and annotation handling."""
+        start_time = time.time()
+        
+        try:
+            # Try to import pdf_viewer
+            try:
+                from streamlit_pdf_viewer import pdf_viewer
+            except ImportError:
+                execution_time = time.time() - start_time
+                self.test_results.append(TestResult(
+                    "PDF Viewer", 
+                    False, 
+                    "streamlit-pdf-viewer package not installed",
+                    execution_time
+                ))
+                return
+            
+            # Test that we can call pdf_viewer with proper annotations parameter
+            from pathlib import Path
+            from unittest.mock import patch
+            
+            # Mock the pdf_viewer to avoid actual rendering during tests
+            with patch('streamlit_pdf_viewer.pdf_viewer') as mock_viewer:
+                mock_viewer.return_value = None
+                
+                # Test with empty annotations list - this should not raise TypeError
+                test_path = "test.pdf"  # We're mocking anyway
+                pdf_viewer(test_path, width=700, height=800, annotations=[])
+                
+                # Verify the call was made with correct parameters
+                mock_viewer.assert_called_with(test_path, width=700, height=800, annotations=[])
+            
+            execution_time = time.time() - start_time
+            self.test_results.append(TestResult(
+                "PDF Viewer", 
+                True, 
+                "PDF viewer can be called with annotations parameter",
+                execution_time
+            ))
+            
+        except TypeError as e:
+            execution_time = time.time() - start_time
+            if "annotations must be a list of dictionaries" in str(e):
+                self.test_results.append(TestResult(
+                    "PDF Viewer", 
+                    False, 
+                    f"PDF viewer annotations error: {str(e)}",
+                    execution_time
+                ))
+            else:
+                self.test_results.append(TestResult(
+                    "PDF Viewer", 
+                    False, 
+                    f"PDF viewer other error: {str(e)}",
+                    execution_time
+                ))
+        except Exception as e:
+            execution_time = time.time() - start_time
+            self.test_results.append(TestResult(
+                "PDF Viewer", 
+                False, 
+                f"PDF viewer test failed: {str(e)}",
                 execution_time
             ))
     
@@ -403,7 +470,7 @@ def run_quick_validation_test() -> bool:
                 return False
         
         # Test that validation functions work
-        from modules.core.validation_utils import validate_numeric_input
+        from modules.validation_utils import validate_numeric_input
         result = validate_numeric_input(100)
         if not result.is_valid:
             return False

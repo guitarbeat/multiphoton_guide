@@ -4,17 +4,10 @@ Implements protocols for optimizing pulse width through GDD adjustment.
 """
 
 import streamlit as st
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from datetime import datetime
-import os
-from pathlib import Path
 
-from modules.core.data_utils import load_dataframe, save_dataframe, ensure_columns, safe_numeric_conversion, filter_dataframe, calculate_statistics
-from modules.ui.components import create_header, create_info_box, create_warning_box, create_success_box, create_metric_row, create_data_editor, create_plot, create_tab_section, create_form_section, display_image, get_image_path
-from modules.core.shared_utils import add_to_rig_log, create_two_column_layout
-from modules.core.constants import PULSE_WIDTH_FILE
+from modules.ui.components import create_header, create_plot, get_image_path
+from modules.core.shared_utils import create_two_column_layout
 
 def render_pulse_width_tab():
     """Render the pulse width optimization tab content."""

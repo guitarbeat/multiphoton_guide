@@ -4,9 +4,8 @@ This module provides standardized validation functions and error handling patter
 """
 
 import streamlit as st
-import pandas as pd
 import numpy as np
-from typing import Union, List, Dict, Any, Optional, Tuple
+from typing import Union, Dict, Any, Optional
 from .constants import WAVELENGTH_RANGE, POWER_RANGE, GDD_RANGE
 
 class ValidationResult:

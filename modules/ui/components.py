@@ -7,7 +7,6 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import os
 from pathlib import Path
-from .theme import get_colors
 
 def create_header(title, subtitle=None):
     """Create a consistent header with title and optional subtitle."""
@@ -163,19 +162,10 @@ def create_tooltip(text, tooltip_text):
     """, unsafe_allow_html=True)
 
 def get_image_path(image_name):
-    """Get the absolute path to an image in the assets/images directory.
-    
-    Args:
-        image_name: Name of the image file
-    
-    Returns:
-        Absolute path to the image
-    """
-    
-    base_dir = Path(__file__).parent.parent
-    image_path = base_dir / "assets" / "images" / image_name
-    
-    return str(image_path)
+    """Get the absolute path to an image in the top-level assets/images directory."""
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    image_path = os.path.join(base_dir, "assets", "images", image_name)
+    return image_path
 
 def display_image(image_name, caption=None, width=None):
     """Display an image from the assets/images directory.

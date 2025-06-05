@@ -1,23 +1,32 @@
 """
-Reference viewer module for the Multiphoton Microscopy Guide application.
-Implements a PDF viewer for the protocol reference document.
+Combined pulse width and fluorescence signal estimation module for the Multiphoton Microscopy Guide application.
+Implements protocols for optimizing pulse width through GDD adjustment and estimating absolute magnitudes of fluorescence signals.
 """
 
 import streamlit as st
+import numpy as np
 import os
 from pathlib import Path
 from streamlit_pdf_viewer import pdf_viewer
 
-from modules.ui.components import create_header, create_info_box, create_tab_section
+from modules.ui.components import create_header, create_plot, get_image_path
+from modules.core.shared_utils import create_two_column_layout
+from modules.measurements.pulse_width import (
+    render_pulse_width_theory_and_procedure,
+    render_pulse_width_visualization,
+    render_pulse_width_tips
+)
+from modules.measurements.fluorescence import (
+    render_fluorescence_theory_and_procedure,
+    render_fluorescence_visualization,
+    render_fluorescence_tips
+)
 
-def render_reference_tab():
-    """Render the reference tab content."""
-    
-    create_header("Protocol Reference", 
-                 "Standardized measurements for monitoring and comparing multiphoton microscope systems")
+def render_reference_content():
+    """Render the reference PDF content."""
     
     # Path to the PDF file - use absolute path
-    base_dir = Path(__file__).parent.parent
+    base_dir = Path(__file__).parent.parent.parent  # Go up to project root
     pdf_path = str(base_dir / "assets" / "s41596-024-01120-w.pdf")
     
     # Check if the PDF exists
@@ -96,8 +105,8 @@ def render_reference_tab():
         st.markdown("## Protocol Document")
         
         # Using the streamlit-pdf-viewer package to display the PDF
-        # Setting width to 100% for responsive display and height to 800 pixels (increased from 600)
-        pdf_viewer(pdf_path, width="100%", height=800, render_text=True)
+        # Providing required annotations parameter as empty list
+        pdf_viewer(pdf_path, width=700, height=800, annotations=[])
         
         # Add a download button for the PDF
         with open(pdf_path, "rb") as file:
@@ -107,3 +116,32 @@ def render_reference_tab():
                 file_name="multiphoton_microscope_protocol.pdf",
                 mime="application/pdf"
             )
+
+def render_pulse_and_fluorescence_tab():
+    """Render the combined pulse width and fluorescence signal estimation tab content."""
+    
+    create_header("Signal Optimization Protocols")
+    
+    # Create main tabs for the three main sections
+    pulse_tab, fluorescence_tab, reference_tab = st.tabs([
+        "⏱️ Pulse Width Control", 
+        "📊 Fluorescence Signal Estimation",
+        "📚 Protocol Reference"
+    ])
+    
+    with pulse_tab:
+        # Create two columns for layout using template
+        create_two_column_layout(
+            render_pulse_width_theory_and_procedure,
+            lambda: (render_pulse_width_visualization(), render_pulse_width_tips())
+        )
+    
+    with fluorescence_tab:
+        # Create two columns for layout using template
+        create_two_column_layout(
+            render_fluorescence_theory_and_procedure,
+            lambda: (render_fluorescence_visualization(), render_fluorescence_tips())
+        )
+    
+    with reference_tab:
+        render_reference_content() 

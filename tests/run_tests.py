@@ -6,7 +6,6 @@ Runs all tests with proper configuration and reporting.
 
 import pytest
 import sys
-import os
 from pathlib import Path
 
 def main():
@@ -69,7 +68,6 @@ def main():
     
     # Add coverage if available
     try:
-        import pytest_cov
         pytest_args.extend([
             "--cov=modules",
             "--cov-report=term-missing",

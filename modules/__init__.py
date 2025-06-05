@@ -8,28 +8,24 @@ Reorganized into logical subdirectories for better maintainability.
 # =============================================================================
 
 # Import core utilities and constants
-from modules.core import *
 
 # =============================================================================
 # USER INTERFACE
 # =============================================================================
 
 # Import UI components, theme, and templates
-from modules.ui import *
 
 # =============================================================================
 # MEASUREMENTS
 # =============================================================================
 
 # Import measurement modules
-from modules.measurements import *
 
 # =============================================================================
 # ANALYSIS & REFERENCE
 # =============================================================================
 
 # Import analysis tools
-from modules.analysis import *
 
 # =============================================================================
 # TESTING UTILITIES (available separately from tests directory)
