@@ -184,13 +184,13 @@ class TestEndToEndWorkflow:
     """Test end-to-end workflows to ensure integration works."""
 
     def test_data_workflow(self):
-        """Test a complete data workflow."""
-        import tempfile
-        from pathlib import Path
-
+        """Test a complete data workflow using the DB utilities."""
+        
         import pandas as pd
+        from sqlalchemy import create_engine
 
         from modules.core.data_utils import load_dataframe, save_dataframe
+        from modules.core import database_utils
 
         # Create test data
         test_data = pd.DataFrame(
@@ -201,27 +201,24 @@ class TestEndToEndWorkflow:
             }
         )
 
-        # Use a temporary file for testing
-        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tmp:
-            try:
-                # Save data
-                save_dataframe(test_data, tmp.name)
+        engine = create_engine("sqlite:///:memory:")
+        monkeypatch = pytest.MonkeyPatch()
+        monkeypatch.setattr(database_utils, "get_connection", lambda url=None: engine)
+        monkeypatch.setattr(database_utils, "get_gsheets_connection", lambda: None)
 
-                # Load data back
-                loaded_data = load_dataframe(tmp.name)
+        table_name = "workflow_table"
 
-                # Verify data integrity
-                assert len(loaded_data) == len(
-                    test_data
-                ), "Loaded data should have same length"
-                assert list(loaded_data.columns) == list(
-                    test_data.columns
-                ), "Columns should match"
+        # Save data
+        save_dataframe(test_data, table_name)
 
-            finally:
-                # Clean up
-                if Path(tmp.name).exists():
-                    Path(tmp.name).unlink()
+        # Load data back
+        loaded_data = load_dataframe(table_name)
+
+        # Verify data integrity
+        assert len(loaded_data) == len(test_data), "Loaded data should have same length"
+        assert list(loaded_data.columns) == list(test_data.columns), "Columns should match"
+        
+        monkeypatch.undo()
 
 
 if __name__ == "__main__":
