@@ -7,6 +7,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import numpy as np
+from scipy.interpolate import CubicSpline
 
 from modules.core.data_utils import load_dataframe, save_dataframe, filter_dataframe
 from modules.ui.components import create_header, create_metric_row, create_plot
@@ -118,14 +119,23 @@ def render_source_power_form():
     st.pyplot(fig)
 
 def get_expected_power(current):
-    """Interpolate expected power based on pump current. Handles scalars and arrays."""
-    # Known points from SOP
-    currents = np.array([2000, 4000, 6000, 8000])
-    powers = np.array([0.2, 2.3, 4.8, 7.5])
+    """Interpolate expected power based on pump current. Uses cubic spline for smoothness."""
+    # Combined anchor points (with exact values) and visually extracted data
+    currents = np.array([
+        0, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000
+    ])
+    powers = np.array([
+        0.0, 0.0, 0.2, 0.2, 0.9, 1.4, 2.0, 2.3, 3.2, 3.8, 4.4, 4.8, 5.7, 6.3, 7.0, 7.5, 8.0, 8.2
+    ])
     current = np.asarray(current)
     # Clamp values to the range
     current_clipped = np.clip(current, currents[0], currents[-1])
-    return np.interp(current_clipped, currents, powers)
+    try:
+        cs = CubicSpline(currents, powers, bc_type='natural')
+        return cs(current_clipped)
+    except Exception:
+        # Fallback to linear interpolation if scipy is not available
+        return np.interp(current_clipped, currents, powers)
 
 def render_source_power_theory_and_procedure(theory_only=False, procedure_only=False):
     """Render the theory and/or procedure sections for source power measurement."""
