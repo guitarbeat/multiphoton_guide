@@ -10,8 +10,8 @@ from typing import Any, Callable, Dict, List
 import numpy as np
 import pandas as pd
 
-from modules.constants import COLUMN_SCHEMAS, FILE_MAPPINGS
-from modules.shared_utils import create_default_dataframe, load_measurement_dataframe
+from modules.core.constants import COLUMN_SCHEMAS, FILE_MAPPINGS
+from modules.core.shared_utils import create_default_dataframe, load_measurement_dataframe
 
 
 class TestResult:
