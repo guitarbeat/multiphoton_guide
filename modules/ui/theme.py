@@ -7,33 +7,36 @@ import streamlit as st
 
 # Define color scheme for dark theme
 COLORS = {
-    "primary": "#BF5701",       # Primary Orange
-    "secondary": "#035F86",     # Primary Blue
-    "accent": "#F2A65A",        # Warm Gold
-    "info": "#4BA3C4",          # Sky Blue
-    "success": "#86BF01",       # Bright Lime
-    "background": "#121212",    # Dark background
-    "surface": "#1E1E1E",       # Slightly lighter surface
-    "on_surface": "#2D2D2D",    # Card/container background
-    "text": "#E0E0E0",          # Light text
-    "text_secondary": "#AAAAAA", # Secondary text
-    "input_background": "#3D3D3D", # Input field background (higher contrast)
-    "input_text": "#FFFFFF",    # Input text (bright white for contrast)
+    "primary": "#BF5701",  # Primary Orange
+    "secondary": "#035F86",  # Primary Blue
+    "accent": "#F2A65A",  # Warm Gold
+    "info": "#4BA3C4",  # Sky Blue
+    "success": "#86BF01",  # Bright Lime
+    "background": "#121212",  # Dark background
+    "surface": "#1E1E1E",  # Slightly lighter surface
+    "on_surface": "#2D2D2D",  # Card/container background
+    "text": "#E0E0E0",  # Light text
+    "text_secondary": "#AAAAAA",  # Secondary text
+    "input_background": "#3D3D3D",  # Input field background (higher contrast)
+    "input_text": "#FFFFFF",  # Input text (bright white for contrast)
     "input_border": "#555555",  # Input border color
-    "input_focus": "#F2A65A",   # Input focus highlight color
+    "input_focus": "#F2A65A",  # Input focus highlight color
     "warning_text": "#FF9800",  # Warning text color
-    "error_text": "#FF5252"     # Error text color
+    "error_text": "#FF5252",  # Error text color
 }
+
 
 def apply_theme():
     """Apply the dark theme to the Streamlit application."""
-    
+
     # Create .streamlit/config.toml with dark theme settings
     import os
+
     os.makedirs(".streamlit", exist_ok=True)
-    
+
     with open(".streamlit/config.toml", "w") as f:
-        f.write(f"""
+        f.write(
+            f"""
 [theme]
 primaryColor = "{COLORS['primary']}"
 backgroundColor = "{COLORS['background']}"
@@ -43,10 +46,12 @@ font = "sans serif"
 
 [browser]
 gatherUsageStats = false
-        """)
-    
+        """
+        )
+
     # Apply only essential custom CSS for basic styling
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <style>
         /* Base styles */
         .main .block-container {{
@@ -137,47 +142,56 @@ gatherUsageStats = false
             border-radius: 4px;
         }}
     </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
+
 
 def get_colors():
     """Return the color scheme dictionary."""
     return COLORS
 
+
 def create_input_field(component_type, label, key, **kwargs):
     """
     Create a styled input field with consistent appearance.
-    
+
     Args:
         component_type: The Streamlit component function (st.text_input, st.number_input, etc.)
         label: Label for the input field
         key: Unique key for the component
         **kwargs: Additional arguments to pass to the component
-        
+
     Returns:
         The value returned by the component
     """
     # Add help text if not provided
-    if 'help' not in kwargs:
-        kwargs['help'] = f"Enter {label.lower()}"
-    
+    if "help" not in kwargs:
+        kwargs["help"] = f"Enter {label.lower()}"
+
     # Create the component
     return component_type(label=label, key=key, **kwargs)
+
 
 def create_text_input(label, key, **kwargs):
     """Create a styled text input field."""
     return create_input_field(st.text_input, label, key, **kwargs)
 
+
 def create_number_input(label, key, **kwargs):
     """Create a styled number input field."""
     return create_input_field(st.number_input, label, key, **kwargs)
+
 
 def create_select_box(label, key, options, **kwargs):
     """Create a styled select box."""
     return create_input_field(st.selectbox, label, key, options=options, **kwargs)
 
+
 def create_radio_buttons(label, key, options, **kwargs):
     """Create styled radio buttons."""
     return create_input_field(st.radio, label, key, options=options, **kwargs)
+
 
 def create_checkbox(label, key, **kwargs):
     """Create a styled checkbox."""
