@@ -64,6 +64,11 @@ build = [
 [project.scripts]
 multiphoton-guide = "app:main"
 
+[tool.poetry]
+packages = [
+  { include = "multiphoton_guide" }
+]
+
 [tool.setuptools.packages.find]
 include = ["modules*"]
 exclude = ["tests*", "data*", "assets*"]
