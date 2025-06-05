@@ -28,9 +28,9 @@ class TestImports:
     def test_core_modules_import(self):
         """Test that core modules import correctly."""
         core_modules = [
-            'modules.data_utils',
-            'modules.ui_components', 
-            'modules.theme'
+            'modules.core.data_utils',
+            'modules.ui.components', 
+            'modules.ui.theme'
         ]
         
         for module_name in core_modules:
@@ -43,10 +43,10 @@ class TestImports:
     def test_page_modules_import(self):
         """Test that page modules import correctly."""
         page_modules = [
-            'modules.laser_power',
-            'modules.pulse_width',
-            'modules.fluorescence',
-            'modules.rig_log'
+            'modules.measurements.laser_power',
+            'modules.measurements.pulse_width',
+            'modules.measurements.fluorescence',
+            'modules.measurements.rig_log'
         ]
         
         for module_name in page_modules:
@@ -59,7 +59,7 @@ class TestImports:
     def test_analyzer_modules_import(self):
         """Test that analyzer modules import correctly."""
         try:
-            from modules.usaf_analyzer import run_usaf_analyzer
+            from modules.analysis.usaf_analyzer import run_usaf_analyzer
             assert callable(run_usaf_analyzer), "run_usaf_analyzer should be callable"
         except ImportError as e:
             pytest.fail(f"Failed to import USAF analyzer: {e}")
@@ -113,9 +113,9 @@ class TestFileStructure:
         # Check for key module files
         key_modules = [
             'modules/__init__.py',
-            'modules/data_utils.py',
-            'modules/ui_components.py',
-            'modules/theme.py'
+            'modules/core/data_utils.py',
+            'modules/ui/components.py',
+            'modules/ui/theme.py'
         ]
         
         for module_file in key_modules:
@@ -123,7 +123,7 @@ class TestFileStructure:
 
     def test_data_directory_creation(self):
         """Test that data directory can be created."""
-        from modules.data_utils import ensure_data_dir
+        from modules.core.data_utils import ensure_data_dir
         
         # This should not raise an exception
         try:
@@ -138,7 +138,7 @@ class TestModuleFunctionality:
     
     def test_data_utils_functions(self):
         """Test that data utilities functions are working."""
-        from modules.data_utils import ensure_columns, safe_numeric_conversion
+        from modules.core.data_utils import ensure_columns, safe_numeric_conversion
         import pandas as pd
         
         # Test ensure_columns
@@ -154,14 +154,14 @@ class TestModuleFunctionality:
 
     def test_ui_components_functions(self):
         """Test that UI components can be imported and are callable."""
-        from modules.ui_components import create_header, create_info_box
+        from modules.ui.components import create_header, create_info_box
         
         assert callable(create_header), "create_header should be callable"
         assert callable(create_info_box), "create_info_box should be callable"
 
     def test_theme_functions(self):
         """Test that theme functions work correctly."""
-        from modules.theme import get_colors, apply_theme
+        from modules.ui.theme import get_colors, apply_theme
         
         assert callable(get_colors), "get_colors should be callable"
         assert callable(apply_theme), "apply_theme should be callable"
@@ -177,7 +177,7 @@ class TestEndToEndWorkflow:
     
     def test_data_workflow(self):
         """Test a complete data workflow."""
-        from modules.data_utils import save_dataframe, load_dataframe, ensure_data_dir
+        from modules.core.data_utils import save_dataframe, load_dataframe, ensure_data_dir
         import pandas as pd
         import tempfile
         from pathlib import Path

@@ -103,9 +103,9 @@ class TestAppPytest:
     def test_modules_import(self):
         """Test that required modules can be imported."""
         required_modules = [
-            'modules.data_utils',
-            'modules.ui_components',
-            'modules.theme'
+            'modules.core.data_utils',
+            'modules.ui.components',
+            'modules.ui.theme'
         ]
         
         for module_name in required_modules:

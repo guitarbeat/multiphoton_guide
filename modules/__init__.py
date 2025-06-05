@@ -1,36 +1,57 @@
 """
 Module initialization file for the Multiphoton Microscopy Guide application.
+Reorganized into logical subdirectories for better maintainability.
 """
 
-# Import all module components for easy access
-from modules.theme import apply_theme, get_colors
-from modules.data_utils import (
-    ensure_data_dir, 
-    load_dataframe, 
-    save_dataframe, 
-    ensure_columns, 
-    safe_numeric_conversion,
-    filter_dataframe,
-    calculate_statistics,
-    linear_regression
-)
-from modules.ui_components import (
-    create_header,
-    create_info_box,
-    create_warning_box,
-    create_success_box,
-    create_metric_row,
-    create_data_editor,
-    create_plot,
-    create_tab_section,
-    create_form_section
-)
-from modules.shared_utils import (
-    add_to_rig_log,
-    get_default_rig_log_df,
-    get_common_dataframe_columns,
-    create_default_dataframe
-)
+# =============================================================================
+# CORE INFRASTRUCTURE
+# =============================================================================
+
+# Import core utilities and constants
+from modules.core import *
+
+# =============================================================================
+# USER INTERFACE
+# =============================================================================
+
+# Import UI components, theme, and templates
+from modules.ui import *
+
+# =============================================================================
+# MEASUREMENTS
+# =============================================================================
+
+# Import measurement modules
+from modules.measurements import *
+
+# =============================================================================
+# ANALYSIS & REFERENCE
+# =============================================================================
+
+# Import analysis tools
+from modules.analysis import *
+
+# =============================================================================
+# TESTING UTILITIES (available separately from tests directory)
+# =============================================================================
+
+# Note: Testing utilities are available separately:
+# from tests.testing_utils import ModuleTester, TestResult, etc.
+# They are not auto-imported to avoid circular dependencies
+
+# =============================================================================
+# VERSION & METADATA
+# =============================================================================
 
 # Version information
-__version__ = "5.0"
+__version__ = "6.0"
+__organization_version__ = "reorganized"
+
+# Module structure information
+__structure__ = {
+    "core": ["constants", "shared_utils", "validation_utils", "data_utils"],
+    "ui": ["components", "theme", "templates"], 
+    "measurements": ["laser_power", "fluorescence", "pulse_width", "rig_log"],
+    "analysis": ["usaf_analyzer", "reference"],
+    "tests": ["testing_utils (available separately)"]
+}

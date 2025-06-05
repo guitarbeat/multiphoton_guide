@@ -8,14 +8,11 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-from modules.data_utils import load_dataframe, save_dataframe, ensure_columns, safe_numeric_conversion, filter_dataframe, calculate_statistics, linear_regression
-from modules.ui_components import create_header, create_metric_row, create_plot
-from modules.theme import get_colors
-from modules.shared_utils import add_to_rig_log
-
-# Constants
-LASER_POWER_FILE = "laser_power_measurements.csv"
-RIG_LOG_FILE = "rig_log.csv"
+from modules.core.data_utils import load_dataframe, save_dataframe, ensure_columns, safe_numeric_conversion, filter_dataframe, calculate_statistics, linear_regression
+from modules.ui.components import create_header, create_metric_row, create_plot
+from modules.ui.theme import get_colors
+from modules.core.shared_utils import add_to_rig_log, load_measurement_dataframe, create_two_column_layout
+from modules.core.constants import LASER_POWER_FILE, LASER_POWER_COLUMNS, MEASUREMENT_MODES
 
 def render_laser_power_tab(use_sidebar_values=False):
     """Render the laser power measurement tab content.
@@ -29,14 +26,12 @@ def render_laser_power_tab(use_sidebar_values=False):
     # Create main layout with the measurement form prominently displayed
     render_simplified_measurement_form(use_sidebar_values)
     
-    # Create two columns for theory/procedure and visualization
-    col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        render_laser_power_theory_and_procedure()
-    
-    with col2:
-        render_laser_power_visualization()
+    # Create two columns for theory/procedure and visualization using template
+    create_two_column_layout(
+        render_laser_power_theory_and_procedure,
+        render_laser_power_visualization,
+        "equal"
+    )
     
     # Add entry to rig log if measurements were taken
     if st.session_state.get('laser_power_submitted', False):
@@ -102,25 +97,11 @@ def render_simplified_measurement_form(use_sidebar_values=False):
     # Get theme colors
     colors = get_colors()
     
-    # Load existing data
-    laser_power_df = load_dataframe(LASER_POWER_FILE, pd.DataFrame({
-        "Study Name": [],
-        "Date": [],
-        "Wavelength (nm)": [],
-        "Sensor Model": [],
-        "Measurement Mode": [],
-        "Fill Fraction (%)": [],
-        "Modulation (%)": [],
-        "Measured Power (mW)": [],
-        "Notes": []
-    }))
+    # Load existing data using template function
+    laser_power_df = load_measurement_dataframe("laser_power")
     
     # Ensure all required columns exist
-    required_columns = ["Study Name", "Date", "Wavelength (nm)", "Sensor Model", 
-                        "Measurement Mode", "Fill Fraction (%)", "Modulation (%)", 
-                        "Measured Power (mW)", "Notes"]
-    
-    laser_power_df = ensure_columns(laser_power_df, required_columns)
+    laser_power_df = ensure_columns(laser_power_df, LASER_POWER_COLUMNS)
     
     # Convert numeric columns
     numeric_columns = ["Wavelength (nm)", "Fill Fraction (%)", "Modulation (%)", "Measured Power (mW)"]
@@ -179,7 +160,7 @@ def render_simplified_measurement_form(use_sidebar_values=False):
                 # Use the widget's key for state management
                 measurement_mode = st.radio(
                     "Measurement Mode:", 
-                    ["Stationary", "Scanning"],
+                    MEASUREMENT_MODES,
                     index=0 if st.session_state.measurement_mode == "Stationary" else 1,
                     key="measurement_mode",
                     help="Stationary: beam fixed at center. Scanning: beam continuously scanning."

@@ -11,28 +11,21 @@ from datetime import datetime
 import os
 from pathlib import Path
 
-from modules.data_utils import load_dataframe, save_dataframe, ensure_columns, safe_numeric_conversion, filter_dataframe, calculate_statistics
-from modules.ui_components import create_header, create_info_box, create_warning_box, create_success_box, create_metric_row, create_data_editor, create_plot, create_tab_section, create_form_section, display_image, get_image_path
-from modules.shared_utils import add_to_rig_log
-
-# Constants
-PULSE_WIDTH_FILE = "pulse_width_measurements.csv"
-RIG_LOG_FILE = "rig_log.csv"
+from modules.core.data_utils import load_dataframe, save_dataframe, ensure_columns, safe_numeric_conversion, filter_dataframe, calculate_statistics
+from modules.ui.components import create_header, create_info_box, create_warning_box, create_success_box, create_metric_row, create_data_editor, create_plot, create_tab_section, create_form_section, display_image, get_image_path
+from modules.core.shared_utils import add_to_rig_log, create_two_column_layout
+from modules.core.constants import PULSE_WIDTH_FILE
 
 def render_pulse_width_tab():
     """Render the pulse width optimization tab content."""
     
     create_header("Pulse Width Control and Optimization")
     
-    # Create two columns for layout
-    col1, col2 = st.columns([3, 2])
-    
-    with col1:
-        render_pulse_width_theory_and_procedure()
-    
-    with col2:
-        render_pulse_width_visualization()
-        render_pulse_width_tips()
+    # Create two columns for layout using template
+    create_two_column_layout(
+        render_pulse_width_theory_and_procedure,
+        lambda: (render_pulse_width_visualization(), render_pulse_width_tips())
+    )
 
 def render_pulse_width_theory_and_procedure():
     """Render the theory and procedure sections for pulse width optimization using tabs."""

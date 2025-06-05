@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 from streamlit_pdf_viewer import pdf_viewer
 
-from modules.ui_components import create_header, create_info_box, create_tab_section
+from modules.ui.components import create_header, create_info_box, create_tab_section
 
 def render_reference_tab():
     """Render the reference tab content."""

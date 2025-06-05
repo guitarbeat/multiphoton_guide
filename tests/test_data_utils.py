@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Import data utilities for testing
-from modules.data_utils import (
+from modules.core.data_utils import (
     ensure_data_dir, 
     load_dataframe, 
     save_dataframe, 

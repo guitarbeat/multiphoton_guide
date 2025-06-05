@@ -7,7 +7,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import os
 from pathlib import Path
-from modules.theme import get_colors
+from .theme import get_colors
 
 def create_header(title, subtitle=None):
     """Create a consistent header with title and optional subtitle."""

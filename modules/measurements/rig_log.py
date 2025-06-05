@@ -11,11 +11,10 @@ from datetime import datetime, timedelta
 import os
 from pathlib import Path
 
-from modules.data_utils import load_dataframe, save_dataframe, ensure_columns
-from modules.ui_components import create_header, create_info_box, create_warning_box, create_success_box, create_metric_row, create_data_editor, create_plot, create_tab_section, create_form_section
-
-# Constants
-RIG_LOG_FILE = "rig_log.csv"
+from modules.core.data_utils import load_dataframe, save_dataframe, ensure_columns
+from modules.ui.components import create_header, create_info_box, create_warning_box, create_success_box, create_metric_row, create_data_editor, create_plot, create_tab_section, create_form_section
+from modules.core.shared_utils import load_measurement_dataframe, create_default_dataframe
+from modules.core.constants import RIG_LOG_FILE, RIG_LOG_COLUMNS, RIG_LOG_CATEGORIES
 
 def render_rig_log_tab():
     """Render the rig log tab content."""
@@ -23,18 +22,11 @@ def render_rig_log_tab():
     create_header("Microscope Log", 
                  f"Track maintenance, calibration, and modifications to ensure reproducibility")
     
-    # Load existing data
-    rig_log_df = load_dataframe(RIG_LOG_FILE, pd.DataFrame({
-        "Date": [],
-        "Researcher": [],
-        "Activity": [],
-        "Description": [],
-        "Category": []
-    }))
+    # Load existing data using the template function
+    rig_log_df = load_measurement_dataframe("rig_log")
     
     # Ensure all required columns exist
-    required_columns = ["Date", "Researcher", "Activity", "Description", "Category"]
-    rig_log_df = ensure_columns(rig_log_df, required_columns)
+    rig_log_df = ensure_columns(rig_log_df, RIG_LOG_COLUMNS)
     
     # Create tabs for better organization
     tab1, tab2 = st.tabs(["📋 View & Filter Log", "📊 Log Analysis"])
@@ -220,7 +212,7 @@ def render_rig_log_table(rig_log_df):
             "Category",
             help="Type of change",
             width="small",
-            options=["Measurement", "Optimization", "Maintenance", "Calibration", "Software", "Hardware"]
+            options=RIG_LOG_CATEGORIES
         )
     }
     
@@ -265,8 +257,7 @@ def render_rig_log_entry_form(rig_log_df):
         
         with form_col2:
             # Category and date options
-            category_options = ["Measurement", "Optimization", "Maintenance", "Calibration", "Software", "Hardware"]
-            category = st.selectbox("Category:", category_options, index=2)
+            category = st.selectbox("Category:", RIG_LOG_CATEGORIES, index=2)
             
             # Add researcher field (default to session state)
             researcher = st.text_input("Researcher:", 

@@ -1,10 +1,6 @@
-from modules.laser_power import render_laser_power_tab
-from modules.pulse_width import render_pulse_width_tab
-from modules.fluorescence import render_fluorescence_tab
-from modules.rig_log import render_rig_log_tab
-from modules.reference import render_reference_tab
-from modules.usaf_analyzer import run_usaf_analyzer
-from modules.theme import apply_theme, get_colors
+from modules.measurements import render_laser_power_tab, render_pulse_width_tab, render_fluorescence_tab, render_rig_log_tab
+from modules.analysis import render_reference_tab, run_usaf_analyzer
+from modules.ui.theme import apply_theme, get_colors
 import streamlit as st
 import pandas as pd
 import numpy as np
