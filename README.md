@@ -212,3 +212,17 @@ pytest tests/test_integration.py -v
 ## Deployment Options
 
 ### Streamlit Community Cloud
+
+Deploying this project on Streamlit Community Cloud is straightforward:
+
+1. Ensure `packages.txt` lists any required system packages and `runtime.txt` specifies the Python version.
+2. If your deployment platform requires a `requirements.txt` file, generate it from `pyproject.toml` using:
+   ```bash
+   pip install pip-tools
+   pip-compile pyproject.toml
+   ```
+3. Push the repository to GitHub.
+4. Visit [share.streamlit.io](https://share.streamlit.io) and sign in with your GitHub account.
+5. Select this repository, choose `app.py` as the entry point, and click **Deploy**.
+
+Streamlit Cloud will build the environment, install dependencies, and host the app automatically.
