@@ -30,7 +30,7 @@ import streamlit as st
 # --- Logging Setup ---
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.WARNING,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[logging.StreamHandler()],
 )
@@ -125,8 +125,6 @@ def parse_filename_for_defaults(filename: str) -> dict[str, Any]:
             try:
                 magnification = float(zoom_match.group(1))
                 result["magnification"] = magnification
-                logger.debug(
-                    f"Found magnification in filename: {magnification}")
             except (ValueError, TypeError):
                 pass
 
@@ -138,8 +136,6 @@ def parse_filename_for_defaults(filename: str) -> dict[str, Any]:
                 element = int(aft_match.group(2))
                 result["group"] = group
                 result["element"] = element
-                logger.debug(
-                    f"Found group {group}, element {element} in filename")
             except (ValueError, TypeError, IndexError):
                 pass
     except Exception as e:
@@ -834,16 +830,11 @@ def find_line_pair_boundaries_threshold(profile, threshold):
     # Create corresponding transition types (all -1 for light-to-dark)
     transition_types = [-1] * len(dark_bar_starts)
 
-    # Debug output about what was found
-    logger.debug(
+    logger.info(
         f"Profile range: {np.min(profile_array)} to {np.max(profile_array)}, threshold: {threshold}"
     )
-    logger.debug(
-        f"Found {len(dark_bar_starts)} dark bar starts (light-to-dark transitions)"
-    )
     if len(dark_bar_starts) > 0:
-        logger.debug(
-            f"Dark bar starts at positions: {dark_bar_starts[:10]}...")
+        pass
     else:
         logger.warning(f"No dark bar starts found with threshold {threshold}!")
 
@@ -1365,10 +1356,7 @@ class ProfileVisualizer:
 
     def _plot_transitions_and_annotations(self, ax_img, ax_profile, boundaries, roi_img, profile):
         """Helper function to plot transition lines and annotations."""
-        logger.debug(f"Visualizing profile with {len(boundaries)} boundaries")
         if len(boundaries) > 0:
-            logger.debug(f"Boundary positions: {boundaries[:10]}...")
-
             # Draw transition boundary lines
             for boundary in boundaries:
                 ax_profile.axvline(
@@ -1720,11 +1708,9 @@ class ImageProcessor:
         # (skip if boundaries are already set, e.g., by threshold detection)
         if self.boundaries is None or len(self.boundaries) == 0:
             if self.boundaries is None or len(self.boundaries) == 0:
-                logger.debug("No boundaries detected yet, using detect_edges")
                 self.detect_edges()
             else:
-                logger.debug(
-                    f"Using pre-existing {len(self.boundaries)} boundaries")
+                pass
 
             # Step 2: Use only the best two line pairs
             self.line_pair_widths = []
@@ -1734,12 +1720,8 @@ class ImageProcessor:
 
             self.line_pair_widths = [end - start for start, end in best_pairs]
             self.avg_line_pair_width = avg_width
-            logger.debug(
-                f"Found {len(best_pairs)} best line pairs with avg width: {avg_width}"
-            )
         else:
             self.avg_line_pair_width = 0.0
-            logger.debug("Not enough boundaries for best line pairs")
 
         # Step 3: Calculate contrast
         self.calculate_contrast()
@@ -1835,20 +1817,12 @@ class ImageProcessor:
             logger.error("Failed to get line profile.")
             return False
         
-        # Debug the profile range
-        min_val = np.min(self.profile) if self.profile is not None and len(self.profile) > 0 else 0
-        max_val = np.max(self.profile) if self.profile is not None and len(self.profile) > 0 else 0
-        logger.debug(f"Profile range: {min_val} to {max_val}")
         return True
 
     def _analyze_with_threshold(self, threshold, group, element):
         """Helper to analyze profile using threshold-based edge detection."""
-        logger.debug(f"Using threshold detection with value {threshold}")
         self.boundaries, self.derivative, self.transition_types = (
             find_line_pair_boundaries_threshold(self.profile, threshold)
-        )
-        logger.debug(
-            f"Found {len(self.boundaries)} boundaries with threshold {threshold}"
         )
         results = self.analyze_profile(group, element)
         results["profile_type"] = "max"
@@ -1865,11 +1839,7 @@ class ImageProcessor:
         Returns:
             Dictionary with analysis results, including profile type and edge method.
         """
-        logger.debug(f"Using {edge_method} edge detection method")
         self.detect_edges(edge_method=edge_method)
-        logger.debug(
-            f"Found {len(self.boundaries) if self.boundaries else 0} boundaries with {edge_method} method"
-        )
 
         result = self.analyze_profile(group, element)
         result["profile_type"] = "max"
@@ -1981,9 +1951,6 @@ def handle_image_selection(
                 )
                 st.session_state[roi_valid_key] = is_valid
                 roi_changed = True
-                logger.debug(
-                    f"ROI updated for image {idx}: {point1} to {point2}, valid: {is_valid}"
-                )
     return roi_changed
 
 
@@ -2387,7 +2354,6 @@ def _update_session_state_and_trigger_analysis(keys, unique_id, selected_group, 
     if should_analyze:
         with st.spinner("🔄 Analyzing image..."):
             try:
-                logging.getLogger().setLevel(logging.DEBUG)
                 img_proc = ImageProcessor(usaf_target=st.session_state.usaf_target)
                 processing_params_analysis = {
                     "autoscale": st.session_state[autoscale_key],
