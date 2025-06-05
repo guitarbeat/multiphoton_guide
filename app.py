@@ -83,10 +83,6 @@ def render_session_info():
             <span class="session-info-value">{study_name}</span>
         </div>
         <div class="session-info-item">
-            <span class="session-info-label">Wavelength:</span>
-            <span class="session-info-value">{wavelength} nm</span>
-        </div>
-        <div class="session-info-item">
             <span class="session-info-label">Researcher:</span>
             <span class="session-info-value">{researcher}</span>
         </div>
@@ -97,7 +93,6 @@ def render_session_info():
     </div>
     """.format(
         study_name=st.session_state.study_name,
-        wavelength=st.session_state.wavelength,
         researcher=st.session_state.researcher,
         mode=st.session_state.measurement_mode
     ), unsafe_allow_html=True)
@@ -122,20 +117,8 @@ def render_study_inputs():
 
 def render_laser_inputs():
     """Render laser wavelength input field."""
-    try:
-        wavelength_value = int(st.session_state.wavelength)
-    except (ValueError, TypeError):
-        wavelength_value = 920
-    wavelength = st.number_input(
-        "Wavelength (nm):",
-        min_value=700,
-        max_value=1100,
-        value=wavelength_value,
-        step=10,
-        key="Wavelength (nm):",
-        help="Enter the laser wavelength in nanometers (typical range: 700-1100 nm)"
-    )
-    return wavelength
+    # This function is deprecated - wavelength management removed
+    return None
 
 
 def render_measurement_inputs():
@@ -163,7 +146,6 @@ def render_session_setup_form():
         st.subheader("Session Setup")
 
         study_name, researcher = render_study_inputs()
-        # wavelength = render_laser_inputs()  # Remove wavelength input
         # Add sensor model input
         sensor_model = st.text_input(
             "Sensor Model (optional):",
@@ -178,10 +160,8 @@ def render_session_setup_form():
         if submitted:
             if not study_name.strip():
                 st.error("Study name cannot be empty")
-            # Remove wavelength validation
             else:
                 st.session_state.study_name = study_name
-                # st.session_state.wavelength = wavelength  # Do not update wavelength
                 st.session_state.researcher = researcher if researcher.strip() else "Anonymous Researcher"
                 st.session_state.sensor_model = sensor_model
                 st.session_state.fill_fraction = fill_fraction
@@ -260,9 +240,9 @@ def main():
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # Render the Laser Power Measurements header above the session setup form
-    st.markdown("# Laser Power Measurements")
-    render_session_setup_form()
+    # Only render session setup form on Laser Power Measurements page
+    if st.session_state.current_page == "Laser Power Measurements":
+        render_session_setup_form()
 
     # Get the function for the current page
     current_page_function = None

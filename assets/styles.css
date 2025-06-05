@@ -1,3 +1,18 @@
+/* CSS Variables for theme consistency */
+:root {
+    --primary-color: #ff6b35;
+    --background-color: #0e1117;
+    --surface-color: #262730;
+    --text-color: #fafafa;
+    --secondary-color: #ff8c42;
+    --accent-color: #ffd23f;
+    --info-color: #0074D9;
+    --success-color: #2ecc71;
+    --warning-color: #f39c12;
+    --error-color: #e74c3c;
+    --muted-color: #999999;
+}
+
 /* Sidebar background and padding */
 [data-testid="stSidebar"] {
     background-color: var(--background-color); /* Replaced with CSS variable */
@@ -47,22 +62,6 @@
     padding-bottom: 0.5rem;
 }
 
-/* Form submit button styling */
-[data-testid="stSidebar"] div[data-testid="stForm"] button[kind="formSubmit"] {
-    background-color: var(--primary-color); /* Replaced with CSS variable */
-    color: white;
-    border-radius: 4px;
-    padding: 0.25rem 1rem;
-    font-weight: bold;
-    width: 100%;
-    transition: background-color 0.3s, transform 0.2s;
-}
-
-[data-testid="stSidebar"] div[data-testid="stForm"] button[kind="formSubmit"]:hover {
-    background-color: var(--accent-color); /* Replaced with CSS variable */
-    transform: translateY(-1px);
-}
-
 /* Session info styling */
 .session-info {
     background-color: rgba(255, 255, 255, 0.05);
@@ -84,6 +83,7 @@
     justify-content: space-between;
     padding: 0.2rem 0;
     font-size: 0.85rem;
+    flex-wrap: wrap;
 }
 
 .session-info-label {
@@ -92,6 +92,7 @@
 
 .session-info-value {
     font-weight: bold;
+    word-break: break-word;
 }
 
 /* Navigation styling - improve spacing and highlight current page */
@@ -111,32 +112,40 @@
     border-top: 1px solid var(--surface-color); /* Replaced with CSS variable */
 }
 
-/* Navigation button styling */
-.nav-button {
-    background-color: var(--background-color); /* Replaced with CSS variable */
-    border: 1px solid var(--surface-color); /* Replaced with CSS variable */
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
-    margin-bottom: 0.5rem;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    width: 100%;
-    display: block;
+/* Fix for expander arrow duplication and caching issues */
+[data-testid="stExpander"] details summary {
+    position: relative;
 }
 
-.nav-button:hover {
-    background-color: var(--surface-color); /* Replaced with CSS variable */
+/* Ensure only one arrow per expander */
+[data-testid="stExpander"] details summary::marker,
+[data-testid="stExpander"] details summary::-webkit-details-marker {
+    display: none !important;
 }
 
-.nav-button.active {
-    border-left: 3px solid var(--primary-color); /* Replaced with CSS variable */
-    background-color: rgba(255, 255, 255, 0.05);
+/* Custom arrow that doesn't get cached */
+[data-testid="stExpander"] details summary::before {
+    content: "▶" !important;
+    position: absolute;
+    left: 0;
+    transition: transform 0.2s ease;
+    pointer-events: none;
 }
 
-/* Fix button text color */
-[data-testid="stSidebar"] button {
-    color: white !important;
+[data-testid="stExpander"] details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+/* Remove any duplicate arrows that might appear */
+[data-testid="stExpander"] details summary > *:first-child::before,
+[data-testid="stExpander"] details summary > *:first-child::after {
+    display: none !important;
+}
+
+/* Ensure expander headers don't create multiple elements */
+[data-testid="stExpander"] details summary {
+    list-style: none;
+    outline: none;
 }
 
 /* USAF Analyzer specific styles */
@@ -154,15 +163,15 @@
 .usaf-analysis-caption-details {
     margin-top: 0;
     font-size: 1.0rem;
-    color: #333;
+    color: var(--text-color); /* Fixed: was hardcoded #333 which is invisible on dark themes */
 }
 
 .usaf-analysis-caption-highlight {
-    color: #0074D9; /* Blue color for highlighting method */
+    color: var(--info-color); /* Fixed: use theme variable instead of hardcoded #0074D9 */
 }
 
 .usaf-analysis-caption-emphasis {
-    color: #FF4500; /* Orange-red for light-to-dark transitions */
+    color: var(--warning-color); /* Fixed: use theme variable instead of hardcoded #FF4500 */
 }
 
 .usaf-line-pair-info {
@@ -184,24 +193,109 @@
 }
 
 .tooltip {
-    border-bottom: 1px dotted #999;
+    border-bottom: 1px dotted var(--muted-color); /* Fixed: use theme variable instead of hardcoded #999 */
     cursor: help;
 }
 
 .technical-term {
-    border-bottom: 1px dotted #999;
+    border-bottom: 1px dotted var(--muted-color); /* Fixed: use theme variable instead of hardcoded #999 */
     cursor: help;
     font-weight: bold;
 }
 
-/* Clear button styling */
-div.stButton > button.clear-form-button {
-    background-color: var(--secondary-color); /* Use theme color */
-    color: white; /* Ensure text is readable */
-    border-radius: 4px; /* Consistent with other buttons */
-    margin-top: 10px; /* Add some space above the button */
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+    /* Sidebar adjustments for mobile */
+    [data-testid="stSidebar"] {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    /* Smaller font sizes for mobile */
+    [data-testid="stSidebar"] h1 {
+        font-size: 1.2rem;
+        line-height: 1.3;
+        margin-bottom: 0.5rem;
+    }
+    
+    [data-testid="stSidebar"] .stCaption {
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+    
+    /* Session info mobile adjustments */
+    .session-info {
+        padding: 0.5rem;
+        margin-top: 0.25rem;
+    }
+    
+    .session-info-title {
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .session-info-item {
+        font-size: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.1rem;
+    }
+    
+    /* Form container mobile adjustments */
+    [data-testid="stSidebar"] div[data-testid="stForm"] {
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    [data-testid="stSidebar"] div[data-testid="stForm"] h3 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Navigation container mobile adjustments */
+    .nav-container {
+        padding-top: 0.5rem;
+    }
+    
+    /* USAF analyzer mobile adjustments */
+    .usaf-analysis-caption-title {
+        font-size: 1rem;
+    }
+    
+    .usaf-analysis-caption-details {
+        font-size: 0.9rem;
+    }
+    
+    /* Control panel mobile adjustments */
+    .control-panel {
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+    }
 }
 
-div.stButton > button.clear-form-button:hover {
-    background-color: var(--info-color); /* Use a different theme color for hover */
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+    [data-testid="stSidebar"] {
+        padding: 0.25rem;
+    }
+    
+    [data-testid="stSidebar"] h1 {
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    [data-testid="stSidebar"] .stCaption {
+        font-size: 0.7rem;
+    }
+    
+    .session-info-item {
+        font-size: 0.7rem;
+    }
+    
+    [data-testid="stSidebar"] div[data-testid="stForm"] {
+        padding: 0.25rem;
+    }
+    
+    [data-testid="stSidebar"] div[data-testid="stForm"] h3 {
+        font-size: 0.9rem;
+    }
 }

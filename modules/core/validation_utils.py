@@ -73,35 +73,35 @@ def validate_numeric_input(value: Union[int, float, str],
     except (ValueError, TypeError):
         return ValidationResult(False, f"{field_name} must be a valid number", field_name, value)
 
-def validate_wavelength(wavelength: Union[int, float, str]) -> ValidationResult:
-    """Validate wavelength input using application-specific ranges.
-    
-    Parameters:
-    -----------
-    wavelength : Union[int, float, str]
-        Wavelength value in nanometers
-    
-    Returns:
-    --------
-    ValidationResult
-        Validation result with context-specific messaging
-    """
-    result = validate_numeric_input(
-        wavelength, 
-        min_value=WAVELENGTH_RANGE["min"], 
-        max_value=WAVELENGTH_RANGE["max"],
-        field_name="Wavelength",
-        allow_zero=False
-    )
-    
-    if result.is_valid:
-        # Add helpful context for common wavelengths
-        if result.value in WAVELENGTH_RANGE["common"]:
-            result.message = f"Wavelength {result.value} nm is commonly used for multiphoton microscopy"
-        else:
-            result.message = f"Wavelength {result.value} nm is within valid range ({WAVELENGTH_RANGE['min']}-{WAVELENGTH_RANGE['max']} nm)"
-    
-    return result
+# def validate_wavelength(wavelength: Union[int, float, str]) -> ValidationResult:
+#     """Validate wavelength input using application-specific ranges.
+#     
+#     Parameters:
+#     -----------
+#     wavelength : Union[int, float, str]
+#         Wavelength value in nanometers
+#     
+#     Returns:
+#     --------
+#     ValidationResult
+#         Validation result with context-specific messaging
+#     """
+#     result = validate_numeric_input(
+#         wavelength, 
+#         min_value=WAVELENGTH_RANGE["min"], 
+#         max_value=WAVELENGTH_RANGE["max"],
+#         field_name="Wavelength",
+#         allow_zero=False
+#     )
+#     
+#     if result.is_valid:
+#         # Add helpful context for common wavelengths
+#         if result.value in WAVELENGTH_RANGE["common"]:
+#             result.message = f"Wavelength {result.value} nm is commonly used for multiphoton microscopy"
+#         else:
+#             result.message = f"Wavelength {result.value} nm is within valid range ({WAVELENGTH_RANGE['min']}-{WAVELENGTH_RANGE['max']} nm)"
+#     
+#     return result
 
 def validate_power(power: Union[int, float, str]) -> ValidationResult:
     """Validate laser power input.
@@ -208,8 +208,8 @@ def validate_form_data(form_data: Dict[str, Any], field_configs: Dict[str, Dict]
                 field_name=field_name,
                 allow_zero=field_config.get('allow_zero', True)
             )
-        elif field_type == 'wavelength':
-            results[field_name] = validate_wavelength(value)
+        # elif field_type == 'wavelength':
+        #     results[field_name] = validate_wavelength(value)
         elif field_type == 'power':
             results[field_name] = validate_power(value)
         elif field_type == 'gdd':

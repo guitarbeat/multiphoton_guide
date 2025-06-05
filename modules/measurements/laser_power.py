@@ -51,11 +51,10 @@ def render_laser_power_tab(use_sidebar_values=False):
             laser_power_df = load_dataframe(LASER_POWER_FILE, pd.DataFrame())
             
             if not laser_power_df.empty:
-                # Filter to current study and wavelength
+                # Filter to current study
                 filtered_df = filter_dataframe(
                     laser_power_df, 
-                    {"Study Name": st.session_state.study_name, 
-                     "Wavelength (nm)": st.session_state.wavelength}
+                    {"Study Name": st.session_state.study_name}
                 )
                 
                 if not filtered_df.empty:
@@ -90,8 +89,7 @@ def render_laser_power_tab(use_sidebar_values=False):
             if not source_power_df.empty:
                 filtered_df = filter_dataframe(
                     source_power_df, 
-                    {"Study Name": st.session_state.study_name, 
-                     "Wavelength (nm)": st.session_state.wavelength}
+                    {"Study Name": st.session_state.study_name}
                 )
                 if not filtered_df.empty:
                     filtered_df = filtered_df.sort_values("Date", ascending=False).head(5)
@@ -106,14 +104,14 @@ def render_laser_power_tab(use_sidebar_values=False):
     # Add entry to rig log if measurements were taken
     if st.session_state.get('laser_power_submitted', False):
         add_to_rig_log("Laser Power Measurement", 
-                      f"Measured laser power at {st.session_state.wavelength} nm using {st.session_state.get('sensor_model', 'unknown sensor')}",
+                      f"Measured laser power using {st.session_state.get('sensor_model', 'unknown sensor')}",
                       "Measurement")
         # Reset the flag
         st.session_state.laser_power_submitted = False
     
     if st.session_state.get('source_power_submitted', False):
         add_to_rig_log("Source Power Measurement", 
-                      f"Measured source power at {st.session_state.wavelength} nm",
+                      f"Measured source power",
                       "Measurement")
         # Reset the flag
         st.session_state.source_power_submitted = False
@@ -139,7 +137,6 @@ def render_laser_power_theory_and_procedure():
            - Place the power meter sensor under the objective
            - Ensure the sensor is centered in the field of view
         2. **Configure the microscope**
-           - Set the wavelength to the desired value
            - Select measurement mode (stationary or scanning)
            - If scanning, set the temporal fill fraction
         3. **Take measurements**
@@ -233,7 +230,7 @@ def render_simplified_measurement_form(use_sidebar_values=False):
                 new_entry = pd.DataFrame({
                     "Study Name": [st.session_state.study_name],
                     "Date": [datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
-                    "Wavelength (nm)": [st.session_state.wavelength],
+
                     "Sensor Model": [sensor_model],
                     "Measurement Mode": [measurement_mode],
                     "Fill Fraction (%)": [fill_fraction],
@@ -276,19 +273,14 @@ def render_laser_power_visualization():
         laser_power_df = load_dataframe(LASER_POWER_FILE, pd.DataFrame())
 
         if not laser_power_df.empty:
-            # Filter data for current study and wavelength
+            # Filter data for current study
             # Robustly handle invalid session state values
-            try:
-                wavelength = float(st.session_state.wavelength)
-            except (ValueError, TypeError):
-                wavelength = 920.0
             try:
                 fill_fraction = float(st.session_state.fill_fraction)
             except (ValueError, TypeError):
                 fill_fraction = 100.0
             current_filters = {
                 "Study Name": st.session_state.study_name,
-                "Wavelength (nm)": wavelength,
                 "Sensor Model": st.session_state.sensor_model,
                 "Measurement Mode": st.session_state.measurement_mode,
                 "Fill Fraction (%)": fill_fraction
@@ -341,7 +333,7 @@ def render_laser_power_visualization():
         # Add labels and title
         ax.set_xlabel('Modulation (%)')
         ax.set_ylabel('Measured Power (mW)')
-        ax.set_title(f'Power vs. Modulation at {wavelength:.0f} nm')
+        ax.set_title('Power vs. Modulation')
 
         # Add grid and legend
         ax.grid(True, linestyle='--', alpha=0.7)

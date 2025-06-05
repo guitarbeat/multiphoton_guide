@@ -13,20 +13,16 @@ def render_fluorescence_tab():
     """Render the fluorescence signal estimation tab content."""
     
     create_header("Estimating Absolute Magnitudes of Fluorescence Signals")
-
     
-    # Create two columns for layout using template
-    create_two_column_layout(
-        render_fluorescence_theory_and_procedure,
-        lambda: (render_fluorescence_visualization(), render_fluorescence_tips())
-    )
+    # Render content in a single column layout
+    render_fluorescence_theory_and_procedure()
+    render_fluorescence_visualization()
+    render_fluorescence_tips()
 
 def render_fluorescence_theory_and_procedure():
-    """Render the theory and procedure sections for fluorescence signal estimation using tabs."""
+    """Render the theory and procedure sections for fluorescence signal estimation using expandable sections."""
     
-    tab1, tab2 = st.tabs(["📖 Introduction & Theory", "📋 Measurement Procedure"])
-    
-    with tab1:
+    with st.expander("📖 Introduction & Theory", expanded=True):
         st.markdown("""
             Fluorescence signals are commonly expressed in arbitrary units or relative scales (like dF/F ratio), masking any degradation in signal magnitude. This can lead to vastly different signal strengths between laboratories following similar protocols, without realizing the discrepancy.
 
@@ -41,7 +37,7 @@ def render_fluorescence_theory_and_procedure():
             While direct photon counting requires specialized electronics, we can use signal-noise statistics to accurately estimate detector photon sensitivity and translate detected signals into estimated photon counts.
         """)
         
-        with st.expander("🔬 Photon Transfer Curve Theory"):
+        with st.expander("🔬 Photon Transfer Curve Theory Details"):
             st.markdown("""
                 ### Understanding the Photon Transfer Curve (PTC)
 
@@ -67,9 +63,9 @@ def render_fluorescence_theory_and_procedure():
                 By measuring pairs of mean and variance values and plotting them, we can determine K from the slope of the linear fit. Once K is known, we can convert any measured signal from arbitrary units to absolute photon counts.
             """)
     
-    with tab2:
+    with st.expander("📋 Measurement Procedure", expanded=True):
         st.markdown("""
-            ### Procedure for Estimating Absolute Fluorescence Signals
+            ### Step-by-Step Procedure for Estimating Absolute Fluorescence Signals
 
             1. **Prepare a fluorescent sample**
                - Use a sample with uniform fluorescence (e.g., fluorescent slide)

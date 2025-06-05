@@ -14,18 +14,15 @@ def render_pulse_width_tab():
     
     create_header("Pulse Width Control and Optimization")
     
-    # Create two columns for layout using template
-    create_two_column_layout(
-        render_pulse_width_theory_and_procedure,
-        lambda: (render_pulse_width_visualization(), render_pulse_width_tips())
-    )
+    # Render content in a single column layout
+    render_pulse_width_theory_and_procedure()
+    render_pulse_width_visualization()
+    render_pulse_width_tips()
 
 def render_pulse_width_theory_and_procedure():
-    """Render the theory and procedure sections for pulse width optimization using tabs."""
+    """Render the theory and procedure sections for pulse width optimization using expandable sections."""
     
-    tab1, tab2 = st.tabs(["📖 Introduction & Theory", "📋 Optimization Procedure"])
-    
-    with tab1:
+    with st.expander("📖 Introduction & Theory", expanded=True):
         st.markdown("""
             Nearly all multiphoton microscopy uses modelocked ultrafast lasers with pulse durations on the order of 100 femtoseconds (100 × 10⁻¹⁵ s). Due to the nonlinearity of multiphoton excitation, peak intensity matters more than average power for efficient excitation.
 
@@ -44,7 +41,7 @@ def render_pulse_width_theory_and_procedure():
             As pulses travel through optical components, they experience dispersion which can temporally broaden or "stretch" the pulse, reducing excitation efficiency. This broadening can be counteracted with dispersion compensation.
         """)
         
-        with st.expander("🔬 Group Delay Dispersion"):
+        with st.expander("🔬 Group Delay Dispersion Details"):
             st.markdown("""
                 ### Understanding Group Delay Dispersion (GDD)
 
@@ -60,9 +57,9 @@ def render_pulse_width_theory_and_procedure():
                 For a given material, the more material the pulse propagates through, the greater the temporal broadening. Microscopes with elaborate optical systems have more glass elements, resulting in more dispersion that needs to be compensated.
             """)
     
-    with tab2:
+    with st.expander("📋 Optimization Procedure", expanded=True):
         st.markdown("""
-            ### Procedure for Optimizing Pulse Width
+            ### Step-by-Step Procedure for Optimizing Pulse Width
 
             1. **Prepare a fluorescent sample**
                - Use a thin, bright fluorescent sample (e.g., fluorescent slide)
