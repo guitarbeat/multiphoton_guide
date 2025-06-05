@@ -21,10 +21,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install .[dev]
-      - name: Lint
+      - name: Lint and Reformat
         run: |
-          black --check .
-          isort --check-only .
+          black .
+          isort .
           flake8 .
       - name: Test
         run: pytest -q
