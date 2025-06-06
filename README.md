@@ -94,6 +94,9 @@ curl -sSL https://install.python-poetry.org | python3 -
 # Install dependencies and create a virtual environment
 poetry install
 
+# If you change dependencies in `pyproject.toml`, update the lock file
+poetry lock --regenerate
+
 # Run the Streamlit application
 poetry run streamlit run app.py
 
