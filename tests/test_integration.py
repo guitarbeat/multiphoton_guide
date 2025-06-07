@@ -187,7 +187,6 @@ class TestEndToEndWorkflow:
         """Test a complete data workflow using the DB utilities."""
         
         import pandas as pd
-        from sqlalchemy import create_engine
 
         from modules.core.data_utils import load_dataframe, save_dataframe
         from modules.core import database_utils
@@ -201,10 +200,19 @@ class TestEndToEndWorkflow:
             }
         )
 
-        engine = create_engine("sqlite:///:memory:")
+        class DummyGSheets:
+            def __init__(self):
+                self.tables = {}
+
+            def update(self, worksheet: str, data):
+                self.tables[worksheet] = data.copy()
+
+            def read(self, worksheet: str):
+                return self.tables.get(worksheet, pd.DataFrame())
+
         monkeypatch = pytest.MonkeyPatch()
-        monkeypatch.setattr(database_utils, "get_connection", lambda url=None: engine)
-        monkeypatch.setattr(database_utils, "get_gsheets_connection", lambda: None)
+        conn = DummyGSheets()
+        monkeypatch.setattr(database_utils, "get_gsheets_connection", lambda: conn)
 
 
         table_name = "workflow_table"

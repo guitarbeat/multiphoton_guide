@@ -14,8 +14,6 @@ import pytest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Import data utilities for testing
-from sqlalchemy import create_engine
-
 from modules.core import database_utils
 from modules.core.data_utils import (
     calculate_statistics,
@@ -50,14 +48,23 @@ def test_data_dir(tmp_path):
     return data_dir
 
 
-@pytest.fixture
-def in_memory_db(monkeypatch):
-    """Provide an in-memory SQLite engine and patch database connection."""
-    engine = create_engine("sqlite:///:memory:")
-    monkeypatch.setattr(database_utils, "get_connection", lambda url=None: engine)
-    monkeypatch.setattr(database_utils, "get_gsheets_connection", lambda: None)
+class DummyGSheets:
+    def __init__(self):
+        self.tables = {}
 
-    return engine
+    def update(self, worksheet: str, data):
+        self.tables[worksheet] = data.copy()
+
+    def read(self, worksheet: str):
+        return self.tables.get(worksheet, pd.DataFrame())
+
+
+@pytest.fixture
+def mock_gsheets(monkeypatch):
+    """Provide an in-memory GSheetsConnection replacement."""
+    conn = DummyGSheets()
+    monkeypatch.setattr(database_utils, "get_gsheets_connection", lambda: conn)
+    return conn
 
 
 # Test data utilities
@@ -202,7 +209,7 @@ def test_safe_numeric_conversion_edge_cases(test_dataframe):
 
 # Test file operations
 @pytest.mark.unit
-def test_save_and_load_dataframe(test_dataframe, in_memory_db):
+def test_save_and_load_dataframe(test_dataframe, mock_gsheets):
     """Test saving and loading a dataframe via the database helpers."""
     table_name = "test_table"
 
@@ -217,7 +224,7 @@ def test_save_and_load_dataframe(test_dataframe, in_memory_db):
 
 
 @pytest.mark.unit
-def test_load_dataframe_with_default(in_memory_db):
+def test_load_dataframe_with_default(mock_gsheets):
     """Test that load_dataframe returns the default dataframe when table doesn't exist."""
     default_df = pd.DataFrame({"A": [1, 2, 3]})
 
