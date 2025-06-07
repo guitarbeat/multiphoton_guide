@@ -25,7 +25,7 @@ def ensure_data_dir():
 
 def save_dataframe(df, filename):
     """
-    Save a dataframe to a SQL table.
+    Save a dataframe to a Google Sheet table.
 
     Parameters:
     -----------
@@ -45,7 +45,7 @@ def save_dataframe(df, filename):
 
 def load_dataframe(filename, default_df=None):
     """
-    Load a dataframe from a SQL table or return a default if it doesn't exist.
+    Load a dataframe from a Google Sheet or return a default if it doesn't exist.
 
     Parameters:
     -----------
