@@ -148,7 +148,7 @@ All dependencies are defined in `pyproject.toml` but can be exported to `require
 
 ## Database Setup
 
-Measurement data is stored in a public Google Sheet. Configure a
+Measurement data is stored in a Google Sheet. Configure a
 `[connections.gsheets]` section in `.streamlit/secrets.toml` as shown below and
 the application will read and write data to that spreadsheet (see
 `docs/public_google_sheets.md`). If the connection is not configured the
@@ -157,6 +157,25 @@ application will raise an error.
 ```toml
 [connections.gsheets]
 spreadsheet = "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit"
+```
+
+For **read-only** access to a public spreadsheet this is all you need. If you
+want full CRUD access or to keep the sheet private, include your service account
+credentials as well:
+
+```toml
+[connections.gsheets]
+spreadsheet = "<spreadsheet-name-or-url>"
+type = "service_account"
+project_id = "<project-id>"
+private_key_id = "<private-key-id>"
+private_key = "<private-key>"
+client_email = "<client-email>"
+client_id = "<client-id>"
+auth_uri = "https://accounts.google.com/o/oauth2/auth"
+token_uri = "https://oauth2.googleapis.com/token"
+auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
+client_x509_cert_url = "<client-cert-url>"
 ```
 
 Place these credentials in `.streamlit/secrets.toml` so the application can

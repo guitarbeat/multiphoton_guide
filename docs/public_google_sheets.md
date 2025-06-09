@@ -83,3 +83,26 @@ Your app can then read from the public Google Sheet in the same way as locally.
 ---
 
 Following these steps lets you pull data from a public Google Sheet without storing credentials in your code. `st.connection` handles secrets, caching, and retries for you.
+
+## Using a Service Account for CRUD Operations
+
+If you need full read/write access or want to work with a private spreadsheet,
+create a Google service account and add its credentials to your secrets file.
+Your `.streamlit/secrets.toml` will look like this:
+
+```toml
+[connections.gsheets]
+spreadsheet = "<spreadsheet-name-or-url>"
+type = "service_account"
+project_id = "<project-id>"
+private_key_id = "<private-key-id>"
+private_key = "<private-key>"
+client_email = "<client-email>"
+client_id = "<client-id>"
+auth_uri = "https://accounts.google.com/o/oauth2/auth"
+token_uri = "https://oauth2.googleapis.com/token"
+auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
+client_x509_cert_url = "<client-cert-url>"
+```
+
+Remember to share the spreadsheet with the service account's `client_email`.
