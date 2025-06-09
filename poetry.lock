@@ -3327,32 +3327,6 @@ files = [
     {file = "sqlparse-0.5.3.tar.gz", hash = "sha256:09f67787f56a0b16ecdbde1bfc7f5d9c3371ca683cfeaa8e6ff60b4807ec9272"},
 ]
 
-[package.extras]
-dev = ["build", "hatch"]
-doc = ["sphinx"]
-
-[[package]]
-name = "st-gsheets-connection"
-version = "0.1.0"
-description = "Streamlit Connection for Google Sheets."
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "st_gsheets_connection-0.1.0-py3-none-any.whl", hash = "sha256:4de86d74c17f02188e0d618b2591d9e57b59e1c6f125ed3eef74e19eac074fda"},
-    {file = "st_gsheets_connection-0.1.0.tar.gz", hash = "sha256:bba0306ce5bdacd70c1c65ad91d31d718709fc136d7709c1fa5b2113b709f958"},
-]
-
-[package.dependencies]
-duckdb = ">=0.8.1"
-gspread = ">=5.8.0,<6"
-gspread-dataframe = ">=3.3.0"
-gspread-formatting = ">=1.1.2"
-gspread-pandas = ">=3.2.2"
-sql-metadata = ">=2.7.0"
-streamlit = ">=1.32.0"
-validators = ">=0.22.0"
-
 [[package]]
 name = "stack-data"
 version = "0.6.3"
