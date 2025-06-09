@@ -214,7 +214,7 @@ class TestPDFViewer:
 def test_pdf_viewer_error_detection():
     """Standalone test function to detect PDF viewer annotation errors."""
     try:
-        from streamlit_pdf_viewer import pdf_viewer
+        import streamlit_pdf_viewer
 
         # Test path
         test_path = Path(__file__).parent.parent / "assets" / "s41596-024-01120-w.pdf"
@@ -225,9 +225,19 @@ def test_pdf_viewer_error_detection():
         # This should work without raising TypeError about annotations
         with patch("streamlit_pdf_viewer.pdf_viewer") as mock_viewer:
             mock_viewer.return_value = None
-            pdf_viewer(str(test_path), width=700, height=800, annotations=[])
+            streamlit_pdf_viewer.pdf_viewer(
+                str(test_path), width=700, height=800, annotations=[]
+            )
 
-        return True
+        # Validate that the mock was called correctly instead of returning a
+        # value from the test function.  This ensures pytest will report
+        # failures properly if the call arguments are wrong.
+        assert mock_viewer.called, "PDF viewer was not called"
+        call_args = mock_viewer.call_args
+        assert "annotations" in call_args.kwargs, "annotations parameter not provided"
+        assert isinstance(call_args.kwargs["annotations"], list), "annotations is not a list"
+
+        # The function should simply complete without returning anything
 
     except ImportError:
         pytest.skip("streamlit-pdf-viewer not installed")
