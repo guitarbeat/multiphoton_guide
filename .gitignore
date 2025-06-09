@@ -51,3 +51,5 @@ Thumbs.db
 # Data files
 *.csv
 !data/*.csv 
+# Bytecode cache
+__pycache__/
