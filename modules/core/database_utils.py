@@ -4,21 +4,53 @@ import pandas as pd
 import streamlit as st
 
 try:
-    from streamlit_gsheets import GSheetsConnection
-except Exception:  # pragma: no cover - gsheets optional
-    GSheetsConnection = None  # type: ignore
+    import gspread
+    from gspread_dataframe import get_as_dataframe, set_with_dataframe
+except Exception:  # pragma: no cover - optional dependency
+    gspread = None  # type: ignore
+    get_as_dataframe = None  # type: ignore
+    set_with_dataframe = None  # type: ignore
 
 
-def get_gsheets_connection() -> "GSheetsConnection":
-    """Return a configured GSheetsConnection or raise an error."""
-    if GSheetsConnection is None:
-        raise RuntimeError(
-            "streamlit-gsheets is required for Google Sheets storage but is not installed"
-        )
+class GSpreadWrapper:
+    """Thin wrapper around gspread to mimic the GSheetsConnection API."""
+
+    def __init__(self, creds: dict, spreadsheet_url: str):
+        self.client = gspread.service_account_from_dict(creds)
+        self.sheet = self.client.open_by_url(spreadsheet_url)
+
+    def _worksheet(self, name: str):
+        try:
+            return self.sheet.worksheet(name)
+        except gspread.exceptions.WorksheetNotFound:
+            return self.sheet.add_worksheet(title=name, rows="100", cols="20")
+
+    def update(self, worksheet: str, data: pd.DataFrame) -> None:
+        ws = self._worksheet(worksheet)
+        ws.clear()
+        set_with_dataframe(ws, data, include_index=False, resize=True)
+
+    def read(self, worksheet: str) -> pd.DataFrame:
+        ws = self._worksheet(worksheet)
+        df = get_as_dataframe(ws, evaluate_formulas=True)
+        df.dropna(axis=0, how="all", inplace=True)
+        df.dropna(axis=1, how="all", inplace=True)
+        return df
+
+
+def get_gsheets_connection() -> "GSpreadWrapper":
+    """Return a configured gspread wrapper or raise an error."""
+    if gspread is None:
+        raise RuntimeError("gspread is required for Google Sheets storage but is not installed")
+
     try:
-        return st.connection("gsheets", type=GSheetsConnection)
+        cfg = st.secrets["connections"]["gsheets"]
+        creds = {k: v for k, v in cfg.items() if k not in {"spreadsheet", "worksheet"}}
+        url = cfg["spreadsheet"]
     except Exception as exc:  # pragma: no cover - configuration errors
         raise RuntimeError("Google Sheets connection 'gsheets' is not configured") from exc
+
+    return GSpreadWrapper(creds, url)
 
 
 
