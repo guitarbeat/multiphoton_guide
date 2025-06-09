@@ -4,14 +4,57 @@ Tests specifically for streamlit-pdf-viewer integration and annotation handling.
 """
 
 import os
+import sys
 from pathlib import Path
+from types import ModuleType
+
+
+class DummySession(dict):
+    """Simple dict subclass that supports attribute access used by Streamlit."""
+
+    def __init__(self):
+        super().__init__()
+        self.notes_input = ""
+        self.reference_notes = ""
 from unittest.mock import MagicMock, patch
 
 import pytest
-import streamlit as st
-import streamlit_pdf_viewer
 
-pytest.skip("Streamlit tests disabled in CI", allow_module_level=True)
+# Import Streamlit and streamlit_pdf_viewer if available. If they are missing
+# (as in CI), substitute light-weight mocks so the tests can still run.
+try:  # pragma: no cover - optional dependency
+    import streamlit as st  # type: ignore
+except Exception:
+    st = MagicMock()
+    sys.modules["streamlit"] = st
+
+try:  # pragma: no cover - optional dependency
+    import streamlit_pdf_viewer  # type: ignore
+except Exception:
+    streamlit_pdf_viewer = MagicMock()
+    sys.modules["streamlit_pdf_viewer"] = streamlit_pdf_viewer
+
+# Dummy replacements for heavy scientific packages that may not be installed
+HEAVY_DEPS = {
+    "numpy": MagicMock(),
+    "pandas": MagicMock(),
+    "cv2": MagicMock(),
+    "tifffile": MagicMock(),
+    "skimage": MagicMock(),
+}
+
+dummy_scipy = ModuleType("scipy")
+dummy_scipy.__path__ = []
+dummy_scipy.interpolate = ModuleType("interpolate")
+dummy_scipy.interpolate.CubicSpline = MagicMock()
+HEAVY_DEPS["scipy"] = dummy_scipy
+HEAVY_DEPS["scipy.interpolate"] = dummy_scipy.interpolate
+
+dummy_matplotlib = ModuleType("matplotlib")
+dummy_matplotlib.__path__ = []
+dummy_matplotlib.pyplot = ModuleType("pyplot")
+HEAVY_DEPS["matplotlib"] = dummy_matplotlib
+HEAVY_DEPS["matplotlib.pyplot"] = dummy_matplotlib.pyplot
 
 
 class TestPDFViewer:
@@ -115,13 +158,15 @@ class TestPDFViewer:
 
     def test_render_reference_content_integration(self):
         """Integration test for the render_reference_content function."""
-        # Import the function we're testing
-        from modules.measurements.pulse_and_fluorescence import \
-            render_reference_content
+        # Import the function we're testing with heavy dependencies mocked
+        with patch.dict(sys.modules, HEAVY_DEPS):
+            import modules.measurements.pulse_and_fluorescence as paf
+            render_reference_content = paf.render_reference_content
 
         # Mock streamlit components to avoid actual rendering
 
         with (
+            patch.dict(sys.modules, HEAVY_DEPS),
             patch("streamlit.columns") as mock_columns,
             patch("streamlit.subheader") as mock_subheader,
             patch("streamlit.markdown") as mock_markdown,
@@ -129,9 +174,7 @@ class TestPDFViewer:
             patch("streamlit.text_area") as mock_text_area,
             patch("streamlit.button") as mock_button,
             patch("streamlit.download_button") as mock_download_button,
-            patch(
-                "modules.measurements.pulse_and_fluorescence.pdf_viewer"
-            ) as mock_pdf_viewer,
+            patch.object(paf, "pdf_viewer") as mock_pdf_viewer,
             patch("builtins.open", create=True) as mock_open,
         ):
 
@@ -144,7 +187,9 @@ class TestPDFViewer:
             mock_open.return_value.__exit__ = MagicMock()
 
             # Mock session state
-            with patch.object(st, "session_state", {}):
+            with patch.object(st, "session_state", DummySession()), patch.dict(
+                sys.modules, HEAVY_DEPS
+            ):
                 # This should not raise any errors
                 try:
                     render_reference_content()
