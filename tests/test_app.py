@@ -46,26 +46,32 @@ try:
 except Exception:  # pragma: no cover - Streamlit not installed
     STREAMLIT_TESTING_AVAILABLE = False
 
-    class AppTest:  # type: ignore
-        """Minimal replacement for streamlit.testing.v1.AppTest."""
+class AppTest:  # type: ignore
+    """Minimal replacement for streamlit.testing.v1.AppTest."""
 
-        def __init__(self) -> None:
-            # Provide simple attributes used in the tests.
-            self.sidebar = "Multiphoton Sidebar"
-            self.main = MagicMock()
-            self.exception = None
-            self.session_state = {
-                "study_name": "",
-                "wavelength": "",
-                "researcher": "",
-            }
+    def __init__(self, file: str) -> None:
+        self.file = file
+        self.sidebar = "Multiphoton Sidebar"
+        self.main = MagicMock()
+        self.exception = None
+        self.session_state = {
+            "study_name": "",
+            "wavelength": "",
+            "researcher": "",
+        }
 
-        @classmethod
-        def from_file(cls, _file: str) -> "AppTest":
-            return cls()
+    @classmethod
+    def from_file(cls, file: str) -> "AppTest":
+        return cls(file)
 
-        def run(self) -> None:
-            return
+    def run(self) -> None:
+        """Import the application module under test."""
+        try:
+            module_name = os.path.splitext(os.path.basename(self.file))[0]
+            with patch.dict(sys.modules, HEAVY_DEPS):
+                __import__(module_name)
+        except Exception as e:  # pragma: no cover - execution failure
+            self.exception = e
 
 try:  # pragma: no cover - streamlit may not be installed
     import streamlit as _st  # noqa: F401
@@ -82,10 +88,13 @@ class TestApp(unittest.TestCase):
     """Test the Streamlit application."""
 
     def setUp(self):
-        """Set up test fixtures before each test method."""
-        # No-op when Streamlit testing utilities are absent because we provide a
-        # dummy implementation above.
-        pass
+        """Patch heavy dependencies before each test."""
+        self.patch_deps = patch.dict(sys.modules, HEAVY_DEPS)
+        self.patch_deps.start()
+
+    def tearDown(self) -> None:
+        """Stop dependency patching after each test."""
+        self.patch_deps.stop()
 
     @pytest.mark.slow
     def test_app_loads_without_errors(self):
