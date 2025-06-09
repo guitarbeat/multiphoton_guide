@@ -39,8 +39,10 @@ def save_dataframe_to_table(
 def load_dataframe_from_table(table_name: str) -> pd.DataFrame:
     """Load a DataFrame from a Google Sheet."""
     tbl = _sanitize_table_name(table_name)
-    conn = get_gsheets_connection()
     try:
+        conn = get_gsheets_connection()
         return conn.read(worksheet=tbl)
-    except Exception:
+    except Exception as exc:
+        # Surface the error to the UI for easier debugging
+        st.error(f"Failed to load data from worksheet '{tbl}': {exc}")
         return pd.DataFrame()
