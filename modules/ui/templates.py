@@ -7,6 +7,10 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, List
 
 import streamlit as st
+import pandas as pd
+
+from modules.core.constants import FILE_MAPPINGS
+from modules.core.data_utils import save_dataframe
 
 from modules.core.shared_utils import (
     add_to_rig_log,
@@ -236,7 +240,7 @@ def _save_measurement_data(df_type: str, form_data: Dict[str, Any]) -> bool:
 
     def save_operation():
         # Load existing data
-        load_measurement_dataframe(df_type)
+        df = load_measurement_dataframe(df_type)
 
         # Create new entry
         new_entry = {**form_data}
@@ -245,8 +249,9 @@ def _save_measurement_data(df_type: str, form_data: Dict[str, Any]) -> bool:
         new_entry["Researcher"] = st.session_state.get("researcher", "")
 
         # Append and save
-        # This would use the shared save functionality
-        # Implementation details would depend on existing data_utils functions
+        new_row = pd.DataFrame([new_entry])
+        updated_df = pd.concat([df, new_row], ignore_index=True)
+        save_dataframe(updated_df, FILE_MAPPINGS[df_type])
 
         return True
 
