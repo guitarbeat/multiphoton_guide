@@ -162,6 +162,18 @@ spreadsheet = "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit"
 Place these credentials in `.streamlit/secrets.toml` so the application can
 establish the Google Sheets connection.
 
+The app uses the
+[`st-gsheets-connection`](https://pypi.org/project/st-gsheets-connection/)
+package. Create the connection in your code with
+
+```python
+from streamlit_gsheets import GSheetsConnection
+conn = st.connection("gsheets", type=GSheetsConnection)
+df = conn.read(worksheet="Sheet1")
+```
+
+If the connection fails, the app will display an error in the sidebar.
+
 ### Docker Deployment
 
 For containerized deployment:

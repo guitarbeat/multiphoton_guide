@@ -66,13 +66,20 @@ def render_laser_power_tab(use_sidebar_values=False):
             # Load existing data
             laser_power_df = load_dataframe(LASER_POWER_FILE, pd.DataFrame())
 
-            if not laser_power_df.empty:
+            if laser_power_df.empty:
+                st.info(
+                    "No measurements found. Check your Google Sheets connection or "
+                    "add data to the sheet."
+                )
+            else:
                 # Filter to current study
                 filtered_df = filter_dataframe(
                     laser_power_df, {"Study Name": st.session_state.study_name}
                 )
 
-                if not filtered_df.empty:
+                if filtered_df.empty:
+                    st.info("No measurements found for the current study.")
+                else:
                     # Sort by date (newest first) and select only the most recent measurements
                     filtered_df = filtered_df.sort_values("Date", ascending=False).head(
                         5
