@@ -47,6 +47,8 @@ df = get_as_dataframe(worksheet)
 # Display the results
 for row in df.itertuples():
     st.write(f"{row.name} has a :{row.pet}:")
+```
+
 ## 4. Write data back to the Sheet
 
 ```python
