@@ -88,10 +88,13 @@ def render_source_power_form():
                         "Wavelength (nm)": [st.session_state.wavelength],
                         "Pump Current (mA)": [pump_current],
                         "Measured Power (W)": [power],
-                        "Expected Power (W)": [expected_power],
                         "Notes": [notes],
                     }
                 )
+                
+                # Calculate expected power but don't include in database entry to avoid schema issues
+                expected_power = get_expected_power(pump_current)
+                
                 # Append to existing data
                 updated_df = pd.concat([source_power_df, new_entry], ignore_index=True)
                 # Save updated data
@@ -219,21 +222,30 @@ def get_expected_power(current):
             currents = np.insert(currents, 0, 0)
             powers = np.insert(powers, 0, 0)
     
-    current = np.asarray(current)
+    # Convert input to numpy array if it's not already
+    current_input = np.asarray(current)
     # Clamp values to the range
-    current_clipped = np.clip(current, currents[0], currents[-1])
+    current_clipped = np.clip(current_input, currents[0], currents[-1])
     
     # Use cubic spline if we have enough points, otherwise linear interpolation
     if len(currents) >= 4:
         try:
             cs = CubicSpline(currents, powers, bc_type="natural")
-            return cs(current_clipped)
+            result = cs(current_clipped)
         except Exception:
             # Fallback to linear interpolation
-            return np.interp(current_clipped, currents, powers)
+            result = np.interp(current_clipped, currents, powers)
     else:
         # Linear interpolation for few points
-        return np.interp(current_clipped, currents, powers)
+        result = np.interp(current_clipped, currents, powers)
+    
+    # Convert the result to a Python native type to ensure JSON serialization works
+    if isinstance(result, np.ndarray):
+        return result.tolist() if result.size > 1 else float(result)
+    elif isinstance(result, np.generic):
+        return result.item()  # Convert numpy scalar to Python scalar
+    else:
+        return result
 
 
 def render_source_power_theory_and_procedure(theory_only=False, procedure_only=False):

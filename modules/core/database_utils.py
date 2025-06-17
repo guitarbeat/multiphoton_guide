@@ -50,10 +50,57 @@ def save_dataframe_to_table(
         "Fan Status": "fan_status"
     }
     
-    # Rename columns using the mapping
-    column_renames = {col: db_column_mapping.get(col, col) for col in df_copy.columns if col in db_column_mapping}
-    if column_renames:
-        df_copy = df_copy.rename(columns=column_renames)
+    try:
+        # Try to get table info to check available columns
+        table_info_response = supabase.table(tbl).select("*").limit(1).execute()
+        
+        # Get available columns from response
+        if table_info_response and table_info_response.data:
+            if len(table_info_response.data) > 0:
+                available_columns = set(table_info_response.data[0].keys())
+                
+                # Create a mapping that only includes columns that exist in the database
+                filtered_mapping = {}
+                for col in df_copy.columns:
+                    if col in db_column_mapping:
+                        # Only include mappings where the target column exists in the database
+                        if db_column_mapping[col] in available_columns:
+                            filtered_mapping[col] = db_column_mapping[col]
+                
+                # Only rename with valid columns
+                if filtered_mapping:
+                    df_copy = df_copy.rename(columns=filtered_mapping)
+                    
+                # Filter out columns that don't exist in the database
+                mapped_columns = set([db_column_mapping.get(col, col) for col in df_copy.columns])
+                columns_to_drop = mapped_columns - available_columns - {'id'}  # Keep 'id' if present
+                if columns_to_drop:
+                    for col in df_copy.columns[:]:
+                        mapped_col = db_column_mapping.get(col, col)
+                        if mapped_col in columns_to_drop:
+                            df_copy = df_copy.drop(columns=[col])
+            else:
+                # Default renaming if we can't determine the schema
+                column_renames = {col: db_column_mapping.get(col, col) for col in df_copy.columns if col in db_column_mapping}
+                if column_renames:
+                    df_copy = df_copy.rename(columns=column_renames)
+        else:
+            # Default renaming if we can't determine the schema
+            column_renames = {col: db_column_mapping.get(col, col) for col in df_copy.columns if col in db_column_mapping}
+            if column_renames:
+                df_copy = df_copy.rename(columns=column_renames)
+                
+    except Exception as e:
+        st.warning(f"Could not verify database schema, attempting save with best guess: {str(e)}")
+        # Default renaming if exception occurred
+        column_renames = {col: db_column_mapping.get(col, col) for col in df_copy.columns if col in db_column_mapping}
+        if column_renames:
+            df_copy = df_copy.rename(columns=column_renames)
+    
+    # Convert NumPy values to Python native types for JSON serialization
+    for col in df_copy.columns:
+        if df_copy[col].dtype.kind in 'fiubO':  # float, integer, unsigned, boolean, object types
+            df_copy[col] = df_copy[col].apply(lambda x: x.item() if hasattr(x, 'item') else x)
     
     # Convert DataFrame to records
     records = df_copy.to_dict(orient="records")

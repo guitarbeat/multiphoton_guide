@@ -80,26 +80,55 @@ def apply_sidebar_styling():
 
 
 def render_session_info():
-    """Render the session info display with enhanced styling."""
-    st.markdown(
-        """
-    <div class="session-info">
-        <div class="session-info-title">Current Session</div>
-        <div class="session-info-item">
-            <span class="session-info-label">Study:</span>
-            <span class="session-info-value">{study_name}</span>
-        </div>
-        <div class="session-info-item">
-            <span class="session-info-label">Researcher:</span>
-            <span class="session-info-value">{researcher}</span>
-        </div>
-    </div>
-    """.format(
-            study_name=st.session_state.study_name,
-            researcher=st.session_state.researcher,
-        ),
-        unsafe_allow_html=True,
-    )
+    """Render the session info display with enhanced styling and inline editing capability."""
+    # Create a container for the session info
+    with st.container():
+        st.markdown('<div class="session-info-title">Current Session</div>', unsafe_allow_html=True)
+        
+        # Create expandable container for editing
+        with st.expander("Edit Session Info", expanded=False):
+            # Study name input
+            new_study_name = st.text_input(
+                "Study Name",
+                value=st.session_state.study_name,
+                key="sidebar_study_name",
+                help="Enter a name for your study or experiment"
+            )
+            
+            # Researcher input
+            new_researcher = st.text_input(
+                "Researcher",
+                value=st.session_state.researcher,
+                key="sidebar_researcher",
+                help="Enter your name or identifier for record keeping"
+            )
+            
+            # Update button
+            if st.button("Update", key="update_session_btn", use_container_width=True):
+                if new_study_name.strip():
+                    st.session_state.study_name = new_study_name
+                    st.session_state.researcher = new_researcher if new_researcher.strip() else "Anonymous Researcher"
+                    st.success("Session updated!")
+                    st.rerun()
+                else:
+                    st.error("Study name cannot be empty")
+        
+        # Display current values
+        st.markdown(
+            f"""
+            <div class="session-info">
+                <div class="session-info-item">
+                    <span class="session-info-label">Study:</span>
+                    <span class="session-info-value">{st.session_state.study_name}</span>
+                </div>
+                <div class="session-info-item">
+                    <span class="session-info-label">Researcher:</span>
+                    <span class="session-info-value">{st.session_state.researcher}</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 def render_study_inputs():
