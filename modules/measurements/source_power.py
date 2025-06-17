@@ -11,7 +11,7 @@ import streamlit as st
 from scipy.interpolate import CubicSpline
 
 from modules.core.constants import SOURCE_POWER_COLUMNS, SOURCE_POWER_FILE, SOP_POWER_VS_PUMP_FILE
-from modules.core.data_utils import filter_dataframe, load_dataframe, save_dataframe
+from modules.core.data_utils import filter_dataframe, load_dataframe, save_dataframe, exponential_fit
 from modules.core.shared_utils import add_to_rig_log
 from modules.ui.components import create_header, create_metric_row, create_plot
 from modules.ui.theme import get_colors
@@ -43,6 +43,31 @@ def render_source_power_form():
         )
         expected_power = get_expected_power(pump_current)
         st.info(f"Expected power: {expected_power:.2f} W")
+        
+        # Load SOP data to show equation
+        sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
+        if not sop_df.empty and "Pump Current (mA)" in sop_df.columns and "Expected Power (W)" in sop_df.columns:
+            # Filter to current study if available
+            if "Study Name" in sop_df.columns:
+                filtered_df = filter_dataframe(
+                    sop_df, {"Study Name": st.session_state.study_name}
+                )
+                if filtered_df.empty:
+                    filtered_df = sop_df
+            else:
+                filtered_df = sop_df
+                
+            # Get data for fit
+            curr_sop = filtered_df["Pump Current (mA)"].astype(float).values
+            power_sop = filtered_df["Expected Power (W)"].astype(float).values
+            
+            # Calculate fit if enough data points
+            if len(curr_sop) >= 3:
+                fit_params = exponential_fit(curr_sop, power_sop)
+                equation_text = f"Power = {fit_params['a']:.3f} × e^({fit_params['b']:.5f} × Current) + {fit_params['c']:.3f}"
+                r_squared_text = f"R² = {fit_params['r_squared']:.4f}"
+                st.caption(f"Exponential Fit: {equation_text} ({r_squared_text})")
+
     with col2:
         pass  # for layout symmetry
 
@@ -214,8 +239,8 @@ def get_expected_power(current):
         filtered_df = filtered_df.sort_values("Pump Current (mA)")
         
         # Extract arrays for interpolation
-        currents = filtered_df["Pump Current (mA)"].values
-        powers = filtered_df["Expected Power (W)"].values
+        currents = filtered_df["Pump Current (mA)"].astype(float).values
+        powers = filtered_df["Expected Power (W)"].astype(float).values
         
         # Add zero point if not present
         if currents[0] > 0:
@@ -227,9 +252,29 @@ def get_expected_power(current):
     # Clamp values to the range
     current_clipped = np.clip(current_input, currents[0], currents[-1])
     
-    # Use cubic spline if we have enough points, otherwise linear interpolation
-    if len(currents) >= 4:
+    # Try to use exponential fit if we have enough points (preferred)
+    if len(currents) >= 3:
         try:
+            # Use exponential fit (preferred for laser power curves)
+            fit_params = exponential_fit(currents, powers)
+            
+            # Apply the exponential model to get result
+            result = fit_params["a"] * np.exp(fit_params["b"] * current_clipped) + fit_params["c"]
+        except Exception:
+            # Fallback to cubic spline or linear interpolation
+            if len(currents) >= 4:
+                try:
+                    cs = CubicSpline(currents, powers, bc_type="natural")
+                    result = cs(current_clipped)
+                except Exception:
+                    # Fallback to linear interpolation
+                    result = np.interp(current_clipped, currents, powers)
+            else:
+                # Linear interpolation for few points
+                result = np.interp(current_clipped, currents, powers)
+    elif len(currents) >= 4:
+        try:
+            # Use cubic spline if exponential fit isn't possible but we have enough points
             cs = CubicSpline(currents, powers, bc_type="natural")
             result = cs(current_clipped)
         except Exception:
@@ -360,25 +405,75 @@ def render_source_power_visualization():
         # Plot data points
         ax.scatter(x, y, color="#4BA3C4", s=50, alpha=0.7, label="Measurements")
 
-        # Add reference line for expected values
-        expected_x = [2000, 4000, 6000, 8000]
-        expected_y = [0.2, 2.3, 4.8, 7.5]
-        ax.plot(
-            expected_x,
-            expected_y,
-            color="#BF5701",
-            linestyle="--",
-            label="Expected Values",
-        )
+        # Load SOP data for expected power curve
+        sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
+        
+        if not sop_df.empty and "Pump Current (mA)" in sop_df.columns and "Expected Power (W)" in sop_df.columns:
+            # Get SOP data
+            curr_sop = sop_df["Pump Current (mA)"].astype(float).values
+            power_sop = sop_df["Expected Power (W)"].astype(float).values
+            
+            # Sort by current for plotting
+            sort_indices = np.argsort(curr_sop)
+            curr_sop = curr_sop[sort_indices]
+            power_sop = power_sop[sort_indices]
+            
+            # Plot the SOP points
+            ax.scatter(curr_sop, power_sop, color="#BF5701", s=60, marker='s', 
+                      label="SOP Data Points")
+            
+            # Create exponential fit for SOP data
+            if len(curr_sop) >= 3:
+                fit_params = exponential_fit(curr_sop, power_sop)
+                
+                # Generate smooth curve for plotting
+                x_curve = np.linspace(0, max(curr_sop) * 1.1, 100)
+                y_curve = fit_params["a"] * np.exp(fit_params["b"] * x_curve) + fit_params["c"]
+                
+                # Plot the fit
+                ax.plot(
+                    x_curve, 
+                    y_curve, 
+                    color="#BF5701", 
+                    linestyle="-", 
+                    label=f"Exp Fit: {fit_params['a']:.3f}*e^({fit_params['b']:.5f}*x) + {fit_params['c']:.3f}"
+                )
+                
+                # Display formula and R²
+                equation_text = f"Power = {fit_params['a']:.3f} × e^({fit_params['b']:.5f} × Current) + {fit_params['c']:.3f}"
+                r_squared_text = f"R² = {fit_params['r_squared']:.4f}"
+                ax.text(0.05, 0.95, equation_text + "\n" + r_squared_text,
+                      transform=ax.transAxes, fontsize=9,
+                      verticalalignment='top',
+                      bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+            else:
+                # Just connect the dots if not enough points for fitting
+                ax.plot(curr_sop, power_sop, color="#BF5701", linestyle="--", 
+                      label="Expected Values")
+        else:
+            # Fallback to hardcoded expected values if no SOP data
+            expected_x = [2000, 4000, 6000, 8000]
+            expected_y = [0.2, 2.3, 4.8, 7.5]
+            ax.plot(
+                expected_x,
+                expected_y,
+                color="#BF5701",
+                linestyle="--",
+                label="Expected Values",
+            )
 
         # Add labels and title
         ax.set_xlabel("Pump Current (mA)")
         ax.set_ylabel("Measured Power (W)")
         ax.set_title("Source Power vs. Pump Current")
+        
+        # Set reasonable axis limits
+        ax.set_xlim(0, max(filtered_df["Pump Current (mA)"].max() * 1.1, 8500))
+        ax.set_ylim(0, max(filtered_df["Measured Power (W)"].max() * 1.1, 8.0))
 
         # Add grid and legend
         ax.grid(True, linestyle="--", alpha=0.7)
-        ax.legend()
+        ax.legend(loc="best")
 
     # Display the plot
     power_plot = create_plot(plot_power_vs_current)
@@ -391,7 +486,9 @@ def render_source_power_visualization():
         This plot shows the relationship between pump current and measured power at the source.
         
         **Key insights:**
-        - The dashed line shows expected power values at different current levels
+        - The exponential curve shows the expected power values at different current levels
+        - The curve follows the form: Power = a × e^(b × Current) + c
+        - Exponential behavior is expected due to the physics of laser gain media
         - Deviations from expected values may indicate:
           * Alignment issues
           * Component degradation

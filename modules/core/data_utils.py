@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from scipy.optimize import curve_fit
 
 from .database_utils import (
     load_dataframe_from_table,
@@ -234,3 +235,95 @@ def linear_regression(x_values, y_values):
     r_squared = 1 - (ss_residual / ss_total) if ss_total != 0 else 0
 
     return {"slope": slope, "intercept": intercept, "r_squared": r_squared}
+
+
+def exponential_fit(x_values, y_values):
+    """
+    Calculate exponential fit between x and y values of form y = a * exp(b * x) + c
+
+    Parameters:
+    -----------
+    x_values : array-like
+        Independent variable values
+    y_values : array-like
+        Dependent variable values
+
+    Returns:
+    --------
+    dict
+        Dictionary with fit parameters (a, b, c) and r_squared
+    """
+    # Function for exponential curve y = a * exp(b * x) + c
+    def exp_func(x, a, b, c):
+        return a * np.exp(b * x) + c
+
+    # Ensure x_values is 1D
+    if hasattr(x_values, "shape") and len(x_values.shape) > 1:
+        x_values = x_values.flatten()
+
+    # Convert to numpy arrays if they aren't already
+    x_values = np.array(x_values)
+    y_values = np.array(y_values)
+
+    # Remove NaN values
+    valid_indices = ~(np.isnan(x_values) | np.isnan(y_values))
+    x = x_values[valid_indices]
+    y = y_values[valid_indices]
+
+    if len(x) < 3:
+        return {"a": 0, "b": 0, "c": 0, "r_squared": 0}
+
+    try:
+        # Initial guess for parameters
+        p0 = [1.0, 0.001, 0.0]
+        
+        # Perform the curve fit
+        popt, pcov = curve_fit(exp_func, x, y, p0=p0, maxfev=10000)
+        a, b, c = popt
+        
+        # Calculate R-squared
+        y_pred = exp_func(x, a, b, c)
+        ss_total = np.sum((y - np.mean(y)) ** 2)
+        ss_residual = np.sum((y - y_pred) ** 2)
+        r_squared = 1 - (ss_residual / ss_total) if ss_total != 0 else 0
+        
+        return {"a": a, "b": b, "c": c, "r_squared": r_squared}
+    
+    except Exception as e:
+        # If fitting fails, return zeros
+        return {"a": 0, "b": 0, "c": 0, "r_squared": 0, "error": str(e)}
+
+
+def save_fit_parameters(table_name, fit_params, metadata=None):
+    """
+    Save fit parameters to a database table.
+    
+    Parameters:
+    -----------
+    table_name : str
+        Name of the table to save to
+    fit_params : dict
+        Dictionary of fit parameters
+    metadata : dict, optional
+        Additional metadata to save with the parameters
+        
+    Returns:
+    --------
+    bool
+        Success or failure
+    """
+    if metadata is None:
+        metadata = {}
+        
+    # Create a dataframe with the fit parameters
+    df = pd.DataFrame({
+        **fit_params,
+        **metadata,
+        'date': pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
+    }, index=[0])
+    
+    try:
+        save_dataframe_to_table(df, f"{table_name}_fits", "append")
+        return True
+    except Exception:
+        return False

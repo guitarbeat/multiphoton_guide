@@ -81,6 +81,15 @@ def apply_sidebar_styling():
 
 def render_session_info():
     """Render the session info display with enhanced styling and inline editing capability."""
+    # List of available researchers (PI and graduate students)
+    researchers = [
+        "Andrew Dunn",  # PI
+        "Jewel Ashbrook",
+        "Sam Melvin",
+        "Hengfa Lu",
+        "Aaron Woods",
+        "Logan Parker",
+    ]
     # Create a container for the session info
     with st.container():
         st.markdown('<div class="session-info-title">Current Session</div>', unsafe_allow_html=True)
@@ -95,19 +104,20 @@ def render_session_info():
                 help="Enter a name for your study or experiment"
             )
             
-            # Researcher input
-            new_researcher = st.text_input(
+            # Researcher dropdown (PI and grad students)
+            new_researcher = st.selectbox(
                 "Researcher",
-                value=st.session_state.researcher,
+                options=researchers,
+                index=researchers.index(st.session_state.researcher) if st.session_state.researcher in researchers else 0,
                 key="sidebar_researcher",
-                help="Enter your name or identifier for record keeping"
+                help="Select the researcher for this session"
             )
             
             # Update button
             if st.button("Update", key="update_session_btn", use_container_width=True):
                 if new_study_name.strip():
                     st.session_state.study_name = new_study_name
-                    st.session_state.researcher = new_researcher if new_researcher.strip() else "Anonymous Researcher"
+                    st.session_state.researcher = new_researcher
                     st.success("Session updated!")
                     st.rerun()
                 else:

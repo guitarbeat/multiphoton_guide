@@ -25,6 +25,8 @@ from modules.core.data_utils import (
     load_dataframe,
     safe_numeric_conversion,
     save_dataframe,
+    exponential_fit,
+    save_fit_parameters,
 )
 from modules.core.shared_utils import (
     add_to_rig_log,
@@ -234,8 +236,40 @@ def render_laser_power_tab(use_sidebar_values=False):
                     else:
                         edited_sop_df["Study Name"] = st.session_state.study_name
                     
+                    # Save the SOP data
                     save_dataframe(edited_sop_df, SOP_POWER_VS_PUMP_FILE)
-                    st.success("SOP data saved successfully!")
+                    
+                    # Calculate and save exponential fit parameters if we have enough data points
+                    if len(edited_sop_df) >= 3:
+                        try:
+                            # Prepare data for fitting
+                            sorted_df = edited_sop_df.sort_values("Pump Current (mA)")
+                            pump_currents = sorted_df["Pump Current (mA)"].astype(float).values
+                            powers = sorted_df["Expected Power (W)"].astype(float).values
+                            
+                            # Calculate exponential fit
+                            fit_params = exponential_fit(pump_currents, powers)
+                            
+                            # Add metadata
+                            metadata = {
+                                "study_name": st.session_state.study_name,
+                                "wavelength": st.session_state.wavelength,
+                                "fit_type": "exponential",
+                                "notes": f"Auto-calculated from SOP data with {len(edited_sop_df)} points"
+                            }
+                            
+                            # Save fit parameters
+                            save_fit_parameters("sop_power_vs_pump", fit_params, metadata)
+                            
+                            # Show the fit equation
+                            equation = f"Power = {fit_params['a']:.3f} × e^({fit_params['b']:.5f} × Current) + {fit_params['c']:.3f}"
+                            st.success(f"SOP data and fit saved successfully! Exponential fit: {equation}")
+                        except Exception as e:
+                            # Still show success even if fit calculation fails
+                            st.success("SOP data saved successfully!")
+                            st.warning(f"Could not calculate fit parameters: {str(e)}")
+                    else:
+                        st.success("SOP data saved successfully! Add at least 3 points to calculate fit parameters.")
                     st.rerun()
                 else:
                     st.info("No changes to save.")
