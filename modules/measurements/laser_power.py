@@ -247,15 +247,24 @@ def render_laser_power_tab(use_sidebar_values=False):
                 # Sort by pump current for proper plotting
                 plot_df = edited_sop_df.sort_values("Pump Current (mA)")
                 
-                fig = create_plot(
-                    x=plot_df["Pump Current (mA)"].values,
-                    y=plot_df["Expected Power (W)"].values,
-                    x_label="Pump Current (mA)",
-                    y_label="Expected Power (W)",
-                    title="Expected Power vs. Pump Current",
-                    color="#1f77b4",
-                    show_regression=True
-                )
+                # Create a plot function to pass to create_plot
+                def plot_sop_data(fig, ax):
+                    ax.plot(
+                        plot_df["Pump Current (mA)"].values,
+                        plot_df["Expected Power (W)"].values,
+                        marker='o',
+                        linestyle='-',
+                        color="#1f77b4",
+                        label="Expected Power"
+                    )
+                    ax.set_xlabel("Pump Current (mA)")
+                    ax.set_ylabel("Expected Power (W)")
+                    ax.set_title("Expected Power vs. Pump Current")
+                    ax.grid(True, linestyle='--', alpha=0.7)
+                    ax.legend()
+                
+                # Pass the plot function to create_plot
+                fig = create_plot(plot_sop_data)
                 st.pyplot(fig)
                 
         with tab_theory:
