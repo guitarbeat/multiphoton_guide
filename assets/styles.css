@@ -112,42 +112,6 @@
     border-top: 1px solid var(--surface-color); /* Replaced with CSS variable */
 }
 
-/* Fix for expander arrow duplication and caching issues */
-[data-testid="stExpander"] details summary {
-    position: relative;
-}
-
-/* Ensure only one arrow per expander */
-[data-testid="stExpander"] details summary::marker,
-[data-testid="stExpander"] details summary::-webkit-details-marker {
-    display: none !important;
-}
-
-/* Custom arrow that doesn't get cached */
-[data-testid="stExpander"] details summary::before {
-    content: "▶" !important;
-    position: absolute;
-    left: 0;
-    transition: transform 0.2s ease;
-    pointer-events: none;
-}
-
-[data-testid="stExpander"] details[open] summary::before {
-    transform: rotate(90deg);
-}
-
-/* Remove any duplicate arrows that might appear */
-[data-testid="stExpander"] details summary > *:first-child::before,
-[data-testid="stExpander"] details summary > *:first-child::after {
-    display: none !important;
-}
-
-/* Ensure expander headers don't create multiple elements */
-[data-testid="stExpander"] details summary {
-    list-style: none;
-    outline: none;
-}
-
 /* USAF Analyzer specific styles */
 .usaf-analysis-caption {
     text-align: center;

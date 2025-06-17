@@ -14,6 +14,8 @@ from modules.core.constants import (
     LASER_POWER_FILE,
     MEASUREMENT_MODES,
     SOURCE_POWER_FILE,
+    SOP_POWER_VS_PUMP_FILE,
+    SOP_POWER_VS_PUMP_COLUMNS,
 )
 from modules.core.data_utils import (
     calculate_statistics,
@@ -85,20 +87,37 @@ def render_laser_power_tab(use_sidebar_values=False):
                         5
                     )
 
-                    # Display the table with selected columns
-                    st.dataframe(
-                        filtered_df[
-                            [
-                                "Date",
-                                "Modulation (%)",
-                                "Measured Power (mW)",
-                                "Measurement Mode",
-                                "Sensor Model",
-                            ]
-                        ],
-                        hide_index=True,
+                    # Columns to display/edit
+                    editable_cols = [
+                        "Date",
+                        "Modulation (%)",
+                        "Measured Power (mW)",
+                        "Measurement Mode",
+                        "Sensor Model",
+                        "Fill Fraction (%)",
+                        "Notes",
+                    ]
+                    display_cols = [col for col in editable_cols if col in filtered_df.columns]
+
+                    # Use st.data_editor for inline editing and deleting
+                    edited_df = st.data_editor(
+                        filtered_df[display_cols],
+                        num_rows="dynamic",  # Allow add/delete
                         use_container_width=True,
+                        key="laser_power_editor"
                     )
+
+                    if st.button("💾 Save Changes to Laser Power Log"):
+                        # Only save if there are actual changes
+                        if not edited_df.equals(filtered_df[display_cols]):
+                            # Update the original DataFrame with the edited data
+                            updated_df = filtered_df.copy()
+                            updated_df.update(edited_df)
+                            save_dataframe(updated_df, LASER_POWER_FILE)
+                            st.success("Laser power log updated!")
+                            st.rerun()
+                        else:
+                            st.info("No changes to save.")
 
         with theory_tab:
             # Show combined theory and procedure
@@ -109,8 +128,8 @@ def render_laser_power_tab(use_sidebar_values=False):
     with source_tab:
         # Show the form and live plot at the top
         render_source_power_form()
-        # Create a single row of two tabs for the source section
-        tab_recent, tab_theory = st.tabs(["Recent Measurements", "Theory & Procedure"])
+        # Create a single row of three tabs for the source section
+        tab_recent, tab_sop, tab_theory = st.tabs(["Recent Measurements", "Expected SOP", "Theory & Procedure"])
 
         with tab_recent:
             # Only show the recent measurements table (not the form or plot)
@@ -121,22 +140,124 @@ def render_laser_power_tab(use_sidebar_values=False):
                     source_power_df, {"Study Name": st.session_state.study_name}
                 )
                 if not filtered_df.empty:
-                    filtered_df = filtered_df.sort_values("Date", ascending=False).head(
-                        5
-                    )
-                    st.dataframe(
-                        filtered_df[
-                            [
-                                "Date",
-                                "Pump Current (mA)",
-                                "Measured Power (W)",
-                                "Expected Power (W)",
-                                "Notes",
-                            ]
-                        ],
-                        hide_index=True,
+                    filtered_df = filtered_df.sort_values("Date", ascending=False).head(5)
+                    editable_cols = [
+                        "Date",
+                        "Pump Current (mA)",
+                        "Measured Power (W)",
+                        "Expected Power (W)",
+                        "Notes",
+                    ]
+                    display_cols = [col for col in editable_cols if col in filtered_df.columns]
+                    edited_df = st.data_editor(
+                        filtered_df[display_cols],
+                        num_rows="dynamic",
                         use_container_width=True,
+                        key="source_power_editor"
                     )
+                    if st.button("💾 Save Changes to Source Power Log"):
+                        if not edited_df.equals(filtered_df[display_cols]):
+                            updated_df = filtered_df.copy()
+                            updated_df.update(edited_df)
+                            save_dataframe(updated_df, SOURCE_POWER_FILE)
+                            st.success("Source power log updated!")
+                            st.rerun()
+                        else:
+                            st.info("No changes to save.")
+                            
+        with tab_sop:
+            st.subheader("Expected SOP: Power vs. Pump Current")
+            st.markdown("""
+            Edit the Standard Operating Procedure (SOP) values for expected power output at different pump current levels.
+            These values represent the expected performance of your system and will be used as a reference for comparison.
+            """)
+            
+            # Load SOP data from Supabase
+            sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
+            
+            # If empty, create a dataframe with the required columns
+            if sop_df.empty:
+                sop_df = pd.DataFrame(columns=SOP_POWER_VS_PUMP_COLUMNS)
+                
+            # Filter to current study
+            filtered_sop_df = filter_dataframe(
+                sop_df, {"Study Name": st.session_state.study_name}
+            )
+            
+            # Create an editable data frame
+            edited_sop_df = st.data_editor(
+                filtered_sop_df,
+                num_rows="dynamic",
+                use_container_width=True,
+                column_config={
+                    "Pump Current (mA)": st.column_config.NumberColumn(
+                        "Pump Current (mA)",
+                        help="Pump current in milliamperes",
+                        min_value=0,
+                        max_value=100,
+                        step=1,
+                        format="%.1f",
+                    ),
+                    "Expected Power (W)": st.column_config.NumberColumn(
+                        "Expected Power (W)",
+                        help="Expected power output in watts",
+                        min_value=0,
+                        max_value=10,
+                        step=0.001,
+                        format="%.3f",
+                    ),
+                    "Wavelength (nm)": st.column_config.NumberColumn(
+                        "Wavelength (nm)",
+                        help="Laser wavelength in nanometers",
+                        min_value=700,
+                        max_value=1300,
+                        step=1,
+                        format="%.1f",
+                    ),
+                    "Temperature (°C)": st.column_config.NumberColumn(
+                        "Temperature (°C)",
+                        help="Operating temperature in degrees Celsius",
+                        min_value=15,
+                        max_value=35,
+                        step=0.1,
+                        format="%.1f",
+                    ),
+                },
+                key="sop_editor"
+            )
+            
+            if st.button("💾 Save SOP Changes"):
+                if not edited_sop_df.equals(filtered_sop_df):
+                    # Make sure Study Name is set for all rows
+                    if "Study Name" in edited_sop_df.columns:
+                        edited_sop_df["Study Name"].fillna(st.session_state.study_name, inplace=True)
+                    else:
+                        edited_sop_df["Study Name"] = st.session_state.study_name
+                    
+                    save_dataframe(edited_sop_df, SOP_POWER_VS_PUMP_FILE)
+                    st.success("SOP data saved successfully!")
+                    st.rerun()
+                else:
+                    st.info("No changes to save.")
+            
+            # Show a plot of the SOP data
+            if not edited_sop_df.empty and "Pump Current (mA)" in edited_sop_df.columns and "Expected Power (W)" in edited_sop_df.columns:
+                st.subheader("SOP Power Curve")
+                
+                # Sort by pump current for proper plotting
+                plot_df = edited_sop_df.sort_values("Pump Current (mA)")
+                
+                fig = create_plot(
+                    x=plot_df["Pump Current (mA)"].values,
+                    y=plot_df["Expected Power (W)"].values,
+                    x_label="Pump Current (mA)",
+                    y_label="Expected Power (W)",
+                    title="Expected Power vs. Pump Current",
+                    color="#1f77b4",
+                    show_regression=True
+                )
+                st.pyplot(fig)
+                
         with tab_theory:
             render_source_power_theory_and_procedure()
 

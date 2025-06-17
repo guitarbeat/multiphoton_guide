@@ -10,7 +10,7 @@ import pandas as pd
 import streamlit as st
 from scipy.interpolate import CubicSpline
 
-from modules.core.constants import SOURCE_POWER_COLUMNS, SOURCE_POWER_FILE
+from modules.core.constants import SOURCE_POWER_COLUMNS, SOURCE_POWER_FILE, SOP_POWER_VS_PUMP_FILE
 from modules.core.data_utils import filter_dataframe, load_dataframe, save_dataframe
 from modules.core.shared_utils import add_to_rig_log
 from modules.ui.components import create_header, create_metric_row, create_plot
@@ -144,60 +144,95 @@ def render_source_power_form():
 
 
 def get_expected_power(current):
-    """Interpolate expected power based on pump current. Uses cubic spline for smoothness."""
-    # Combined anchor points (with exact values) and visually extracted data
-    currents = np.array(
-        [
-            0,
-            1000,
-            1500,
-            2000,
-            2500,
-            3000,
-            3500,
-            4000,
-            4500,
-            5000,
-            5500,
-            6000,
-            6500,
-            7000,
-            7500,
-            8000,
-            8500,
-            9000,
-        ]
-    )
-    powers = np.array(
-        [
-            0.0,
-            0.0,
-            0.2,
-            0.2,
-            0.9,
-            1.4,
-            2.0,
-            2.3,
-            3.2,
-            3.8,
-            4.4,
-            4.8,
-            5.7,
-            6.3,
-            7.0,
-            7.5,
-            8.0,
-            8.2,
-        ]
-    )
+    """Interpolate expected power based on pump current using SOP data from Supabase."""
+    # Load SOP data from Supabase
+    sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
+    
+    # If no SOP data exists, use default values
+    if sop_df.empty or "Pump Current (mA)" not in sop_df.columns or "Expected Power (W)" not in sop_df.columns:
+        # Default values as fallback
+        currents = np.array(
+            [
+                0,
+                1000,
+                1500,
+                2000,
+                2500,
+                3000,
+                3500,
+                4000,
+                4500,
+                5000,
+                5500,
+                6000,
+                6500,
+                7000,
+                7500,
+                8000,
+                8500,
+                9000,
+            ]
+        )
+        powers = np.array(
+            [
+                0.0,
+                0.0,
+                0.2,
+                0.2,
+                0.9,
+                1.4,
+                2.0,
+                2.3,
+                3.2,
+                3.8,
+                4.4,
+                4.8,
+                5.7,
+                6.3,
+                7.0,
+                7.5,
+                8.0,
+                8.2,
+            ]
+        )
+    else:
+        # Filter to current study if available
+        if "Study Name" in sop_df.columns:
+            filtered_df = filter_dataframe(
+                sop_df, {"Study Name": st.session_state.study_name}
+            )
+            # If no data for current study, use all SOP data
+            if filtered_df.empty:
+                filtered_df = sop_df
+        else:
+            filtered_df = sop_df
+            
+        # Sort by pump current
+        filtered_df = filtered_df.sort_values("Pump Current (mA)")
+        
+        # Extract arrays for interpolation
+        currents = filtered_df["Pump Current (mA)"].values
+        powers = filtered_df["Expected Power (W)"].values
+        
+        # Add zero point if not present
+        if currents[0] > 0:
+            currents = np.insert(currents, 0, 0)
+            powers = np.insert(powers, 0, 0)
+    
     current = np.asarray(current)
     # Clamp values to the range
     current_clipped = np.clip(current, currents[0], currents[-1])
-    try:
-        cs = CubicSpline(currents, powers, bc_type="natural")
-        return cs(current_clipped)
-    except Exception:
-        # Fallback to linear interpolation if scipy is not available
+    
+    # Use cubic spline if we have enough points, otherwise linear interpolation
+    if len(currents) >= 4:
+        try:
+            cs = CubicSpline(currents, powers, bc_type="natural")
+            return cs(current_clipped)
+        except Exception:
+            # Fallback to linear interpolation
+            return np.interp(current_clipped, currents, powers)
+    else:
+        # Linear interpolation for few points
         return np.interp(current_clipped, currents, powers)
 
 

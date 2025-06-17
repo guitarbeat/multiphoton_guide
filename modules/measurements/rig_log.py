@@ -47,47 +47,7 @@ def render_rig_log_tab():
         with stats_col:
             # Quick stats about the log
             if not rig_log_df.empty:
-                st.subheader("Log Overview")
-                total_entries = len(rig_log_df)
-
-                # Calculate days of log history
-                if "Date" in rig_log_df.columns and not rig_log_df["Date"].empty:
-                    try:
-                        dates = pd.to_datetime(rig_log_df["Date"], errors="coerce")
-                        if not dates.empty and not dates.isna().all():
-                            days_tracked = (dates.max() - dates.min()).days + 1
-                        else:
-                            days_tracked = 0
-                    except:
-                        days_tracked = 0
-                else:
-                    days_tracked = 0
-
-                metrics = [
-                    {"label": "Total Entries", "value": total_entries},
-                    {
-                        "label": "Days Tracked",
-                        "value": days_tracked if days_tracked > 0 else "N/A",
-                    },
-                ]
-
-                # Count by category if categories exist
-                if (
-                    "Category" in rig_log_df.columns
-                    and not rig_log_df["Category"].empty
-                ):
-                    top_category = (
-                        rig_log_df["Category"].value_counts().idxmax()
-                        if not rig_log_df["Category"].isna().all()
-                        else "None"
-                    )
-                    metrics.append({"label": "Top Category", "value": top_category})
-
-                create_metric_row(metrics)
-
-            # Add entry button that jumps to the entry form
-            if st.button("➕ Add New Entry", type="primary", use_container_width=True):
-                st.session_state.show_entry_form = True
+                pass  # Removed Log Overview and metrics
 
         st.markdown("---")
         render_rig_log_table(rig_log_df)
@@ -238,23 +198,25 @@ def render_rig_log_table(rig_log_df):
         st.info("📭 No log entries match the selected filters.")
     else:
         # Sort by date (newest first)
-        filtered_df = filtered_df.sort_values("Date", ascending=False)
+        filtered_df = filtered_df.sort_values("Date", ascending=False).reset_index(drop=True)
 
-        # Display the table
-        st.dataframe(
+        # Use st.data_editor for inline editing and deleting
+        edited_df = st.data_editor(
             filtered_df,
-            column_config=column_config,
-            hide_index=True,
+            num_rows="dynamic",  # Allow add/delete
             use_container_width=True,
+            key="rig_log_editor"
         )
 
-        # More visible status message with emoji
-        filter_status = (
-            "Showing all entries"
-            if len(filtered_df) == len(rig_log_df)
-            else f"Filtered: {len(filtered_df)} of {len(rig_log_df)} entries"
-        )
-        st.caption(f"📊 {filter_status}")
+        # Save changes if the DataFrame was edited
+        if st.button("💾 Save Changes to Log"):
+            # Only save if there are actual changes
+            if not edited_df.equals(filtered_df):
+                save_dataframe(edited_df, RIG_LOG_FILE)
+                st.success("Log updated!")
+                st.rerun()
+            else:
+                st.info("No changes to save.")
 
 
 def render_rig_log_entry_form(rig_log_df):

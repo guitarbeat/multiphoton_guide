@@ -28,6 +28,17 @@ SOURCE_POWER_COLUMNS = [
     "Notes",
 ]
 
+# SOP for Power vs Pump Current
+SOP_POWER_VS_PUMP_FILE = "sop_power_vs_pump"
+SOP_POWER_VS_PUMP_COLUMNS = [
+    "Pump Current (mA)",
+    "Expected Power (W)",
+    "Wavelength (nm)",
+    "Temperature (°C)",
+    "Study Name",
+    "Notes",
+]
+
 # =============================================================================
 # COMMON DATAFRAME COLUMN SCHEMAS
 # =============================================================================
@@ -126,6 +137,7 @@ COLUMN_SCHEMAS = {
     "laser_power": LASER_POWER_COLUMNS,
     "fluorescence": FLUORESCENCE_COLUMNS,
     "pulse_width": PULSE_WIDTH_COLUMNS,
+    "sop_power_vs_pump": SOP_POWER_VS_PUMP_COLUMNS,
 }
 
 # Map file types to their file names
@@ -134,4 +146,5 @@ FILE_MAPPINGS = {
     "laser_power": LASER_POWER_FILE,
     "fluorescence": FLUORESCENCE_FILE,
     "pulse_width": PULSE_WIDTH_FILE,
+    "sop_power_vs_pump": SOP_POWER_VS_PUMP_FILE,
 }

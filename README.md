@@ -148,31 +148,33 @@ All dependencies are defined in `pyproject.toml` but can be exported to `require
 
 ## Database Setup
 
-Measurement data is stored in a public Google Sheet. Configure a
-`[connections.gsheets]` section in `.streamlit/secrets.toml` as shown below and
-the application will read and write data to that spreadsheet (see
-`docs/public_google_sheets.md`). If the connection is not configured the
-application will raise an error.
+Measurement data is stored in a Supabase database. Configure a `[supabase]` section in `.streamlit/secrets.toml` as shown below and the application will read and write data to that database. If the connection is not configured, the application will raise an error.
 
 ```toml
-[connections.gsheets]
-spreadsheet = "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit"
+[supabase]
+url = "https://your-project-id.supabase.co"
+api_key = "your-supabase-anon-key"
 ```
 
-Place these credentials in `.streamlit/secrets.toml` so the application can
-establish the Google Sheets connection.
+Place these credentials in `.streamlit/secrets.toml` so the application can establish the Supabase connection.
 
-The app now uses [`gspread`](https://pypi.org/project/gspread/) directly. A
-simple usage example is:
+The app uses the [Supabase Python client](https://pypi.org/project/supabase/) to interact with the database. A simple usage example is:
 
 ```python
-import gspread
-from gspread_dataframe import get_as_dataframe
+from supabase import create_client
 
-creds = st.secrets["connections"]["gsheets"]
-client = gspread.service_account_from_dict(creds)
-sheet = client.open_by_url(creds["spreadsheet"])
-df = get_as_dataframe(sheet.worksheet("Sheet1"))
+url = st.secrets["supabase"]["url"]
+key = st.secrets["supabase"]["api_key"]
+supabase = create_client(url, key)
+
+# Query data
+response = supabase.table("fluorescence_measurements").select("*").execute()
+data = response.data
+df = pd.DataFrame(data)
+
+# Insert data
+records = df.to_dict(orient="records")
+supabase.table("fluorescence_measurements").insert(records).execute()
 ```
 
 If the connection fails, the app will display an error in the sidebar.

@@ -93,15 +93,10 @@ def render_session_info():
             <span class="session-info-label">Researcher:</span>
             <span class="session-info-value">{researcher}</span>
         </div>
-        <div class="session-info-item">
-            <span class="session-info-label">Mode:</span>
-            <span class="session-info-value">{mode}</span>
-        </div>
     </div>
     """.format(
             study_name=st.session_state.study_name,
             researcher=st.session_state.researcher,
-            mode=st.session_state.measurement_mode,
         ),
         unsafe_allow_html=True,
     )
@@ -237,6 +232,9 @@ def main():
         # Only render session info in the sidebar
         render_session_info()
 
+        # Render session setup form in the sidebar (always visible)
+        # render_session_setup_form()  # Removed as requested
+
         # Add navigation at the bottom of the sidebar
         st.markdown('<div class="nav-container">', unsafe_allow_html=True)
         st.subheader("Navigation")
@@ -261,10 +259,6 @@ def main():
                     st.rerun()
 
         st.markdown("</div>", unsafe_allow_html=True)
-
-    # Only render session setup form on Laser Power Measurements page
-    if st.session_state.current_page == "Laser Power Measurements":
-        render_session_setup_form()
 
     # Get the function for the current page
     current_page_function = None

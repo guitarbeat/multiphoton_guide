@@ -41,8 +41,7 @@ dependencies = [
     "opencv-python>=4.8.0",
     "tifffile>=2023.7.0",
     "streamlit-image-coordinates>=0.1.6",
-    "gspread>=5.8.0",
-    "gspread-dataframe>=4.0.0",
+    "supabase>=2.0.0",
 ]
 
 [project.optional-dependencies]
