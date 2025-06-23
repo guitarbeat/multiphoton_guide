@@ -18,7 +18,6 @@ def render_pulse_width_tab():
     # Render content in a single column layout
     render_pulse_width_theory_and_procedure()
     render_pulse_width_visualization()
-    render_pulse_width_tips()
 
 
 def render_pulse_width_theory_and_procedure():
@@ -27,80 +26,57 @@ def render_pulse_width_theory_and_procedure():
     with st.expander("📖 Introduction & Theory", expanded=True):
         st.markdown(
             """
-            Nearly all multiphoton microscopy uses modelocked ultrafast lasers with pulse durations on the order of 100 femtoseconds (100 × 10⁻¹⁵ s). Due to the nonlinearity of multiphoton excitation, peak intensity matters more than average power for efficient excitation.
+            Nearly all multiphoton microscopy uses **modelocked ultrafast lasers** with pulse durations on the order of 100 femtoseconds (100 × 10⁻¹⁵ s). Due to the **nonlinearity of multiphoton excitation**, peak intensity matters significantly more than average power for efficient excitation. The temporal compression of energy into ultrashort pulses creates the extremely high instantaneous intensities required for multiphoton processes.
 
-            The efficiency of multiphoton excitation using pulsed lasers versus continuous wave (CW) lasers, with the same time-averaged power, is given by:
+            The **enhancement factor** for multiphoton excitation using pulsed lasers versus continuous wave (CW) lasers, with the same time-averaged power, follows a fundamental relationship:
 
-            g⁽ⁿ⁾ = g⁽ⁿ⁾ₚ / (τfᵣ)ⁿ⁻¹
+            **g⁽ⁿ⁾ = g⁽ⁿ⁾ₚ / (τfᵣ)ⁿ⁻¹**
 
-            Where:
-            - g⁽ⁿ⁾ is the enhancement factor
-            - τ is the pulse width
-            - fᵣ is the repetition rate
-            - n is number of photons in the absorption process
+            Where **g⁽ⁿ⁾** represents the enhancement factor, **τ** is the pulse width, **fᵣ** is the repetition rate, and **n** is the number of photons in the absorption process. For **two-photon imaging** with a standard Ti-sapphire laser operating at 80 MHz with 150 fs pulses, this enhancement over CW lasers reaches approximately **50,000-fold** and demonstrates strong dependence on pulse width.
 
-            For two-photon imaging with a standard Ti-sapphire laser (80 MHz, 150 fs pulses), this enhancement over CW lasers is ~50,000 and is strongly dependent on pulse width.
-
-            As pulses travel through optical components, they experience dispersion which can temporally broaden or "stretch" the pulse, reducing excitation efficiency. This broadening can be counteracted with dispersion compensation.
+            As pulses travel through **optical components**, they experience **dispersion** which temporally broadens or "stretches" the pulse, dramatically reducing excitation efficiency. This broadening occurs because different wavelength components of the broadband pulse travel at different velocities through dispersive materials. The effect can be counteracted through **dispersion compensation**, which is critical for maintaining optimal performance in multiphoton systems.
         """
         )
 
         with st.expander("🔬 Group Delay Dispersion Details"):
             st.markdown(
                 """
-                ### Understanding Group Delay Dispersion (GDD)
+                **Group Delay Dispersion (GDD)** quantifies how different wavelength components of a pulse are delayed relative to each other as they travel through optical materials. Understanding GDD is essential for optimizing pulse width at the sample plane.
 
-                Group Delay Dispersion (GDD) is a measure of how different wavelength components of a pulse are delayed relative to each other as they travel through optical materials.
+                **Positive GDD** occurs when blue components travel slower than red components, causing temporal stretching of the pulse. Most **optical materials** including glass, water, and biological tissues introduce positive GDD. Conversely, **negative GDD** causes red components to travel slower than blue components.
 
-                - **Positive GDD**: Blue components travel slower than red components, stretching the pulse
-                - **Negative GDD**: Red components travel slower than blue components
+                The **optimal GDD setting** represents the precise balance where negative GDD from the compensation unit exactly cancels the positive GDD accumulated through the microscope's optical path. This results in the **shortest possible pulse duration** at the sample, maximizing multiphoton excitation efficiency.
 
-                Most optical materials (glass, water) introduce positive GDD. To compensate, we introduce negative GDD using specialized optics.
-
-                The optimal GDD setting is where the negative GDD from the compensation unit exactly balances the positive GDD from the microscope's optical path, resulting in the shortest possible pulse at the sample.
-
-                For a given material, the more material the pulse propagates through, the greater the temporal broadening. Microscopes with elaborate optical systems have more glass elements, resulting in more dispersion that needs to be compensated.
+                **Dispersion accumulation** increases proportionally with the amount of material the pulse traverses. Microscopes with elaborate optical systems containing numerous glass elements require more extensive dispersion compensation. The **wavelength dependence** of dispersion means that optimal GDD values must be determined independently for each excitation wavelength used in experiments.
             """
             )
 
     with st.expander("📋 Optimization Procedure", expanded=True):
         st.markdown(
             """
-            ### Step-by-Step Procedure for Optimizing Pulse Width
+            ### Systematic Approach to Pulse Width Optimization
 
-            1. **Prepare a fluorescent sample**
-               - Use a thin, bright fluorescent sample (e.g., fluorescent slide)
-               - Place the sample under the objective and focus
+            Begin by preparing a **fluorescent sample** such as a thin, bright fluorescent slide or coverslip with fluorescent beads. The sample should provide uniform, bright fluorescence to enable accurate intensity measurements. Place the sample under the objective and establish proper focus using standard microscopy techniques.
 
-            2. **Configure the microscope**
-               - Set the wavelength to the desired value
-               - Set laser power to a moderate level (avoid saturation)
-               - Enable live scanning mode
+            Configure the microscope by setting the **wavelength** to your desired excitation value and adjusting **laser power** to a moderate level that avoids saturation while providing sufficient signal. Enable **live scanning mode** to allow real-time monitoring of signal changes during optimization.
 
-            3. **Optimize GDD**
-               - View the live image histogram
-               - Adjust the GDD value in steps (typically ±500 fs²)
-               - For each GDD value, record the mean and maximum pixel values
-               - Find the GDD value that maximizes the signal intensity
+            **GDD optimization** involves systematically adjusting the dispersion compensation while monitoring signal intensity. View the **live image histogram** and adjust GDD values in incremental steps, typically **±500 fs²** initially. For each GDD setting, record both the **mean pixel intensity** and **maximum pixel values** from the histogram. The goal is to identify the GDD value that maximizes fluorescence signal intensity.
 
-            4. **Verify optimization**
-               - Plot pixel intensity vs. GDD value
-               - The optimal GDD value should be at the peak of the curve
-               - Save this value for future reference at this wavelength
+            **Verification** requires plotting pixel intensity versus GDD value to confirm that the optimal setting corresponds to the peak of the response curve. This **optimal GDD value** should be saved for future reference at this specific wavelength, as optimization is wavelength-dependent and must be repeated for each excitation wavelength commonly used.
         """
         )
 
         st.warning(
-            "**CRITICAL:** Optimal GDD values are wavelength-dependent. Repeat this procedure for each wavelength you commonly use."
+            "**CRITICAL:** Optimal GDD values are **wavelength-dependent**. The procedure must be repeated for each wavelength used in your experiments."
         )
         st.warning(
-            "**CRITICAL:** Keep the laser power constant throughout the optimization process."
+            "**CRITICAL:** Maintain **constant laser power** throughout the optimization process to ensure accurate comparisons."
         )
 
-        # Display only the pixel histogram image which we know exists
+        # Display the pixel histogram image
         st.image(
             get_image_path("pixel_histogram.png"),
-            caption="The pixel intensity value distribution is shown for one image frame while live scanning. The spread of this distribution is used to optimize laser pulse width.",
+            caption="Pixel intensity distribution during live scanning. The histogram shape and peak values are used to optimize laser pulse width through GDD adjustment.",
         )
 
 
@@ -111,7 +87,7 @@ def render_pulse_width_visualization():
 
     # Create example GDD optimization plot
     def plot_gdd_optimization_example(fig, ax):
-        # Example data
+        # Example data based on typical optimization curves
         x = np.array([-4000, -2000, 0, 2000, 4000, 6000, 8000, 10000, 12000, 14000])
         y1 = np.array([350, 420, 500, 600, 850, 1200, 1400, 1800, 2050, 1450])
 
@@ -139,7 +115,7 @@ def render_pulse_width_visualization():
         # Add labels and title
         ax.set_xlabel("GDD Value (fs²)")
         ax.set_ylabel("Pixel Intensity")
-        ax.set_title(f"Example GDD Optimization at {st.session_state.wavelength} nm")
+        ax.set_title(f"Example GDD Optimization at {st.session_state.get('wavelength', 920)} nm")
 
         # Add grid and legend
         ax.grid(True, linestyle="--", alpha=0.7)
@@ -149,88 +125,46 @@ def render_pulse_width_visualization():
     gdd_plot = create_plot(plot_gdd_optimization_example)
     st.pyplot(gdd_plot)
 
-    # Add explanation
-    with st.popover("📊 Understanding This Plot", use_container_width=True):
+    # Enhanced explanation based on Nature article insights
+    with st.popover("📊 Understanding the Optimization Curve", use_container_width=True):
         st.markdown(
             """
-        This plot shows how pixel intensity varies with different GDD values.
-        
-        **Key insights:**
-        - The peak of the curve represents the optimal GDD value
-        - At this value, the pulse is shortest at the sample, maximizing two-photon excitation
-        - The width of the curve indicates how sensitive your system is to GDD changes
-        - Optimal GDD values are wavelength-dependent
-        
-        **Typical values:**
-        - Optimal GDD values typically range from -5000 to +5000 fs²
-        - The exact value depends on your microscope's optical path
-        - More complex optical paths generally require more negative GDD compensation
+            This **GDD optimization curve** demonstrates how fluorescence signal intensity varies with dispersion compensation settings. The **peak intensity** corresponds to minimal pulse width at the sample plane, where multiphoton excitation efficiency is maximized.
+
+            **Key characteristics** of the optimization curve include the **peak position** representing optimal GDD compensation, the **curve width** indicating system sensitivity to dispersion changes, and the **maximum intensity** reflecting the quality of pulse compression achieved.
+
+            **Typical GDD values** range from **-5000 to +5000 fs²** depending on the microscope's optical path complexity. Systems with more glass elements generally require **larger negative GDD** values for optimal compensation. The **sharpness of the peak** indicates how precisely the GDD must be set for optimal performance.
+
+            **Wavelength dependence** means that each excitation wavelength requires its own optimization curve. **Shorter wavelengths** typically require less negative GDD compensation due to reduced material dispersion, while **longer wavelengths** may need more extensive correction.
         """
         )
 
 
-def render_pulse_width_tips():
-    """Render tips and best practices for pulse width optimization."""
+def render_pulse_width_quick_reference():
+    """Render quick reference content for sidebar documentation."""
+    return {
+        "title": "Pulse Width Optimization Quick Reference",
+        "content": """
+        **Essential Parameters:**
+        - **Pulse Duration**: ~100 fs for Ti:sapphire lasers
+        - **Enhancement Factor**: ~50,000× over CW at same average power
+        - **Typical GDD Range**: -5000 to +5000 fs²
+        - **Optimization Step Size**: ±500 fs² initially, ±250 fs² for fine tuning
 
-    st.subheader("Tips & Best Practices")
+        **Key Relationships:**
+        - **Shorter pulses** → Higher peak intensity → Better multiphoton efficiency
+        - **More glass elements** → More positive dispersion → Need more negative GDD
+        - **Longer wavelengths** → Greater material dispersion → More compensation needed
 
-    with st.expander("🔍 Histogram Analysis", expanded=True):
-        st.markdown(
-            """
-        ### Using the Pixel Histogram
+        **Critical Considerations:**
+        - Optimization is **wavelength-dependent**
+        - Maintain **constant laser power** during optimization
+        - Use **uniform fluorescent samples** for accurate measurements
+        - Record optimal values for each wavelength/objective combination
 
-        The pixel intensity histogram is a powerful tool for optimizing pulse width:
-
-        1. Set the vertical scale to logarithmic to see low pixel counts
-        2. Adjust the x-axis to show the full range of possible pixel values
-        3. Set laser power so pixel values occupy ~25% of the full intensity range
-        4. Record the histogram shape, mean, and maximum values for each GDD setting
-        5. Look for the GDD value that gives the highest mean and maximum values
+        **Common Issues:**
+        - **No signal change**: Check dispersion unit, laser mode-locking, sample focus
+        - **Signal decreases everywhere**: May be near optimal, try smaller steps
+        - **Optimal at range limits**: May need additional dispersion compensation
         """
-        )
-
-        st.image(
-            get_image_path("pixel_histogram.png"),
-            caption="Example pixel histogram showing intensity distribution during live scanning",
-        )
-
-    with st.expander("⚠️ Common Issues"):
-        st.markdown(
-            """
-        ### Troubleshooting Pulse Width Optimization
-
-        **If signal doesn't change with GDD adjustment:**
-        - Ensure your dispersion compensation unit is working properly
-        - Check that the laser is mode-locked
-        - Verify that the sample is fluorescent and in focus
-
-        **If signal decreases at all GDD values:**
-        - Your starting point may be near optimal
-        - Try smaller GDD adjustment steps (±250 fs²)
-        - Check for laser power fluctuations
-
-        **If optimal GDD is at the extreme of your adjustment range:**
-        - Your system may have more dispersion than your compensation unit can handle
-        - Consider adding additional dispersion compensation
-        - For very short pulses (<80 fs), higher-order dispersion may be significant
-        """
-        )
-
-    with st.expander("📝 Record Keeping"):
-        st.markdown(
-            """
-        ### Maintaining Records
-
-        For each wavelength and objective combination:
-        1. Record the optimal GDD value
-        2. Note the date of optimization
-        3. Document any changes to the optical path
-        4. Re-optimize after any significant system modifications
-        5. Periodically verify optimization (monthly recommended)
-
-        This information should be recorded in your system's rig log for future reference.
-        """
-        )
-
-
-# add_to_rig_log function moved to modules/shared_utils.py to eliminate duplication
+    }

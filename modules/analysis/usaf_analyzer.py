@@ -2101,40 +2101,37 @@ def analyze_and_display_image(idx, uploaded_file):
             st.session_state.get(threshold_key, default_threshold_val)
         )
 
-        settings_tab, roi_tab = st.tabs(["⚙️ Settings", "🎯 ROI & Analysis"])
-
-        with settings_tab:
-            (
-                selected_group,
-                selected_element,
-                magnification,
-                autoscale,
-                normalize,
-                invert,
-                equalize_histogram,
-                saturated_pixels,
-                threshold,
-                new_rotation,
-            ) = _display_settings_tab(
-                unique_id,
-                default_group,
-                default_element,
-                magnification_key,
-                autoscale_key,
-                normalize_key,
-                invert_key,
-                equalize_histogram_key,
-                saturated_pixels_key,
-                threshold_key,
-                current_threshold,
-                max_threshold_val,
-                roi_rotation_key,
-            )
-
-        with roi_tab:
-            _display_roi_tab(
-                idx, uploaded_file, image, keys, unique_id, magnification_key
-            )
+        # Combined analysis interface - no more tab switching!
+        (
+            selected_group,
+            selected_element,
+            magnification,
+            autoscale,
+            normalize,
+            invert,
+            equalize_histogram,
+            saturated_pixels,
+            threshold,
+            new_rotation,
+        ) = _display_combined_analysis_interface(
+            idx,
+            uploaded_file,
+            image,
+            keys,
+            unique_id,
+            default_group,
+            default_element,
+            magnification_key,
+            autoscale_key,
+            normalize_key,
+            invert_key,
+            equalize_histogram_key,
+            saturated_pixels_key,
+            threshold_key,
+            current_threshold,
+            max_threshold_val,
+            roi_rotation_key,
+        )
 
         _update_session_state_and_trigger_analysis(
             keys,
@@ -2242,7 +2239,11 @@ def _calculate_threshold_defaults(image_for_roi, roi_tuple):
     return default_threshold, max_threshold
 
 
-def _display_settings_tab(
+def _display_combined_analysis_interface(
+    idx,
+    uploaded_file,
+    image,
+    keys,
     unique_id,
     default_group,
     default_element,
@@ -2257,127 +2258,128 @@ def _display_settings_tab(
     max_threshold_val,
     roi_rotation_key,
 ):
-    """Displays the content of the 'Settings' tab."""
-    target_col, processing_col = st.columns([1, 1])
-    with target_col:
-        st.markdown("##### 🎯 Target Parameters")
-        group_options = ["-2", "-1", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-        selected_group = st.radio(
-            "**Group**",
-            options=group_options,
-            index=(
-                group_options.index(str(default_group))
-                if str(default_group) in group_options
-                else 2
-            ),
-            key=f"group_radio_{unique_id}",
-            horizontal=True,
-            help="USAF target group number",
-        )
-        element_options = ["1", "2", "3", "4", "5", "6"]
-        selected_element = st.radio(
-            "**Element**",
-            options=element_options,
-            index=int(default_element) - 1 if 0 < int(default_element) <= 6 else 0,
-            key=f"element_radio_{unique_id}",
-            horizontal=True,
-            help="USAF target element number",
-        )
-        magnification = st.number_input(
-            "**Magnification (×)**",
-            min_value=0.1,
-            max_value=1000.0,
-            value=st.session_state[magnification_key],
-            step=0.1,
-            format="%.1f",
-            key=f"magnification_widget_{unique_id}",
-            help="Optical magnification for display",
-        )
-    with processing_col:
-        st.markdown("##### 🖼️ Image Processing")
-        toggle_col1, toggle_col2 = st.columns(2)
-        with toggle_col1:
-            autoscale = st.toggle(
-                "**Autoscale**",
-                value=st.session_state[autoscale_key],
-                key=f"autoscale_widget_{unique_id}",
-                help="Percentile-based contrast",
+    """Combined interface - settings and ROI selection in one streamlined view."""
+    
+    # Main content in two columns: Settings on left, ROI & Results on right
+    settings_col, roi_col = st.columns([1, 1.2])
+    
+    with settings_col:
+        st.markdown("### ⚙️ Analysis Setup")
+        
+        # Target parameters in a container
+        with st.container():
+            st.markdown("**🎯 Target Parameters**")
+            group_options = ["-2", "-1", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+            selected_group = st.radio(
+                "Group",
+                options=group_options,
+                index=(
+                    group_options.index(str(default_group))
+                    if str(default_group) in group_options
+                    else 2
+                ),
+                key=f"group_radio_{unique_id}",
+                horizontal=True,
+                help="USAF target group number",
             )
-            normalize = st.toggle(
-                "**Normalize**",
-                value=st.session_state[normalize_key],
-                key=f"normalize_widget_{unique_id}",
-                help="Full range (0-255)",
+            element_options = ["1", "2", "3", "4", "5", "6"]
+            selected_element = st.radio(
+                "Element",
+                options=element_options,
+                index=int(default_element) - 1 if 0 < int(default_element) <= 6 else 0,
+                key=f"element_radio_{unique_id}",
+                horizontal=True,
+                help="USAF target element number",
             )
-        with toggle_col2:
-            invert = st.toggle(
-                "**Invert**",
-                value=st.session_state[invert_key],
-                key=f"invert_widget_{unique_id}",
-                help="Invert colors",
+            magnification = st.number_input(
+                "Magnification (×)",
+                min_value=0.1,
+                max_value=1000.0,
+                value=st.session_state[magnification_key],
+                step=0.1,
+                format="%.1f",
+                key=f"magnification_widget_{unique_id}",
+                help="Optical magnification for display",
             )
-            equalize_histogram = st.toggle(
-                "**Equalize**",
-                value=st.session_state[equalize_histogram_key],
-                key=f"equalize_histogram_widget_{unique_id}",
-                help="Histogram equalization",
-            )
-        saturated_pixels = st.slider(
-            "**Saturated Pixels (%)**",
-            min_value=0.0,
-            max_value=20.0,
-            value=st.session_state[saturated_pixels_key],
-            step=0.1,
-            format="%.1f",
-            key=f"saturated_pixels_widget_{unique_id}",
-            disabled=not autoscale,
-            help="Percentage of pixels to saturate",
-        )
-    st.markdown("##### 🔍 Analysis Options")
-    analysis_col1, analysis_col2 = st.columns([2, 1])
-    with analysis_col1:
-        threshold = st.slider(
-            "**Threshold Line**",
-            min_value=0,
-            max_value=max_threshold_val,  # Use calculated max
-            value=current_threshold,  # Use current or default
-            key=f"threshold_widget_{unique_id}",
-            help="Edge detection threshold",
-        )
-    with analysis_col2:
-        prev_rotation = st.session_state.get(roi_rotation_key, 0)
-        rotation_options = ["0°", "90°", "180°", "270°"]
-        selected_rotation_str = st.radio(
-            "**ROI Rotation**",
-            options=rotation_options,
-            index=prev_rotation,
-            horizontal=True,
-            key=f"roi_rotation_radio_{unique_id}",
-            help="Rotate extracted ROI",
-        )
-        new_rotation = rotation_options.index(selected_rotation_str)
-    return (
-        selected_group,
-        selected_element,
-        magnification,
-        autoscale,
-        normalize,
-        invert,
-        equalize_histogram,
-        saturated_pixels,
-        threshold,
-        new_rotation,
-    )
 
+        st.markdown("---")
+        
+        # Analysis controls in a container
+        with st.container():
+            st.markdown("**🔍 Analysis Controls**")
+            threshold = st.slider(
+                "Threshold Line",
+                min_value=0,
+                max_value=max_threshold_val,
+                value=current_threshold,
+                key=f"threshold_widget_{unique_id}",
+                help="Edge detection threshold - adjust to optimize line detection",
+            )
+            
+            prev_rotation = st.session_state.get(roi_rotation_key, 0)
+            rotation_options = ["0°", "90°", "180°", "270°"]
+            selected_rotation_str = st.radio(
+                "ROI Rotation",
+                options=rotation_options,
+                index=prev_rotation,
+                horizontal=True,
+                key=f"roi_rotation_radio_{unique_id}",
+                help="Rotate extracted ROI for optimal line pair orientation",
+            )
+            new_rotation = rotation_options.index(selected_rotation_str)
 
-def _display_roi_tab(idx, uploaded_file, image, keys, unique_id, magnification_key):
-    """Displays the content of the 'ROI & Analysis' tab."""
-    roi_col, result_col = st.columns([1, 1])
+        st.markdown("---")
+        
+        # Image processing in an expander to save space
+        with st.expander("🖼️ Image Processing Options", expanded=False):
+            toggle_col1, toggle_col2 = st.columns(2)
+            with toggle_col1:
+                autoscale = st.toggle(
+                    "Autoscale",
+                    value=st.session_state[autoscale_key],
+                    key=f"autoscale_widget_{unique_id}",
+                    help="Percentile-based contrast",
+                )
+                normalize = st.toggle(
+                    "Normalize", 
+                    value=st.session_state[normalize_key],
+                    key=f"normalize_widget_{unique_id}",
+                    help="Full range (0-255)",
+                )
+            with toggle_col2:
+                invert = st.toggle(
+                    "Invert",
+                    value=st.session_state[invert_key],
+                    key=f"invert_widget_{unique_id}",
+                    help="Invert colors",
+                )
+                equalize_histogram = st.toggle(
+                    "Equalize",
+                    value=st.session_state[equalize_histogram_key],
+                    key=f"equalize_histogram_widget_{unique_id}",
+                    help="Histogram equalization",
+                )
+            saturated_pixels = st.slider(
+                "Saturated Pixels (%)",
+                min_value=0.0,
+                max_value=20.0,
+                value=st.session_state[saturated_pixels_key],
+                step=0.1,
+                format="%.1f",
+                key=f"saturated_pixels_widget_{unique_id}",
+                disabled=not autoscale,
+                help="Percentage of pixels to saturate",
+            )
+    
     with roi_col:
-        st.markdown("##### 🎯 Select Region of Interest")
+        st.markdown("### 🎯 ROI Selection & Results")
+        
+        # ROI selection
+        st.markdown("**Select Analysis Region**")
         pil_img = Image.fromarray(image)
         draw = ImageDraw.Draw(pil_img)
         current_coords = st.session_state.get(keys["coordinates"])
+        
         if current_coords:
             p1, p2 = current_coords
             coords = (
@@ -2398,21 +2400,21 @@ def _display_roi_tab(idx, uploaded_file, image, keys, unique_id, magnification_k
             idx, uploaded_file, pil_img, key=f"usaf_image_{idx}", rotation=0
         )
         if roi_changed:
-            st.session_state[f"settings_changed_{unique_id}"] = (
-                True  # Trigger analysis on ROI change
-            )
+            st.session_state[f"settings_changed_{unique_id}"] = True
 
+        # ROI status
         if current_coords:
-            (
+            if st.session_state.get(keys["roi_valid"], False):
                 st.success("✅ **Valid ROI selected** - Ready for analysis")
-                if st.session_state.get(keys["roi_valid"], False)
-                else st.error("❌ **Invalid ROI** - Please reselect area")
-            )
+            else:
+                st.error("❌ **Invalid ROI** - Please reselect area")
         else:
             st.info("👆 **Click and drag** to select analysis region")
 
-    with result_col:
-        st.markdown("##### 📊 Analysis Results")
+        st.markdown("---")
+        
+        # Results section
+        st.markdown("**📊 Analysis Results**")
         analysis_results_for_plot = st.session_state.get(keys["analysis_results"])
         if analysis_results_for_plot:
             roi_rotation_from_results = analysis_results_for_plot.get("roi_rotation", 0)
@@ -2446,7 +2448,7 @@ def _display_roi_tab(idx, uploaded_file, image, keys, unique_id, magnification_k
             )
             if fig:
                 st.pyplot(fig)
-                # Download button and caption logic remains similar
+                # Download button
                 buf = io.BytesIO()
                 fig.savefig(buf, format="png", bbox_inches="tight", dpi=150)
                 buf.seek(0)
@@ -2517,6 +2519,22 @@ def _display_roi_tab(idx, uploaded_file, image, keys, unique_id, magnification_k
                 st.warning(f"⚠️ Could not display ROI preview: {e!s}")
         else:  # No ROI selected
             st.info("👆 **Select an ROI above** to view analysis results")
+    
+    return (
+        selected_group,
+        selected_element,
+        magnification,
+        autoscale,
+        normalize,
+        invert,
+        equalize_histogram,
+        saturated_pixels,
+        threshold,
+        new_rotation,
+    )
+
+
+
 
 
 def _update_session_state_and_trigger_analysis(
@@ -2758,25 +2776,26 @@ def _display_page_header():
 
 
 def _display_control_tabs():
-    """Displays the control panel tabs for managing images, export, and help."""
-    upload_tab, manage_tab, export_tab, help_tab = st.tabs(
-        ["📁 Upload & Status", "🗂️ Manage Images", "📤 Export Results", "💡 Help & Tips"]
+    """Displays the streamlined control panel with fewer tabs."""
+    # Combine upload and manage into one tab, keep export and help separate
+    main_tab, export_tab, help_tab = st.tabs(
+        ["📁 Images & Management", "📤 Export Results", "💡 Help & Tips"]
     )
-    with upload_tab:
-        _display_upload_tab()
-    with manage_tab:
-        _display_manage_tab()
+    with main_tab:
+        _display_images_and_management_tab()
     with export_tab:
         _display_export_tab()
     with help_tab:
         _display_help_tab()
 
 
-def _display_upload_tab():
-    """Displays the content of the 'Upload & Status' tab."""
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        st.markdown("#### 📁 **Upload Images**")
+def _display_images_and_management_tab():
+    """Combined upload and management functionality in one streamlined interface."""
+    # Top row: Upload and status
+    upload_col, status_col, manage_col = st.columns([2, 1, 1])
+    
+    with upload_col:
+        st.markdown("**📁 Upload Images**")
         if new_uploaded_files := st.file_uploader(
             "Select USAF target image(s)",
             type=["jpg", "jpeg", "png", "tif", "tiff"],
@@ -2794,10 +2813,11 @@ def _display_upload_tab():
                 if new_file_name not in file_names:
                     st.session_state.uploaded_files_list.append(file)
                     st.success(f"✅ **Added:** {new_file_name}")
-    with col2:
-        st.markdown("#### 📊 **Current Status**")
+    
+    with status_col:
+        st.markdown("**📊 Status**")
         if st.session_state.uploaded_files_list:
-            st.info(f"**{len(st.session_state.uploaded_files_list)}** image(s) loaded")
+            st.info(f"**{len(st.session_state.uploaded_files_list)}** loaded")
             analyzed_count = sum(
                 1
                 for idx, uploaded_file in enumerate(
@@ -2808,18 +2828,15 @@ def _display_upload_tab():
                 )
             )
             if analyzed_count > 0:
-                st.success(f"**{analyzed_count}** image(s) analyzed")
+                st.success(f"**{analyzed_count}** analyzed")
             else:
-                st.warning("**No images analyzed yet**")
+                st.warning("**None analyzed**")
         else:
-            st.info("**No images loaded**")
-
-
-def _display_manage_tab():
-    """Displays the content of the 'Manage Images' tab."""
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("#### 🗂️ **Image Management**")
+            st.info("**No images**")
+    
+    with manage_col:
+        st.markdown("**🗂️ Management**")
+        # Auto-load default image if no images present
         default_image_path = load_default_image()
         if (
             not st.session_state.uploaded_files_list
@@ -2828,39 +2845,54 @@ def _display_manage_tab():
         ):
             st.session_state.uploaded_files_list.append(default_image_path)
             st.session_state.default_image_added = True
-            st.info(
-                f"📷 **Default image loaded:** {os.path.basename(default_image_path)}"
-            )
+            st.info(f"📷 Default loaded")
 
-        if st.button("🗑️ **Clear All Images**", use_container_width=True):
+        if st.button("🗑️ Clear All", use_container_width=True, type="secondary"):
             st.session_state.uploaded_files_list = []
             st.session_state.default_image_added = False
             st.session_state.image_index_to_id = {}
-            st.success("✅ **All images cleared**")
             for key in list(st.session_state.keys()):
                 if any(key.startswith(prefix) for prefix in SESSION_STATE_PREFIXES):
                     del st.session_state[key]
+            st.success("✅ **All images cleared**")
             st.rerun()
-    with col2:
-        if st.session_state.uploaded_files_list:
-            st.markdown("#### 📋 **Loaded Images**")
-            for idx, uploaded_file in enumerate(st.session_state.uploaded_files_list):
-                filename = (
-                    uploaded_file.name
-                    if hasattr(uploaded_file, "name")
-                    else (
-                        os.path.basename(uploaded_file)
-                        if isinstance(uploaded_file, str)
-                        else f"Image {idx+1}"
-                    )
+    
+    # Bottom section: Loaded images list (only if there are images)
+    if st.session_state.uploaded_files_list:
+        st.markdown("---")
+        st.markdown("**📋 Loaded Images**")
+        
+        # Create a more compact display
+        for idx, uploaded_file in enumerate(st.session_state.uploaded_files_list):
+            filename = (
+                uploaded_file.name
+                if hasattr(uploaded_file, "name")
+                else (
+                    os.path.basename(uploaded_file)
+                    if isinstance(uploaded_file, str)
+                    else f"Image {idx+1}"
                 )
-                keys = get_image_session_keys(idx, uploaded_file)
-                status = (
-                    "✅ Analyzed"
-                    if st.session_state.get(keys["analysis_results"])
-                    else "⏳ Pending"
-                )
-                st.text(f"{idx+1}. {filename} - {status}")
+            )
+            keys = get_image_session_keys(idx, uploaded_file)
+            has_results = st.session_state.get(keys["analysis_results"])
+            
+            # Use columns for a more compact layout
+            img_col1, img_col2, img_col3 = st.columns([3, 1, 1])
+            with img_col1:
+                st.text(f"{idx+1}. {filename}")
+            with img_col2:
+                if has_results:
+                    st.success("✅ Done")
+                else:
+                    st.warning("⏳ Pending")
+            with img_col3:
+                # Quick jump to image (optional enhancement for later)
+                if has_results:
+                    group = st.session_state.get(keys["last_group"], "?")
+                    element = st.session_state.get(keys["last_element"], "?")
+                    st.text(f"G{group}E{element}")
+                else:
+                    st.text("—")
 
 
 def _display_export_tab():
