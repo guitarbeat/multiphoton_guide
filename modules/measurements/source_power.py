@@ -34,7 +34,7 @@ def render_source_power_form():
             st.session_state.wavelength,                           # Wavelength (nm)
             2000,                                                  # Pump Current (mA)
             25.0,                                                  # Temperature (°C)
-            0.0,                                                   # Measured Power (W)
+            0.0,                                                   # Measured Power (mW)
             0,                                                     # Pulse Width (fs)
             "",                                                    # Grating Position
             "Unknown",                                             # Fan Status
@@ -77,11 +77,11 @@ def render_source_power_form():
             format="%.1f",
             help="Operating temperature"
         ),
-        "Measured Power (W)": st.column_config.NumberColumn(
-            "Measured Power (W)",
+        "Measured Power (mW)": st.column_config.NumberColumn(
+            "Measured Power (mW)",
             min_value=0.0,
-            step=0.1,
-            format="%.2f",
+            step=1.0,
+            format="%.0f",
             help="Power measured at the source"
         ),
         "Pulse Width (fs)": st.column_config.NumberColumn(
@@ -140,7 +140,7 @@ def render_source_power_form():
             # Remove empty rows (rows where key measurement fields are empty/zero)
             filtered_df = edited_df[
                 (edited_df["Pump Current (mA)"] > 0) | 
-                (edited_df["Measured Power (W)"] > 0) | 
+                (edited_df["Measured Power (mW)"] > 0) | 
                 (edited_df["Notes"].str.strip() != "") |
                 (edited_df["Pulse Width (fs)"] > 0) |
                 (edited_df["Grating Position"].str.strip() != "")
@@ -149,7 +149,7 @@ def render_source_power_form():
             # Validate required fields
             if not filtered_df.empty:
                 # Check for missing values in critical columns
-                missing_power = filtered_df["Measured Power (W)"].isna() | (filtered_df["Measured Power (W)"] <= 0)
+                missing_power = filtered_df["Measured Power (mW)"].isna() | (filtered_df["Measured Power (mW)"] <= 0)
                 missing_current = filtered_df["Pump Current (mA)"].isna() | (filtered_df["Pump Current (mA)"] <= 0)
                 
                 if missing_power.any() or missing_current.any():
@@ -180,7 +180,16 @@ def render_source_power_form():
         
         # Load SOP data to show equation
         sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
-        if not sop_df.empty and "Pump Current (mA)" in sop_df.columns and "Expected Power (W)" in sop_df.columns:
+        
+        # Check for column names (backward compatibility)
+        power_col = None
+        if not sop_df.empty and "Pump Current (mA)" in sop_df.columns:
+            if "Expected Power (mW)" in sop_df.columns:
+                power_col = "Expected Power (mW)"
+            elif "Expected Power (W)" in sop_df.columns:
+                power_col = "Expected Power (W)"
+        
+        if power_col is not None:
             # Filter to current study if available
             if "Study Name" in sop_df.columns:
                 filtered_sop_df = filter_dataframe(
@@ -193,12 +202,16 @@ def render_source_power_form():
                 
             # Get data for fit
             curr_sop = filtered_sop_df["Pump Current (mA)"].astype(float).values
-            power_sop = filtered_sop_df["Expected Power (W)"].astype(float).values
+            power_sop = filtered_sop_df[power_col].astype(float).values
+            
+            # Convert W to mW if needed for consistency
+            if power_col == "Expected Power (W)":
+                power_sop = power_sop * 1000
             
             # Calculate fit if enough data points
             if len(curr_sop) >= 3:
                 fit_params = exponential_fit(curr_sop, power_sop)
-                equation_text = f"Power = {fit_params['a']:.3f} × e^({fit_params['b']:.5f} × Current) + {fit_params['c']:.3f}"
+                equation_text = f"Power (mW) = {fit_params['a']:.1f} × e^({fit_params['b']:.5f} × Current) + {fit_params['c']:.1f}"
                 r_squared_text = f"R² = {fit_params['r_squared']:.4f}"
                 st.info(f"**Expected Power Formula:** {equation_text} ({r_squared_text})")
 
@@ -207,7 +220,7 @@ def render_source_power_form():
         for _, row in edited_df.iterrows():
             if pd.notna(row["Pump Current (mA)"]) and row["Pump Current (mA)"] > 0:
                 expected = get_expected_power(row["Pump Current (mA)"])
-                expected_powers.append(f"{row['Pump Current (mA)']} mA → {expected:.2f} W expected")
+                expected_powers.append(f"{row['Pump Current (mA)']} mA → {expected:.0f} mW expected")
         
         if expected_powers:
             st.caption("**Current Entries:** " + " | ".join(expected_powers))
@@ -218,9 +231,18 @@ def get_expected_power(current):
     # Load SOP data from Supabase
     sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
     
-    # If no SOP data exists, use default values
-    if sop_df.empty or "Pump Current (mA)" not in sop_df.columns or "Expected Power (W)" not in sop_df.columns:
-        # Default values as fallback
+    # Check for both old and new column names (backward compatibility)
+    power_col = None
+    if not sop_df.empty and "Pump Current (mA)" in sop_df.columns:
+        if "Expected Power (mW)" in sop_df.columns:
+            power_col = "Expected Power (mW)"
+        elif "Expected Power (W)" in sop_df.columns:
+            power_col = "Expected Power (W)"
+            # Convert W to mW for consistency
+    
+    # If no SOP data exists or missing required columns, use default values
+    if sop_df.empty or "Pump Current (mA)" not in sop_df.columns or power_col is None:
+        # Default values as fallback (converted to mW)
         currents = np.array(
             [
                 0,
@@ -247,22 +269,22 @@ def get_expected_power(current):
             [
                 0.0,
                 0.0,
-                0.2,
-                0.2,
-                0.9,
-                1.4,
-                2.0,
-                2.3,
-                3.2,
-                3.8,
-                4.4,
-                4.8,
-                5.7,
-                6.3,
-                7.0,
-                7.5,
-                8.0,
-                8.2,
+                200.0,
+                200.0,
+                900.0,
+                1400.0,
+                2000.0,
+                2300.0,
+                3200.0,
+                3800.0,
+                4400.0,
+                4800.0,
+                5700.0,
+                6300.0,
+                7000.0,
+                7500.0,
+                8000.0,
+                8200.0,
             ]
         )
     else:
@@ -282,7 +304,11 @@ def get_expected_power(current):
         
         # Extract arrays for interpolation
         currents = filtered_df["Pump Current (mA)"].astype(float).values
-        powers = filtered_df["Expected Power (W)"].astype(float).values
+        powers = filtered_df[power_col].astype(float).values
+        
+        # Convert W to mW if needed for consistency
+        if power_col == "Expected Power (W)":
+            powers = powers * 1000
         
         # Add zero point if not present
         if currents[0] > 0:
@@ -373,10 +399,10 @@ def render_source_power_theory_and_procedure(theory_only=False, procedure_only=F
                - Record power at each current level
             
             3. **Expected Power Levels**
-               - ~0.2 W at 2000 mA
-               - ~2.3 W at 4000 mA
-               - ~4.8 W at 6000 mA
-               - ~7.5 W at 8000 mA
+               - ~200 mW at 2000 mA
+               - ~2300 mW at 4000 mA
+               - ~4800 mW at 6000 mA
+               - ~7500 mW at 8000 mA
             
             4. **Pulse Width Control** (for reference)
                - Use grating pair (F-G1 & F-G2) to adjust pulse width
@@ -425,7 +451,7 @@ def render_source_power_visualization():
         [
             {
                 "label": "Latest Power",
-                "value": f"{filtered_df['Measured Power (W)'].iloc[-1]:.2f} W",
+                "value": f"{filtered_df['Measured Power (mW)'].iloc[-1]:.0f} mW",
             },
             {
                 "label": "Pump Current",
@@ -433,7 +459,7 @@ def render_source_power_visualization():
             },
             {
                 "label": "Power Ratio",
-                "value": f"{filtered_df['Measured Power (W)'].iloc[-1] / filtered_df['Expected Power (W)'].iloc[-1]:.2f}",
+                "value": f"{filtered_df['Measured Power (mW)'].iloc[-1] / get_expected_power(filtered_df['Pump Current (mA)'].iloc[-1]):.2f}",
             },
         ]
     )
@@ -442,7 +468,7 @@ def render_source_power_visualization():
     def plot_power_vs_current(fig, ax):
         # Get data
         x = filtered_df["Pump Current (mA)"].values
-        y = filtered_df["Measured Power (W)"].values
+        y = filtered_df["Measured Power (mW)"].values
 
         # Plot data points
         ax.scatter(x, y, color="#4BA3C4", s=50, alpha=0.7, label="Measurements")
@@ -450,10 +476,22 @@ def render_source_power_visualization():
         # Load SOP data for expected power curve
         sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
         
-        if not sop_df.empty and "Pump Current (mA)" in sop_df.columns and "Expected Power (W)" in sop_df.columns:
+        # Check for column names (backward compatibility)
+        power_col = None
+        if not sop_df.empty and "Pump Current (mA)" in sop_df.columns:
+            if "Expected Power (mW)" in sop_df.columns:
+                power_col = "Expected Power (mW)"
+            elif "Expected Power (W)" in sop_df.columns:
+                power_col = "Expected Power (W)"
+        
+        if power_col is not None:
             # Get SOP data
             curr_sop = sop_df["Pump Current (mA)"].astype(float).values
-            power_sop = sop_df["Expected Power (W)"].astype(float).values
+            power_sop = sop_df[power_col].astype(float).values
+            
+            # Convert W to mW if needed for consistency
+            if power_col == "Expected Power (W)":
+                power_sop = power_sop * 1000
             
             # Sort by current for plotting
             sort_indices = np.argsort(curr_sop)
@@ -493,9 +531,9 @@ def render_source_power_visualization():
                 ax.plot(curr_sop, power_sop, color="#BF5701", linestyle="--", 
                       label="Expected Values")
         else:
-            # Fallback to hardcoded expected values if no SOP data
+            # Fallback to hardcoded expected values if no SOP data (converted to mW)
             expected_x = [2000, 4000, 6000, 8000]
-            expected_y = [0.2, 2.3, 4.8, 7.5]
+            expected_y = [200, 2300, 4800, 7500]
             ax.plot(
                 expected_x,
                 expected_y,
@@ -506,12 +544,12 @@ def render_source_power_visualization():
 
         # Add labels and title
         ax.set_xlabel("Pump Current (mA)")
-        ax.set_ylabel("Measured Power (W)")
+        ax.set_ylabel("Measured Power (mW)")
         ax.set_title("Source Power vs. Pump Current")
         
         # Set reasonable axis limits
         ax.set_xlim(0, max(filtered_df["Pump Current (mA)"].max() * 1.1, 8500))
-        ax.set_ylim(0, max(filtered_df["Measured Power (W)"].max() * 1.1, 8.0))
+        ax.set_ylim(0, max(filtered_df["Measured Power (mW)"].max() * 1.1, 8000.0))
 
         # Add grid and legend
         ax.grid(True, linestyle="--", alpha=0.7)
@@ -538,9 +576,9 @@ def render_source_power_visualization():
         - Regular monitoring helps detect system changes over time
         
         **Typical values:**
-        - ~0.2 W at 2000 mA
-        - ~2.3 W at 4000 mA
-        - ~4.8 W at 6000 mA
-        - ~7.5 W at 8000 mA
+        - ~200 mW at 2000 mA
+        - ~2300 mW at 4000 mA
+        - ~4800 mW at 6000 mA
+        - ~7500 mW at 8000 mA
         """
         )

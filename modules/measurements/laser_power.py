@@ -60,113 +60,18 @@ def render_laser_power_tab(use_sidebar_values=False):
         # Create main layout with the measurement form prominently displayed at the top
         render_simplified_measurement_form(use_sidebar_values)
 
-        # Create tabs for recent measurements and combined theory/procedure below the form
-        recent_tab, theory_tab = st.tabs(["Recent Measurements", "Theory & Procedure"])
-
-        with recent_tab:
-            # Show recent measurements
-            st.subheader("Recent Measurements")
-
-            # Load existing data
-            laser_power_df = load_dataframe(LASER_POWER_FILE, pd.DataFrame())
-
-            if laser_power_df.empty:
-                st.info(
-                    "No measurements found. Check your Google Sheets connection or "
-                    "add data to the sheet."
-                )
-            else:
-                # Filter to current study
-                filtered_df = filter_dataframe(
-                    laser_power_df, {"Study Name": st.session_state.study_name}
-                )
-
-                if filtered_df.empty:
-                    st.info("No measurements found for the current study.")
-                else:
-                    # Sort by date (newest first) and select only the most recent measurements
-                    filtered_df = filtered_df.sort_values("Date", ascending=False).head(
-                        5
-                    )
-
-                    # Columns to display/edit
-                    editable_cols = [
-                        "Date",
-                        "Modulation (%)",
-                        "Measured Power (mW)",
-                        "Measurement Mode",
-                        "Sensor Model",
-                        "Fill Fraction (%)",
-                        "Notes",
-                    ]
-                    display_cols = [col for col in editable_cols if col in filtered_df.columns]
-
-                    # Use st.data_editor for inline editing and deleting
-                    edited_df = st.data_editor(
-                        filtered_df[display_cols],
-                        num_rows="dynamic",  # Allow add/delete
-                        use_container_width=True,
-                        key="laser_power_editor"
-                    )
-
-                    if st.button("💾 Save Changes to Laser Power Log"):
-                        # Only save if there are actual changes
-                        if not edited_df.equals(filtered_df[display_cols]):
-                            # Update the original DataFrame with the edited data
-                            updated_df = filtered_df.copy()
-                            updated_df.update(edited_df)
-                            save_dataframe(updated_df, LASER_POWER_FILE)
-                            st.success("Laser power log updated!")
-                            st.rerun()
-                        else:
-                            st.info("No changes to save.")
-
-        with theory_tab:
-            # Show combined theory and procedure
-            render_laser_power_theory_and_procedure()
-            # Optionally, also show visualization here if desired
-            render_laser_power_visualization()
+        # Show combined theory and procedure below the form
+        st.markdown("---")
+        render_laser_power_theory_and_procedure()
+        # Show visualization
+        render_laser_power_visualization()
 
     with source_tab:
         # Show the form and live plot at the top
         render_source_power_form()
-        # Create a single row of three tabs for the source section
-        tab_recent, tab_sop, tab_theory = st.tabs(["Recent Measurements", "Expected SOP", "Theory & Procedure"])
+        # Create tabs for SOP and Theory
+        tab_sop, tab_theory = st.tabs(["Expected SOP", "Theory & Procedure"])
 
-        with tab_recent:
-            # Only show the recent measurements table (not the form or plot)
-            source_power_df = load_dataframe(SOURCE_POWER_FILE, pd.DataFrame())
-            st.subheader("Recent Measurements")
-            if not source_power_df.empty:
-                filtered_df = filter_dataframe(
-                    source_power_df, {"Study Name": st.session_state.study_name}
-                )
-                if not filtered_df.empty:
-                    filtered_df = filtered_df.sort_values("Date", ascending=False).head(5)
-                    editable_cols = [
-                        "Date",
-                        "Pump Current (mA)",
-                        "Measured Power (W)",
-                        "Expected Power (W)",
-                        "Notes",
-                    ]
-                    display_cols = [col for col in editable_cols if col in filtered_df.columns]
-                    edited_df = st.data_editor(
-                        filtered_df[display_cols],
-                        num_rows="dynamic",
-                        use_container_width=True,
-                        key="source_power_editor"
-                    )
-                    if st.button("💾 Save Changes to Source Power Log"):
-                        if not edited_df.equals(filtered_df[display_cols]):
-                            updated_df = filtered_df.copy()
-                            updated_df.update(edited_df)
-                            save_dataframe(updated_df, SOURCE_POWER_FILE)
-                            st.success("Source power log updated!")
-                            st.rerun()
-                        else:
-                            st.info("No changes to save.")
-                            
         with tab_sop:
             st.subheader("Expected SOP: Power vs. Pump Current")
             st.markdown("""
@@ -200,13 +105,13 @@ def render_laser_power_tab(use_sidebar_values=False):
                         step=1,
                         format="%.1f",
                     ),
-                    "Expected Power (W)": st.column_config.NumberColumn(
-                        "Expected Power (W)",
-                        help="Expected power output in watts",
+                    "Expected Power (mW)": st.column_config.NumberColumn(
+                        "Expected Power (mW)",
+                        help="Expected power output in milliwatts",
                         min_value=0,
-                        max_value=10,
-                        step=0.001,
-                        format="%.3f",
+                        max_value=10000,
+                        step=1,
+                        format="%.0f",
                     ),
                     "Wavelength (nm)": st.column_config.NumberColumn(
                         "Wavelength (nm)",
@@ -245,7 +150,7 @@ def render_laser_power_tab(use_sidebar_values=False):
                             # Prepare data for fitting
                             sorted_df = edited_sop_df.sort_values("Pump Current (mA)")
                             pump_currents = sorted_df["Pump Current (mA)"].astype(float).values
-                            powers = sorted_df["Expected Power (W)"].astype(float).values
+                            powers = sorted_df["Expected Power (mW)"].astype(float).values
                             
                             # Calculate exponential fit
                             fit_params = exponential_fit(pump_currents, powers)
@@ -262,7 +167,7 @@ def render_laser_power_tab(use_sidebar_values=False):
                             save_fit_parameters("sop_power_vs_pump", fit_params, metadata)
                             
                             # Show the fit equation
-                            equation = f"Power = {fit_params['a']:.3f} × e^({fit_params['b']:.5f} × Current) + {fit_params['c']:.3f}"
+                            equation = f"Power (mW) = {fit_params['a']:.1f} × e^({fit_params['b']:.5f} × Current) + {fit_params['c']:.1f}"
                             st.success(f"SOP data and fit saved successfully! Exponential fit: {equation}")
                         except Exception as e:
                             # Still show success even if fit calculation fails
@@ -275,7 +180,7 @@ def render_laser_power_tab(use_sidebar_values=False):
                     st.info("No changes to save.")
             
             # Show a plot of the SOP data
-            if not edited_sop_df.empty and "Pump Current (mA)" in edited_sop_df.columns and "Expected Power (W)" in edited_sop_df.columns:
+            if not edited_sop_df.empty and "Pump Current (mA)" in edited_sop_df.columns and "Expected Power (mW)" in edited_sop_df.columns:
                 st.subheader("SOP Power Curve")
                 
                 # Sort by pump current for proper plotting
@@ -285,14 +190,14 @@ def render_laser_power_tab(use_sidebar_values=False):
                 def plot_sop_data(fig, ax):
                     ax.plot(
                         plot_df["Pump Current (mA)"].values,
-                        plot_df["Expected Power (W)"].values,
+                        plot_df["Expected Power (mW)"].values,
                         marker='o',
                         linestyle='-',
                         color="#1f77b4",
                         label="Expected Power"
                     )
                     ax.set_xlabel("Pump Current (mA)")
-                    ax.set_ylabel("Expected Power (W)")
+                    ax.set_ylabel("Expected Power (mW)")
                     ax.set_title("Expected Power vs. Pump Current")
                     ax.grid(True, linestyle='--', alpha=0.7)
                     ax.legend()

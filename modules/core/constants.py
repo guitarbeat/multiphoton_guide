@@ -21,7 +21,7 @@ SOURCE_POWER_COLUMNS = [
     "Wavelength (nm)",
     "Pump Current (mA)",
     "Temperature (°C)",
-    "Measured Power (W)",
+    "Measured Power (mW)",
     "Pulse Width (fs)",
     "Grating Position",
     "Fan Status",
@@ -32,7 +32,7 @@ SOURCE_POWER_COLUMNS = [
 SOP_POWER_VS_PUMP_FILE = "sop_power_vs_pump"
 SOP_POWER_VS_PUMP_COLUMNS = [
     "Pump Current (mA)",
-    "Expected Power (W)",
+    "Expected Power (mW)",
     "Wavelength (nm)",
     "Temperature (°C)",
     "Study Name",
