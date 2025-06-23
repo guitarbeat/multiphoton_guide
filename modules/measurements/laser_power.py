@@ -268,119 +268,158 @@ def render_laser_power_theory_and_procedure():
 
 
 def render_simplified_measurement_form(use_sidebar_values=False):
-    """Render the simplified measurement form for laser power measurements."""
+    """Render the editable dataframe for laser power measurements."""
     # Load existing data
     laser_power_df = load_dataframe(LASER_POWER_FILE, pd.DataFrame())
 
-    # Get colors for styling
-    colors = get_colors()
+    st.subheader("Laser Power Measurements")
 
-    st.markdown('<div class="measurement-form">', unsafe_allow_html=True)
+    # Initialize with default structure if empty
+    if laser_power_df.empty:
+        laser_power_df = pd.DataFrame(columns=LASER_POWER_COLUMNS)
+        # Add one empty row for editing
+        laser_power_df.loc[0] = [
+            st.session_state.study_name,                           # Study Name
+            datetime.now(),                                        # Date (as datetime object)  
+            st.session_state.wavelength,                           # Wavelength (nm)
+            st.session_state.get("researcher", ""),               # Researcher
+            st.session_state.get("sensor_model", ""),             # Sensor Model
+            "Stationary",                                          # Measurement Mode
+            100.0,                                                 # Fill Fraction (%)
+            10,                                                    # Modulation (%)
+            0.0,                                                   # Measured Power (mW)
+            ""                                                     # Notes
+        ]
+    
+    # Convert Date column to datetime if it exists and is string type
+    if not laser_power_df.empty and "Date" in laser_power_df.columns:
+        if laser_power_df["Date"].dtype == 'object':  # String type
+            try:
+                laser_power_df["Date"] = pd.to_datetime(laser_power_df["Date"])
+            except:
+                # If conversion fails, keep as string and use text column config
+                pass
 
-    # Single measurement form
-    st.subheader("Add Single Measurement")
-
-    with st.form(key="quick_measurement_form"):
-        # Create three columns for the form
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            # Sensor Model input (optional)
-            sensor_model = st.text_input(
-                "Sensor Model (optional):",
-                value=st.session_state.get("sensor_model", ""),
-                help="Enter the model of your power meter sensor (optional)",
+    # Create column configuration for the data editor
+    column_config = {
+        "Study Name": st.column_config.TextColumn(
+            "Study Name",
+            default=st.session_state.study_name,
+            help="Name of the study"
+        ),
+        "Wavelength (nm)": st.column_config.NumberColumn(
+            "Wavelength (nm)",
+            default=st.session_state.wavelength,
+            help="Wavelength setting"
+        ),
+        "Researcher": st.column_config.TextColumn(
+            "Researcher",
+            help="Name of the researcher"
+        ),
+        "Sensor Model": st.column_config.TextColumn(
+            "Sensor Model",
+            help="Model of the power meter sensor"
+        ),
+        "Measurement Mode": st.column_config.SelectboxColumn(
+            "Measurement Mode",
+            options=MEASUREMENT_MODES,
+            help="Stationary: beam fixed at center. Scanning: beam continuously scanning."
+        ),
+        "Fill Fraction (%)": st.column_config.NumberColumn(
+            "Fill Fraction (%)",
+            min_value=1,
+            max_value=100,
+            step=1,
+            format="%.0f",
+            help="Percentage of time the beam is 'on' during scanning"
+        ),
+        "Modulation (%)": st.column_config.NumberColumn(
+            "Modulation (%)",
+            min_value=0,
+            max_value=100,
+            step=1,
+            format="%.0f",
+            help="Percentage of maximum laser power"
+        ),
+        "Measured Power (mW)": st.column_config.NumberColumn(
+            "Measured Power (mW)",
+            min_value=0.0,
+            step=0.1,
+            format="%.1f",
+            help="Power measured at the sample"
+        ),
+        "Notes": st.column_config.TextColumn(
+            "Notes",
+            help="Optional notes about the measurement"
+        )
+    }
+    
+    # Add Date column configuration based on data type
+    if not laser_power_df.empty and "Date" in laser_power_df.columns:
+        if pd.api.types.is_datetime64_any_dtype(laser_power_df["Date"]):
+            column_config["Date"] = st.column_config.DatetimeColumn(
+                "Date",
+                help="Date and time of measurement"
             )
-
-            modulation = st.number_input(
-                "Modulation (%):",
-                min_value=0,
-                max_value=100,
-                value=10,
-                step=5,
-                help="Percentage of maximum laser power",
+        else:
+            column_config["Date"] = st.column_config.TextColumn(
+                "Date",
+                help="Date and time of measurement (YYYY-MM-DD HH:MM:SS)"
             )
+    else:
+        # Default for new dataframes
+        column_config["Date"] = st.column_config.DatetimeColumn(
+            "Date",
+            help="Date and time of measurement"
+        )
 
-        with col2:
-            # Measurement Mode selection
-            measurement_mode = st.radio(
-                "Measurement Mode:",
-                MEASUREMENT_MODES,
-                index=(
-                    0
-                    if st.session_state.get("measurement_mode", "Stationary")
-                    == "Stationary"
-                    else 1
-                ),
-                help="Stationary: beam fixed at center. Scanning: beam continuously scanning.",
-            )
+    # Display editable dataframe
+    edited_df = st.data_editor(
+        laser_power_df,
+        column_config=column_config,
+        num_rows="dynamic",
+        use_container_width=True,
+        key="laser_power_editor"
+    )
 
-            power = st.number_input(
-                "Measured Power (mW):",
-                min_value=0.0,
-                value=0.0,
-                step=0.1,
-                format="%.2f",
-                help="Power measured at the sample",
-            )
-
-        with col3:
-            # Fill fraction (only shown if scanning mode is selected)
-            fill_fraction = st.session_state.get(
-                "fill_fraction", 100
-            )  # Default from session state
-            if measurement_mode == "Scanning":
-                fill_fraction = st.number_input(
-                    "Fill Fraction (%):",
-                    min_value=1,
-                    max_value=100,
-                    value=int(st.session_state.get("fill_fraction", 100)),
-                    help="Percentage of time the beam is 'on' during scanning",
-                )
+    # Save button
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        if st.button("💾 Save Changes", use_container_width=True):
+            # Remove empty rows (rows where key measurement fields are empty/zero)
+            filtered_df = edited_df[
+                (edited_df["Modulation (%)"] > 0) | 
+                (edited_df["Measured Power (mW)"] > 0) | 
+                (edited_df["Notes"].str.strip() != "")
+            ].copy()
+            
+            # Validate required fields
+            if not filtered_df.empty:
+                # Check for missing values in critical columns
+                missing_power = filtered_df["Measured Power (mW)"].isna() | (filtered_df["Measured Power (mW)"] <= 0)
+                missing_modulation = filtered_df["Modulation (%)"].isna() | (filtered_df["Modulation (%)"] <= 0)
+                
+                if missing_power.any() or missing_modulation.any():
+                    st.error("Please ensure all rows have valid Modulation and Measured Power values.")
+                else:
+                    # Fill in missing optional values
+                    filtered_df["Researcher"] = filtered_df["Researcher"].fillna("")
+                    filtered_df["Sensor Model"] = filtered_df["Sensor Model"].fillna("")
+                    filtered_df["Measurement Mode"] = filtered_df["Measurement Mode"].fillna("Stationary")
+                    filtered_df["Fill Fraction (%)"] = filtered_df["Fill Fraction (%)"].fillna(100.0)
+                    filtered_df["Notes"] = filtered_df["Notes"].fillna("")
+                    
+                    # Convert datetime back to string format for storage consistency
+                    if "Date" in filtered_df.columns and pd.api.types.is_datetime64_any_dtype(filtered_df["Date"]):
+                        filtered_df["Date"] = filtered_df["Date"].dt.strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    # Save the data
+                    save_dataframe(filtered_df, LASER_POWER_FILE)
+                    st.session_state.laser_power_submitted = True
+                    st.success(f"Saved {len(filtered_df)} laser power measurements!")
+                    st.rerun()
             else:
-                st.info("Fill fraction: 100%")
-                fill_fraction = 100
-
-        notes = st.text_area("Notes:", help="Optional notes about the measurement")
-
-        # Submit button
-        submitted = st.form_submit_button("Add Measurement")
-
-        if submitted:
-            # Validate inputs
-            if power <= 0 or modulation <= 0:
-                st.error("Please enter valid power and modulation values.")
-            else:
-                # Create new entry
-                new_entry = pd.DataFrame(
-                    {
-                        "Study Name": [st.session_state.study_name],
-                        "Date": [datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
-                        "Sensor Model": [sensor_model],
-                        "Measurement Mode": [measurement_mode],
-                        "Fill Fraction (%)": [fill_fraction],
-                        "Modulation (%)": [modulation],
-                        "Measured Power (mW)": [power],
-                        "Notes": [notes],
-                    }
-                )
-
-                # Append to existing data
-                updated_df = pd.concat([laser_power_df, new_entry], ignore_index=True)
-
-                # Save updated data
-                save_dataframe(updated_df, LASER_POWER_FILE)
-
-                # Set flag for rig log entry
-                st.session_state.laser_power_submitted = True
-
-                # Success message
-                st.success("Measurement added successfully!")
-
-                # Force a rerun to refresh the page with the new data
-                st.rerun()
-
-    st.markdown("</div>", unsafe_allow_html=True)
+                st.warning("No valid measurements to save.")
 
 
 def render_laser_power_visualization():
