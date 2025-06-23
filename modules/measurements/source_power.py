@@ -18,157 +18,199 @@ from modules.ui.theme import get_colors
 
 
 def render_source_power_form():
-    """Render the source power measurement form."""
+    """Render the source power measurement editable dataframe."""
     # Load existing data
     source_power_df = load_dataframe(SOURCE_POWER_FILE, pd.DataFrame())
 
-    # Get colors for styling
-    colors = get_colors()
+    st.subheader("Source Power Measurements")
 
-    st.markdown('<div class="measurement-form">', unsafe_allow_html=True)
+    # Initialize with default structure if empty
+    if source_power_df.empty:
+        source_power_df = pd.DataFrame(columns=SOURCE_POWER_COLUMNS)
+        # Add one empty row for editing
+        source_power_df.loc[0] = [
+            st.session_state.study_name,                           # Study Name
+            datetime.now(),                                        # Date (as datetime object)
+            st.session_state.wavelength,                           # Wavelength (nm)
+            2000,                                                  # Pump Current (mA)
+            25.0,                                                  # Temperature (°C)
+            0.0,                                                   # Measured Power (W)
+            0,                                                     # Pulse Width (fs)
+            "",                                                    # Grating Position
+            "Unknown",                                             # Fan Status
+            ""                                                     # Notes
+        ]
+    
+    # Convert Date column to datetime if it exists and is string type
+    if not source_power_df.empty and "Date" in source_power_df.columns:
+        if source_power_df["Date"].dtype == 'object':  # String type
+            try:
+                source_power_df["Date"] = pd.to_datetime(source_power_df["Date"])
+            except:
+                # If conversion fails, keep as string and use text column config
+                pass
 
-    st.subheader("Add Source Power Measurement")
-
-    # Pump Current input and expected power info box OUTSIDE the form for live update
-    col1, col2 = st.columns(2)
-    with col1:
-        pump_current = st.number_input(
-            "Pump Current (mA):",
+    # Create column configuration for the data editor
+    column_config = {
+        "Study Name": st.column_config.TextColumn(
+            "Study Name",
+            default=st.session_state.study_name,
+            help="Name of the study"
+        ),
+        "Wavelength (nm)": st.column_config.NumberColumn(
+            "Wavelength (nm)",
+            default=st.session_state.wavelength,
+            help="Wavelength setting"
+        ),
+        "Pump Current (mA)": st.column_config.NumberColumn(
+            "Pump Current (mA)",
             min_value=0,
             max_value=8000,
-            value=2000,
             step=250,
-            help="Current setting for the pump diode",
-            key="source_power_pump_current_live",
+            help="Current setting for the pump diode"
+        ),
+        "Temperature (°C)": st.column_config.NumberColumn(
+            "Temperature (°C)",
+            min_value=0.0,
+            max_value=50.0,
+            step=0.1,
+            format="%.1f",
+            help="Operating temperature"
+        ),
+        "Measured Power (W)": st.column_config.NumberColumn(
+            "Measured Power (W)",
+            min_value=0.0,
+            step=0.1,
+            format="%.2f",
+            help="Power measured at the source"
+        ),
+        "Pulse Width (fs)": st.column_config.NumberColumn(
+            "Pulse Width (fs)",
+            min_value=0,
+            step=1,
+            help="Pulse width in femtoseconds"
+        ),
+        "Grating Position": st.column_config.TextColumn(
+            "Grating Position",
+            help="Position of the grating"
+        ),
+        "Fan Status": st.column_config.SelectboxColumn(
+            "Fan Status",
+            options=["Running", "Stopped", "Unknown"],
+            help="Status of the cooling fan"
+        ),
+        "Notes": st.column_config.TextColumn(
+            "Notes",
+            help="Optional notes about the measurement"
         )
-        expected_power = get_expected_power(pump_current)
-        st.info(f"Expected power: {expected_power:.2f} W")
+    }
+    
+    # Add Date column configuration based on data type
+    if not source_power_df.empty and "Date" in source_power_df.columns:
+        if pd.api.types.is_datetime64_any_dtype(source_power_df["Date"]):
+            column_config["Date"] = st.column_config.DatetimeColumn(
+                "Date",
+                help="Date and time of measurement"
+            )
+        else:
+            column_config["Date"] = st.column_config.TextColumn(
+                "Date",
+                help="Date and time of measurement (YYYY-MM-DD HH:MM:SS)"
+            )
+    else:
+        # Default for new dataframes
+        column_config["Date"] = st.column_config.DatetimeColumn(
+            "Date",
+            help="Date and time of measurement"
+        )
+
+    # Display editable dataframe
+    edited_df = st.data_editor(
+        source_power_df,
+        column_config=column_config,
+        num_rows="dynamic",
+        use_container_width=True,
+        key="source_power_editor"
+    )
+
+    # Save button
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        if st.button("💾 Save Changes", use_container_width=True):
+            # Remove empty rows (rows where key measurement fields are empty/zero)
+            filtered_df = edited_df[
+                (edited_df["Pump Current (mA)"] > 0) | 
+                (edited_df["Measured Power (W)"] > 0) | 
+                (edited_df["Notes"].str.strip() != "") |
+                (edited_df["Pulse Width (fs)"] > 0) |
+                (edited_df["Grating Position"].str.strip() != "")
+            ].copy()
+            
+            # Validate required fields
+            if not filtered_df.empty:
+                # Check for missing values in critical columns
+                missing_power = filtered_df["Measured Power (W)"].isna() | (filtered_df["Measured Power (W)"] <= 0)
+                missing_current = filtered_df["Pump Current (mA)"].isna() | (filtered_df["Pump Current (mA)"] <= 0)
+                
+                if missing_power.any() or missing_current.any():
+                    st.error("Please ensure all rows have valid Pump Current and Measured Power values.")
+                else:
+                    # Fill in missing optional values
+                    filtered_df["Temperature (°C)"] = filtered_df["Temperature (°C)"].fillna(25.0)
+                    filtered_df["Pulse Width (fs)"] = filtered_df["Pulse Width (fs)"].fillna(0)
+                    filtered_df["Grating Position"] = filtered_df["Grating Position"].fillna("")
+                    filtered_df["Fan Status"] = filtered_df["Fan Status"].fillna("Unknown")
+                    filtered_df["Notes"] = filtered_df["Notes"].fillna("")
+                    
+                    # Convert datetime back to string format for storage consistency
+                    if "Date" in filtered_df.columns and pd.api.types.is_datetime64_any_dtype(filtered_df["Date"]):
+                        filtered_df["Date"] = filtered_df["Date"].dt.strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    # Save the data
+                    save_dataframe(filtered_df, SOURCE_POWER_FILE)
+                    st.session_state.source_power_submitted = True
+                    st.success(f"Saved {len(filtered_df)} source power measurements!")
+                    st.rerun()
+            else:
+                st.warning("No valid measurements to save.")
+
+    # Show expected power info
+    if not edited_df.empty and len(edited_df) > 0:
+        st.subheader("Expected Power Reference")
         
         # Load SOP data to show equation
         sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
         if not sop_df.empty and "Pump Current (mA)" in sop_df.columns and "Expected Power (W)" in sop_df.columns:
             # Filter to current study if available
             if "Study Name" in sop_df.columns:
-                filtered_df = filter_dataframe(
+                filtered_sop_df = filter_dataframe(
                     sop_df, {"Study Name": st.session_state.study_name}
                 )
-                if filtered_df.empty:
-                    filtered_df = sop_df
+                if filtered_sop_df.empty:
+                    filtered_sop_df = sop_df
             else:
-                filtered_df = sop_df
+                filtered_sop_df = sop_df
                 
             # Get data for fit
-            curr_sop = filtered_df["Pump Current (mA)"].astype(float).values
-            power_sop = filtered_df["Expected Power (W)"].astype(float).values
+            curr_sop = filtered_sop_df["Pump Current (mA)"].astype(float).values
+            power_sop = filtered_sop_df["Expected Power (W)"].astype(float).values
             
             # Calculate fit if enough data points
             if len(curr_sop) >= 3:
                 fit_params = exponential_fit(curr_sop, power_sop)
                 equation_text = f"Power = {fit_params['a']:.3f} × e^({fit_params['b']:.5f} × Current) + {fit_params['c']:.3f}"
                 r_squared_text = f"R² = {fit_params['r_squared']:.4f}"
-                st.caption(f"Exponential Fit: {equation_text} ({r_squared_text})")
+                st.info(f"**Expected Power Formula:** {equation_text} ({r_squared_text})")
 
-    with col2:
-        pass  # for layout symmetry
-
-    # The rest of the form (Measured Power, Notes, Submit)
-    with st.form(key="source_power_form"):
-        col1, col2 = st.columns(2)
-        with col1:
-            power = st.number_input(
-                "Measured Power (W):",
-                min_value=0.0,
-                value=0.0,
-                step=0.1,
-                format="%.2f",
-                help="Power measured at the source",
-                key="source_power_measured_power",
-            )
-            # Show power difference from expected
-            if power > 0:
-                diff = power - expected_power
-                diff_percent = (diff / expected_power) * 100 if expected_power else 0
-                if abs(diff_percent) > 10:
-                    st.warning(f"Power differs from expected by {diff_percent:.1f}%")
-                else:
-                    st.success(f"Power within {abs(diff_percent):.1f}% of expected")
-        with col2:
-            notes = st.text_area(
-                "Notes:",
-                help="Optional notes about the measurement",
-                key="source_power_notes",
-            )
-        # Submit button
-        submitted = st.form_submit_button("Add Measurement")
-        if submitted:
-            # Validate inputs
-            if power <= 0:
-                st.error("Please enter a valid power value.")
-            else:
-                # Create new entry
-                new_entry = pd.DataFrame(
-                    {
-                        "Study Name": [st.session_state.study_name],
-                        "Date": [datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
-                        "Wavelength (nm)": [st.session_state.wavelength],
-                        "Pump Current (mA)": [pump_current],
-                        "Measured Power (W)": [power],
-                        "Notes": [notes],
-                    }
-                )
-                
-                # Calculate expected power but don't include in database entry to avoid schema issues
-                expected_power = get_expected_power(pump_current)
-                
-                # Append to existing data
-                updated_df = pd.concat([source_power_df, new_entry], ignore_index=True)
-                # Save updated data
-                save_dataframe(updated_df, SOURCE_POWER_FILE)
-                # Set flag for rig log entry
-                st.session_state.source_power_submitted = True
-                # Success message
-                st.success("Source power measurement added successfully!")
-                # Force a rerun to refresh the page with the new data
-                st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # --- Live plot below the form ---
-    st.subheader("Live Power vs. Pump Current")
-    import matplotlib.pyplot as plt
-
-    fig, ax = plt.subplots()
-    # Plot expected curve
-    x_curve = np.linspace(0, 8500, 100)
-    y_curve = get_expected_power(x_curve)
-    ax.plot(x_curve, y_curve, label="Expected (SOP)", color="#BF5701", linestyle="--")
-    # Plot previous measurements
-    if not source_power_df.empty:
-        ax.scatter(
-            source_power_df["Pump Current (mA)"],
-            source_power_df["Measured Power (W)"],
-            color="#4BA3C4",
-            s=50,
-            alpha=0.7,
-            label="Previous Measurements",
-        )
-    # Plot current (unsaved) value if entered
-    if pump_current and power > 0:
-        ax.scatter(
-            [pump_current],
-            [power],
-            color="red",
-            s=100,
-            label="Current Entry",
-            zorder=10,
-        )
-    ax.set_xlabel("Pump Current (mA)")
-    ax.set_ylabel("Measured Power (W)")
-    ax.set_title("Fiber Amplifier Power with Pump Current")
-    ax.set_xlim(0, 8500)
-    ax.set_ylim(0, 8)
-    ax.grid(True, linestyle="--", alpha=0.7)
-    ax.legend()
-    st.pyplot(fig)
+        # Show expected power for current entries
+        expected_powers = []
+        for _, row in edited_df.iterrows():
+            if pd.notna(row["Pump Current (mA)"]) and row["Pump Current (mA)"] > 0:
+                expected = get_expected_power(row["Pump Current (mA)"])
+                expected_powers.append(f"{row['Pump Current (mA)']} mA → {expected:.2f} W expected")
+        
+        if expected_powers:
+            st.caption("**Current Entries:** " + " | ".join(expected_powers))
 
 
 def get_expected_power(current):
