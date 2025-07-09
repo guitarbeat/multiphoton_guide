@@ -52,8 +52,8 @@ def render_laser_power_tab(use_sidebar_values=False):
     create_header("Laser Power Measurements")
 
     # Create tabs for different measurement locations
-    sample_tab, source_tab = st.tabs(
-        ["Laser Power at the Sample", "Laser Power at the Source"]
+    source_tab, sample_tab = st.tabs(
+        ["Laser Power at the Source", "Laser Power at the Sample"]
     )
 
     with sample_tab:

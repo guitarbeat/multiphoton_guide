@@ -19,6 +19,48 @@ from modules.ui.theme import get_colors
 
 def render_source_power_form():
     """Render the source power measurement editable dataframe."""
+    # --- Quick Measurement Entry ---
+    st.subheader("Quick Measurement Entry")
+    quick_pump_currents = [1000, 1250, 1500, 1750, 2000]
+    quick_entries = []
+    quick_form = st.form(key="quick_measurement_form")
+    quick_cols = quick_form.columns(len(quick_pump_currents))
+    quick_mw_values = []
+    for i, current in enumerate(quick_pump_currents):
+        with quick_cols[i]:
+            mw = quick_form.number_input(f"{current} mA", min_value=0.0, step=1.0, format="%.1f", key=f"quick_mw_{current}")
+            quick_mw_values.append(mw)
+    quick_submit = quick_form.form_submit_button("Add Quick Measurements")
+    if quick_submit:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        for i, current in enumerate(quick_pump_currents):
+            mw = quick_mw_values[i]
+            if mw > 0:
+                entry = {
+                    "Study Name": st.session_state.study_name,
+                    "Date": now,
+                    "Wavelength (nm)": st.session_state.wavelength,
+                    "Pump Current (mA)": current,
+                    "Temperature (°C)": 25.0,
+                    "Measured Power (mW)": mw,
+                    "Pulse Width (fs)": 0,
+                    "Grating Position": "",
+                    "Fan Status": "Unknown",
+                    "Notes": "Quick entry"
+                }
+                quick_entries.append(entry)
+        if quick_entries:
+            # Load existing data
+            source_power_df = load_dataframe(SOURCE_POWER_FILE, pd.DataFrame())
+            # Append new entries
+            new_df = pd.DataFrame(quick_entries)
+            combined_df = pd.concat([source_power_df, new_df], ignore_index=True)
+            save_dataframe(combined_df, SOURCE_POWER_FILE)
+            st.success(f"Added {len(quick_entries)} quick measurements!")
+            st.session_state.source_power_submitted = True
+            st.rerun()
+    # --- End Quick Measurement Entry ---
+    
     # Load existing data
     source_power_df = load_dataframe(SOURCE_POWER_FILE, pd.DataFrame())
 
