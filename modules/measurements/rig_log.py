@@ -203,9 +203,10 @@ def render_rig_log_table(rig_log_df):
         # Use st.data_editor for inline editing and deleting
         edited_df = st.data_editor(
             filtered_df,
+            column_config=column_config,
             num_rows="dynamic",  # Allow add/delete
             use_container_width=True,
-            key="rig_log_editor"
+            key="rig_log_editor",
         )
 
         # Save changes if the DataFrame was edited

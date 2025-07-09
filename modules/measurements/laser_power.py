@@ -104,6 +104,7 @@ def render_laser_power_tab(use_sidebar_values=False):
                         max_value=100,
                         step=1,
                         format="%.1f",
+                        width="small",
                     ),
                     "Expected Power (mW)": st.column_config.NumberColumn(
                         "Expected Power (mW)",
@@ -112,6 +113,7 @@ def render_laser_power_tab(use_sidebar_values=False):
                         max_value=10000,
                         step=1,
                         format="%.0f",
+                        width="small",
                     ),
                     "Wavelength (nm)": st.column_config.NumberColumn(
                         "Wavelength (nm)",
@@ -120,6 +122,7 @@ def render_laser_power_tab(use_sidebar_values=False):
                         max_value=1300,
                         step=1,
                         format="%.1f",
+                        width="small",
                     ),
                     "Temperature (°C)": st.column_config.NumberColumn(
                         "Temperature (°C)",
@@ -128,6 +131,7 @@ def render_laser_power_tab(use_sidebar_values=False):
                         max_value=35,
                         step=0.1,
                         format="%.1f",
+                        width="small",
                     ),
                 },
                 key="sop_editor"
@@ -305,25 +309,28 @@ def render_simplified_measurement_form(use_sidebar_values=False):
         "Study Name": st.column_config.TextColumn(
             "Study Name",
             default=st.session_state.study_name,
-            help="Name of the study"
+            help="Name of the study",
+            width="medium",
         ),
         "Wavelength (nm)": st.column_config.NumberColumn(
             "Wavelength (nm)",
             default=st.session_state.wavelength,
-            help="Wavelength setting"
+            help="Wavelength setting",
+            width="small",
         ),
         "Researcher": st.column_config.TextColumn(
-            "Researcher",
-            help="Name of the researcher"
+            "Researcher", help="Name of the researcher", width="small"
         ),
         "Sensor Model": st.column_config.TextColumn(
             "Sensor Model",
-            help="Model of the power meter sensor"
+            help="Model of the power meter sensor",
+            width="medium",
         ),
         "Measurement Mode": st.column_config.SelectboxColumn(
             "Measurement Mode",
             options=MEASUREMENT_MODES,
-            help="Stationary: beam fixed at center. Scanning: beam continuously scanning."
+            help="Stationary: beam fixed at center. Scanning: beam continuously scanning.",
+            width="medium",
         ),
         "Fill Fraction (%)": st.column_config.NumberColumn(
             "Fill Fraction (%)",
@@ -331,7 +338,8 @@ def render_simplified_measurement_form(use_sidebar_values=False):
             max_value=100,
             step=1,
             format="%.0f",
-            help="Percentage of time the beam is 'on' during scanning"
+            help="Percentage of time the beam is 'on' during scanning",
+            width="small",
         ),
         "Modulation (%)": st.column_config.NumberColumn(
             "Modulation (%)",
@@ -339,38 +347,38 @@ def render_simplified_measurement_form(use_sidebar_values=False):
             max_value=100,
             step=1,
             format="%.0f",
-            help="Percentage of maximum laser power"
+            help="Percentage of maximum laser power",
+            width="small",
         ),
         "Measured Power (mW)": st.column_config.NumberColumn(
             "Measured Power (mW)",
             min_value=0.0,
             step=0.1,
             format="%.1f",
-            help="Power measured at the sample"
+            help="Power measured at the sample",
+            width="small",
         ),
         "Notes": st.column_config.TextColumn(
-            "Notes",
-            help="Optional notes about the measurement"
-        )
+            "Notes", help="Optional notes about the measurement", width="large"
+        ),
     }
-    
+
     # Add Date column configuration based on data type
     if not laser_power_df.empty and "Date" in laser_power_df.columns:
         if pd.api.types.is_datetime64_any_dtype(laser_power_df["Date"]):
             column_config["Date"] = st.column_config.DatetimeColumn(
-                "Date",
-                help="Date and time of measurement"
+                "Date", help="Date and time of measurement", width="medium"
             )
         else:
             column_config["Date"] = st.column_config.TextColumn(
                 "Date",
-                help="Date and time of measurement (YYYY-MM-DD HH:MM:SS)"
+                help="Date and time of measurement (YYYY-MM-DD HH:MM:SS)",
+                width="medium",
             )
     else:
         # Default for new dataframes
         column_config["Date"] = st.column_config.DatetimeColumn(
-            "Date",
-            help="Date and time of measurement"
+            "Date", help="Date and time of measurement", width="medium"
         )
 
     # Display editable dataframe
