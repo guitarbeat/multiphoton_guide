@@ -136,7 +136,7 @@ def render_source_power_form():
     # Save button
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        if st.button("💾 Save Changes", use_container_width=True):
+        if st.button("💾 Save Changes", use_container_width=True, key="save_source_power_changes"):
             # Remove empty rows (rows where key measurement fields are empty/zero)
             filtered_df = edited_df[
                 (edited_df["Pump Current (mA)"] > 0) | 

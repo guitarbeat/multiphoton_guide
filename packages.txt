@@ -1,6 +1,1 @@
-libgl1
-libglib2.0-0
 poppler-utils
-libgtk2.0-0
-libx11-xcb1
-libnss3
