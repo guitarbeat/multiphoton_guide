@@ -21,7 +21,23 @@ def render_source_power_form():
     """Render the source power measurement editable dataframe."""
     # --- Quick Measurement Entry ---
     st.subheader("Quick Measurement Entry")
-    quick_pump_currents = [1000, 1250, 1500, 1750, 2000]
+    if "quick_pump_currents" not in st.session_state:
+        st.session_state.quick_pump_currents = [1000, 1250, 1500, 1750, 2000]
+    quick_pump_currents = st.session_state.quick_pump_currents
+
+    # Add more rows button
+    col_add, col_reset = st.columns([1, 1])
+    with col_add:
+        if st.button("Add More Rows", key="add_more_quick_rows"):
+            last_val = quick_pump_currents[-1] if quick_pump_currents else 2000
+            next_val = last_val + 250
+            quick_pump_currents.append(next_val)
+            st.session_state.quick_pump_currents = quick_pump_currents
+    with col_reset:
+        if st.button("Reset Rows", key="reset_quick_rows"):
+            st.session_state.quick_pump_currents = [1000, 1250, 1500, 1750, 2000]
+            quick_pump_currents = st.session_state.quick_pump_currents
+
     quick_entries = []
     quick_form = st.form(key="quick_measurement_form")
     quick_cols = quick_form.columns(len(quick_pump_currents))
