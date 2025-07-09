@@ -33,7 +33,8 @@ dependencies = [
     "opencv-python-headless>=4.8.0",
     "streamlit-nested-layout>=0.1.4; python_version >= '3.9' and python_version != '3.9.7'",
     "streamlit-pdf-viewer>=0.0.23",
-    "streamlit-image-coordinates>=0.1.6"
+    "streamlit-image-coordinates>=0.1.6",
+    "supabase>=2.0.0"
 ]
 
 [project.optional-dependencies]
