@@ -44,7 +44,7 @@ from modules.ui.theme import get_colors
 
 def render_quick_laser_power_entry():
     """Render a quick entry form for laser power measurements at the sample (Power in mW, Modulation in %)."""
-    st.subheader("Quick Measurement Entry (Power in mW, Modulation in %)")
+    st.subheader("Quick Measurement Entry (Power in mW, Modulation in %)")  # Units clarified
     if "quick_modulations" not in st.session_state:
         st.session_state.quick_modulations = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     quick_modulations = st.session_state.quick_modulations
@@ -52,7 +52,7 @@ def render_quick_laser_power_entry():
     # Add more rows and reset buttons
     col_add, col_reset = st.columns([1, 1])
     with col_add:
-        if st.button("Add More Rows", key="add_more_quick_mod_rows"):
+        if st.button("Add Row", key="add_more_quick_mod_rows"):
             last_val = quick_modulations[-1] if quick_modulations else 100
             next_val = min(last_val + 10, 100)
             if next_val <= 100:
@@ -68,7 +68,7 @@ def render_quick_laser_power_entry():
     quick_mw_values = []
     for i, mod in enumerate(quick_modulations):
         with quick_cols[i]:
-            mw = quick_form.number_input(f"{mod}% (Power in mW)", min_value=0.0, step=0.1, format="%.1f", key=f"quick_laser_mw_{mod}")
+            mw = quick_form.number_input(f"{mod}% (Power in mW)", min_value=0.0, step=0.1, format="%.1f", key=f"quick_laser_mw_{mod}")  # Units clarified
             quick_mw_values.append(mw)
     if quick_submit := quick_form.form_submit_button("Add Quick Measurements"):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -96,7 +96,7 @@ def render_quick_laser_power_entry():
             new_df = pd.DataFrame(quick_entries)
             combined_df = pd.concat([laser_power_df, new_df], ignore_index=True)
             save_dataframe(combined_df, LASER_POWER_FILE)
-            st.success(f"Added {len(quick_entries)} quick measurements!")
+            st.success(f"Added {len(quick_entries)} quick measurements.")
             st.session_state.laser_power_submitted = True
             st.rerun()
 
@@ -132,7 +132,7 @@ def render_laser_power_tab(use_sidebar_values=False):
             st.subheader("Expected SOP: Power vs. Pump Current")
             st.markdown("""
             Edit the Standard Operating Procedure (SOP) values for expected power output at different pump current levels.
-            These values represent the expected performance of your system and will be used as a reference for comparison.
+            These values represent the expected performance of your system and are used as a reference for comparison.
             """)
 
             # Load SOP data from Supabase
@@ -155,7 +155,7 @@ def render_laser_power_tab(use_sidebar_values=False):
                 column_config={
                     "Pump Current (mA)": st.column_config.NumberColumn(
                         "Pump Current (mA)",
-                        help="Pump current in milliamperes",
+                        help="Pump current in milliamperes.",
                         min_value=0,
                         max_value=100,
                         step=1,
@@ -164,7 +164,7 @@ def render_laser_power_tab(use_sidebar_values=False):
                     ),
                     "Expected Power (mW)": st.column_config.NumberColumn(
                         "Expected Power (mW)",
-                        help="Expected power output in milliwatts",
+                        help="Expected power output in milliwatts.",
                         min_value=0,
                         max_value=10000,
                         step=1,
@@ -173,7 +173,7 @@ def render_laser_power_tab(use_sidebar_values=False):
                     ),
                     "Wavelength (nm)": st.column_config.NumberColumn(
                         "Wavelength (nm)",
-                        help="Laser wavelength in nanometers",
+                        help="Laser wavelength in nanometers.",
                         min_value=700,
                         max_value=1300,
                         step=1,
@@ -182,7 +182,7 @@ def render_laser_power_tab(use_sidebar_values=False):
                     ),
                     "Temperature (°C)": st.column_config.NumberColumn(
                         "Temperature (°C)",
-                        help="Operating temperature in degrees Celsius",
+                        help="Operating temperature in degrees Celsius.",
                         min_value=15,
                         max_value=35,
                         step=0.1,
@@ -228,13 +228,13 @@ def render_laser_power_tab(use_sidebar_values=False):
 
                             # Show the fit equation
                             equation = f"Power (mW) = {fit_params['a']:.1f} × e^({fit_params['b']:.5f} × Current) + {fit_params['c']:.1f}"
-                            st.success(f"SOP data and fit saved successfully! Exponential fit: {equation}")
+                            st.success(f"SOP data and fit saved successfully. Exponential fit: {equation}")
                         except Exception as e:
                             # Still show success even if fit calculation fails
-                            st.success("SOP data saved successfully!")
+                            st.success("SOP data saved successfully.")
                             st.warning(f"Could not calculate fit parameters: {str(e)}")
                     else:
-                        st.success("SOP data saved successfully! Add at least 3 points to calculate fit parameters.")
+                        st.success("SOP data saved successfully. Add at least 3 points to calculate fit parameters.")
                     st.rerun()
                 else:
                     st.info("No changes to save.")
@@ -292,36 +292,36 @@ def render_laser_power_theory_and_procedure():
     st.markdown(
         """
         ### Introduction & Theory
-        Measuring and monitoring laser power at the sample is critical in multiphoton microscopy for maintaining sample integrity and data quality. 
-        
-        Fluorescence emission is proportional to the average laser power squared, so small changes in laser power can result in large changes to your data. Exposing your sample to excessive laser power can cause photobleaching and photodamage, altering your sample and measurements.
-        
+        Measuring and monitoring laser power at the sample is critical in multiphoton microscopy for maintaining sample integrity and data quality.
+
+        Fluorescence emission is proportional to the square of the average laser power, so small changes in laser power can result in large changes to your data. Exposing your sample to excessive laser power can cause photobleaching and photodamage, altering your sample and measurements.
+
         There are two types of laser-induced photodamage in multiphoton microscopy:
-        1. **Local heating** of the imaged area, which is linearly related to average laser power (in mW)
-        2. **Photochemical degradation** (bleaching or ablation), which is nonlinearly related to average laser power
-        
-        Knowing the laser power (in mW) and the modulation percentage (as set in ScanImage) is essential for consistency between experiments, for minimizing photodamage, and for monitoring system health.
-        
+        1. **Local heating** of the imaged area, which is linearly related to average laser power (in mW).
+        2. **Photochemical degradation** (bleaching or ablation), which is nonlinearly related to average laser power.
+
+        Knowing the laser power (in mW) and the modulation percentage (as set in ScanImage) is essential for consistency between experiments, minimizing photodamage, and monitoring system health.
+
         ---
-        
+
         ### Measurement Procedure
         1. **Prepare the power meter**
-           - Place the power meter sensor under the objective
-           - Ensure the sensor is centered in the field of view
+           - Place the power meter sensor under the objective.
+           - Ensure the sensor is centered in the field of view.
         2. **Configure the microscope**
-           - Select measurement mode (stationary or scanning)
-           - If scanning, set the temporal fill fraction
+           - Select the measurement mode (stationary or scanning).
+           - If scanning, set the temporal fill fraction.
         3. **Take measurements**
-           - Start at 0% modulation (ScanImage power percentage) and increase in 5-10% increments
-           - Record the measured power (in mW) at each modulation level
-           - Continue until reaching 100% or maximum safe power
+           - Start at 0% modulation (ScanImage power percentage) and increase in 5-10% increments.
+           - Record the measured power (in mW) at each modulation level.
+           - Continue until reaching 100% or the maximum safe power.
         4. **Calculate the power/modulation ratio**
-           - Plot modulation percentage (ScanImage) vs. measured power (mW)
-           - Calculate the slope of the linear relationship (units: mW/% modulation)
-           - This ratio is useful for system monitoring over time
-        
+           - Plot modulation percentage (ScanImage) vs. measured power (mW).
+           - Calculate the slope of the linear relationship (units: mW/% modulation).
+           - This ratio is useful for system monitoring over time.
+
         **CRITICAL:** Always measure with the same objective, as transmission efficiency varies between objectives.
-        
+
         **CRITICAL:** For consistent measurements, use the same measurement mode (stationary or scanning) each time.
     """
     )
@@ -449,7 +449,7 @@ def render_simplified_measurement_form(use_sidebar_values=False):
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
         if st.button("💾 Save Changes", use_container_width=True):
-            # Remove empty rows (rows where key measurement fields are empty/zero)
+            # Remove empty rows (rows where key measurement fields are empty or zero)
             filtered_df = edited_df[
                 (edited_df["Modulation (%)"] > 0) | 
                 (edited_df["Measured Power (mW)"] > 0) | 
@@ -479,10 +479,10 @@ def render_simplified_measurement_form(use_sidebar_values=False):
                     # Save the data
                     save_dataframe(filtered_df, LASER_POWER_FILE)
                     st.session_state.laser_power_submitted = True
-                    st.success(f"Saved {len(filtered_df)} laser power measurements!")
+                    st.success(f"Saved {len(filtered_df)} laser power measurements.")
                     st.rerun()
             else:
-                st.warning("No valid measurements to save.")
+                st.info("No changes to save.")
 
 
 def render_laser_power_visualization():
@@ -530,7 +530,7 @@ def render_laser_power_visualization():
                 has_measurements = True
 
     if not has_measurements or len(measurements_df) < 2:
-        st.info("Add at least two measurements to see analysis")
+        st.info("Add at least two measurements to see analysis.")
         return
 
     # Calculate statistics
@@ -593,15 +593,15 @@ def render_laser_power_visualization():
         This plot shows the relationship between laser modulation percentage (as set in ScanImage, 0-100%) and measured power at the sample (in mW).
         
         **Key insights:**
-        - The slope represents the power/modulation ratio (mW per % modulation)
-        - A linear relationship indicates proper laser and modulator function
-        - Deviations from linearity may indicate issues with the laser or power modulator
-        - Monitoring this ratio over time helps detect system degradation
+        - The slope represents the power/modulation ratio (mW per % modulation).
+        - A linear relationship indicates proper laser and modulator function.
+        - Deviations from linearity may indicate issues with the laser or power modulator.
+        - Monitoring this ratio over time helps detect system degradation.
         
         **Typical values:**
-        - Slope values (mW/%) vary by laser and objective
-        - For a given setup, this value should remain stable over time
-        - Significant changes may indicate alignment issues or component degradation
+        - Slope values (mW/%) vary by laser and objective.
+        - For a given setup, this value should remain stable over time.
+        - Significant changes may indicate alignment issues or component degradation.
         
         **Units:**
         - X-axis: Modulation (%) (ScanImage Power %)
