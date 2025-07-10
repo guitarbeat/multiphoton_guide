@@ -63,9 +63,7 @@ def load_dataframe(filename, default_df=None):
     df = load_dataframe_from_table(filename)
     if not df.empty:
         return df
-    if default_df is not None:
-        return default_df
-    return pd.DataFrame()
+    return default_df if default_df is not None else pd.DataFrame()
 
 
 def ensure_columns(df, required_columns, defaults=None):

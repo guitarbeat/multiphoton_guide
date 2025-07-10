@@ -90,11 +90,14 @@ def _get_effective_bit_depth(image: np.ndarray) -> int:
     if image.dtype == np.uint8:
         return 8
     max_val = np.max(image)
-    # Find the smallest bit depth that can represent max_val
-    for bits in (8, 10, 12, 14, 16, 32):
-        if max_val <= (1 << bits) - 1:
-            return bits
-    return 16  # fallback
+    return next(
+        (
+            bits
+            for bits in (8, 10, 12, 14, 16, 32)
+            if max_val <= (1 << bits) - 1
+        ),
+        16,
+    )
 
 
 def parse_filename_for_defaults(filename: str) -> dict[str, Any]:
@@ -117,21 +120,19 @@ def parse_filename_for_defaults(filename: str) -> dict[str, Any]:
         # Extract just the filename if a full path is given
         base_name = os.path.basename(filename)
 
-        # Look for magnification pattern: Zoom<number>
-        zoom_match = re.search(r"Zoom(\d+(?:\.\d+)?)", base_name, re.IGNORECASE)
-        if zoom_match:
+        if zoom_match := re.search(
+            r"Zoom(\d+(?:\.\d+)?)", base_name, re.IGNORECASE
+        ):
             try:
-                magnification = float(zoom_match.group(1))
+                magnification = float(zoom_match[1])
                 result["magnification"] = magnification
             except (ValueError, TypeError):
                 pass
 
-        # Look for AFT pattern: AFT<group><element>
-        aft_match = re.search(r"AFT(\d)(\d)", base_name, re.IGNORECASE)
-        if aft_match:
+        if aft_match := re.search(r"AFT(\d)(\d)", base_name, re.IGNORECASE):
             try:
-                group = int(aft_match.group(1))
-                element = int(aft_match.group(2))
+                group = int(aft_match[1])
+                element = int(aft_match[2])
                 result["group"] = group
                 result["element"] = element
             except (ValueError, TypeError, IndexError):
@@ -158,13 +159,9 @@ def rotate_image(image: np.ndarray, rotation_count: int) -> np.ndarray:
 
     try:
         # Normalize rotation count to 0-3
-        rotation_count = rotation_count % 4
+        rotation_count %= 4
 
-        if rotation_count == 0:
-            return image
-
-        # Apply rotation
-        return np.rot90(image, k=rotation_count)
+        return image if rotation_count == 0 else np.rot90(image, k=rotation_count)
     except Exception as e:
         logger.error(f"Error rotating image: {e}")
         return image  # Return original image on error
@@ -203,13 +200,12 @@ def normalize_to_uint8(
 def _prepare_image_copy(image: np.ndarray) -> np.ndarray:
     """Prepare a copy of the image, normalizing float images to 0-1 range."""
     image_copy = image.copy()
-    if np.issubdtype(image_copy.dtype, np.floating):
-        if np.max(image_copy) > 1.0 or np.min(image_copy) < -1.0:
-            min_val, max_val = np.min(image_copy), np.max(image_copy)
-            if max_val > min_val:
-                image_copy = (image_copy - min_val) / (max_val - min_val)
-            else:
-                image_copy = np.zeros_like(image_copy)
+    if np.issubdtype(image_copy.dtype, np.floating) and (np.max(image_copy) > 1.0 or np.min(image_copy) < -1.0):
+        min_val, max_val = np.min(image_copy), np.max(image_copy)
+        if max_val > min_val:
+            image_copy = (image_copy - min_val) / (max_val - min_val)
+        else:
+            image_copy = np.zeros_like(image_copy)
     return image_copy
 
 
@@ -277,15 +273,14 @@ def _normalize_autoscale(
     image: np.ndarray, is_multichannel: bool, saturated_pixels: float
 ) -> np.ndarray:
     """Autoscale image using percentile-based contrast stretching."""
-    if is_multichannel:
-        result = np.zeros_like(image, dtype=np.uint8)
-        for c in range(image.shape[-1]):
-            result[..., c] = _normalize_channel_autoscale(
-                image[..., c], saturated_pixels
-            )
-        return result
-    else:
+    if not is_multichannel:
         return _normalize_channel_autoscale(image, saturated_pixels)
+    result = np.zeros_like(image, dtype=np.uint8)
+    for c in range(image.shape[-1]):
+        result[..., c] = _normalize_channel_autoscale(
+            image[..., c], saturated_pixels
+        )
+    return result
 
 
 def _normalize_channel_full_range(channel: np.ndarray) -> np.ndarray:
@@ -305,13 +300,12 @@ def _normalize_channel_full_range(channel: np.ndarray) -> np.ndarray:
 
 def _normalize_full_range(image: np.ndarray, is_multichannel: bool) -> np.ndarray:
     """Normalize image to the full 0-255 range."""
-    if is_multichannel:
-        result = np.zeros_like(image, dtype=np.uint8)
-        for c in range(image.shape[-1]):
-            result[..., c] = _normalize_channel_full_range(image[..., c])
-        return result
-    else:
+    if not is_multichannel:
         return _normalize_channel_full_range(image)
+    result = np.zeros_like(image, dtype=np.uint8)
+    for c in range(image.shape[-1]):
+        result[..., c] = _normalize_channel_full_range(image[..., c])
+    return result
 
 
 def _normalize_channel_by_bit_depth(channel: np.ndarray, bit_depth: int) -> np.ndarray:
@@ -331,13 +325,12 @@ def _normalize_by_bit_depth(
     image: np.ndarray, is_multichannel: bool, bit_depth: int
 ) -> np.ndarray:
     """Scale image to its digitization bit depth."""
-    if is_multichannel:
-        result = np.zeros_like(image, dtype=np.uint8)
-        for c in range(image.shape[-1]):
-            result[..., c] = _normalize_channel_by_bit_depth(image[..., c], bit_depth)
-        return result
-    else:
+    if not is_multichannel:
         return _normalize_channel_by_bit_depth(image, bit_depth)
+    result = np.zeros_like(image, dtype=np.uint8)
+    for c in range(image.shape[-1]):
+        result[..., c] = _normalize_channel_by_bit_depth(image[..., c], bit_depth)
+    return result
 
 
 def _normalize_channel_fallback(channel: np.ndarray) -> np.ndarray:
@@ -823,22 +816,18 @@ def find_line_pair_boundaries_threshold(profile, threshold):
     # Create a binary mask where True is above threshold
     above_threshold = profile_array > threshold
 
-    # Find light-to-dark transitions directly
-    dark_bar_starts = []
-    for i in range(1, len(above_threshold)):
-        # Look for transitions from above threshold to below threshold (light-to-dark)
-        if above_threshold[i - 1] == True and above_threshold[i] == False:
-            dark_bar_starts.append(i)
-
+    dark_bar_starts = [
+        i
+        for i in range(1, len(above_threshold))
+        if above_threshold[i - 1] == True and above_threshold[i] == False
+    ]
     # Create corresponding transition types (all -1 for light-to-dark)
     transition_types = [-1] * len(dark_bar_starts)
 
     logger.info(
         f"Profile range: {np.min(profile_array)} to {np.max(profile_array)}, threshold: {threshold}"
     )
-    if len(dark_bar_starts) > 0:
-        pass
-    else:
+    if len(dark_bar_starts) <= 0:
         logger.warning(f"No dark bar starts found with threshold {threshold}!")
 
     # Create a pseudo derivative for compatibility with the rest of the code
@@ -1051,10 +1040,14 @@ class ProfileVisualizer:
     ):
         """Plot the ROI image"""
         ax.imshow(image, cmap="gray", aspect="auto", interpolation="bicubic")
-        title_text = self._build_plot_title(
-            group, element, avg_line_pair_width, lp_width_um, magnification, lp_per_mm
-        )
-        if title_text:
+        if title_text := self._build_plot_title(
+            group,
+            element,
+            avg_line_pair_width,
+            lp_width_um,
+            magnification,
+            lp_per_mm,
+        ):
             ax.set_title(
                 title_text,
                 fontweight="normal",
@@ -1276,7 +1269,7 @@ class ProfileVisualizer:
         if group is not None and element is not None and lp_width_um is not None:
             lp_per_mm_str = f"{lp_per_mm:.2f} lp/mm" if lp_per_mm is not None else ""
 
-            caption = f"""
+            return f"""
             <div style='text-align:center; font-family: "Times New Roman", Times, serif;'>
                 <p style='margin-bottom:0.3rem; font-size:1.25rem;'><b>Figure: Intensity Profile Analysis of USAF Target</b></p>
                 <p style='margin-top:0; font-size:1.0rem; color:#333;'>
@@ -1289,7 +1282,7 @@ class ProfileVisualizer:
             </div>
             """
         else:
-            caption = f"""
+            return f"""
             <div style='text-align:center; font-family: "Times New Roman", Times, serif;'>
                 <p style='margin-bottom:0.3rem; font-size:1.25rem;'><b>Figure: Aligned Visual Analysis</b></p>
                 <p style='margin-top:0; font-size:1.0rem; color:#333;'>
@@ -1299,7 +1292,6 @@ class ProfileVisualizer:
                 </p>
             </div>
             """
-        return caption
 
     def visualize_profile(
         self,
@@ -1616,10 +1608,7 @@ class ImageProcessor:
         try:
             use_roi = self.roi
             self.individual_profiles = use_roi.copy()
-            if use_max:
-                self.profile = np.max(use_roi, axis=0)
-            else:
-                self.profile = np.mean(use_roi, axis=0)
+            self.profile = np.max(use_roi, axis=0) if use_max else np.mean(use_roi, axis=0)
             return self.profile
         except Exception as e:
             logger.error(f"Error getting line profile: {e}")
@@ -1719,11 +1708,7 @@ class ImageProcessor:
         # Step 1: Detect edges in the profile if not already detected
         # (skip if boundaries are already set, e.g., by threshold detection)
         if self.boundaries is None or len(self.boundaries) == 0:
-            if self.boundaries is None or len(self.boundaries) == 0:
-                self.detect_edges()
-            else:
-                pass
-
+            self.detect_edges()
             # Step 2: Use only the best two line pairs
             self.line_pair_widths = []
 
@@ -2190,8 +2175,7 @@ def _load_and_display_image_header(
                     else ""
                 ),
             ]
-            values_list = [v for v in values_list if v]  # Remove empty strings
-            if values_list:
+            if values_list := [v for v in values_list if v]:
                 st.success(f"**Auto-detected:** {' • '.join(values_list)}")
         else:
             st.info("**Ready for analysis** - Configure settings below")
@@ -2199,11 +2183,7 @@ def _load_and_display_image_header(
         bit_depth = st.session_state.get(bit_depth_key, 8)
         st.info(f"**{bit_depth}-bit** (0-{(1 << bit_depth)-1})")
     with header_col3:
-        # This part is tricky as display_roi_info depends on the image being processed by streamlit_image_coordinates
-        # For now, we'll keep it simple, but this might need adjustment if it causes issues.
-        roi_tuple = display_roi_info(idx, image)  # Pass the *processed* image here
-        # The threshold calculation will be done before creating the slider in _display_settings_tab
-        if roi_tuple:
+        if roi_tuple := display_roi_info(idx, image):
             # Attempt to get profile range from the *processed* image
             temp_roi_for_header = extract_roi_image(image, roi_tuple)
             if temp_roi_for_header is not None:
@@ -2262,10 +2242,10 @@ def _display_combined_analysis_interface(
     
     # Main content in two columns: Settings on left, ROI & Results on right
     settings_col, roi_col = st.columns([1, 1.2])
-    
+
     with settings_col:
         st.markdown("### ⚙️ Analysis Setup")
-        
+
         # Target parameters in a container
         with st.container():
             st.markdown("**🎯 Target Parameters**")
@@ -2303,7 +2283,7 @@ def _display_combined_analysis_interface(
             )
 
         st.markdown("---")
-        
+
         # Analysis controls in a container
         with st.container():
             st.markdown("**🔍 Analysis Controls**")
@@ -2315,7 +2295,7 @@ def _display_combined_analysis_interface(
                 key=f"threshold_widget_{unique_id}",
                 help="Edge detection threshold - adjust to optimize line detection",
             )
-            
+
             prev_rotation = st.session_state.get(roi_rotation_key, 0)
             rotation_options = ["0°", "90°", "180°", "270°"]
             selected_rotation_str = st.radio(
@@ -2329,7 +2309,7 @@ def _display_combined_analysis_interface(
             new_rotation = rotation_options.index(selected_rotation_str)
 
         st.markdown("---")
-        
+
         # Image processing in an expander to save space
         with st.expander("🖼️ Image Processing Options", expanded=False):
             toggle_col1, toggle_col2 = st.columns(2)
@@ -2370,16 +2350,16 @@ def _display_combined_analysis_interface(
                 disabled=not autoscale,
                 help="Percentage of pixels to saturate",
             )
-    
+
     with roi_col:
         st.markdown("### 🎯 ROI Selection & Results")
-        
+
         # ROI selection
         st.markdown("**Select Analysis Region**")
         pil_img = Image.fromarray(image)
         draw = ImageDraw.Draw(pil_img)
         current_coords = st.session_state.get(keys["coordinates"])
-        
+
         if current_coords:
             p1, p2 = current_coords
             coords = (
@@ -2396,10 +2376,9 @@ def _display_combined_analysis_interface(
             )
             draw.rectangle(coords, outline=outline_color, width=3)
 
-        roi_changed = handle_image_selection(
+        if roi_changed := handle_image_selection(
             idx, uploaded_file, pil_img, key=f"usaf_image_{idx}", rotation=0
-        )
-        if roi_changed:
+        ):
             st.session_state[f"settings_changed_{unique_id}"] = True
 
         # ROI status
@@ -2412,11 +2391,12 @@ def _display_combined_analysis_interface(
             st.info("👆 **Click and drag** to select analysis region")
 
         st.markdown("---")
-        
+
         # Results section
         st.markdown("**📊 Analysis Results**")
-        analysis_results_for_plot = st.session_state.get(keys["analysis_results"])
-        if analysis_results_for_plot:
+        if analysis_results_for_plot := st.session_state.get(
+            keys["analysis_results"]
+        ):
             roi_rotation_from_results = analysis_results_for_plot.get("roi_rotation", 0)
             roi_for_display = extract_roi_image(
                 image,
@@ -2438,15 +2418,14 @@ def _display_combined_analysis_interface(
                     group_val_plot, element_val_plot
                 )
 
-            fig = visualizer.visualize_profile(
+            if fig := visualizer.visualize_profile(
                 analysis_results_for_plot,
                 roi_for_display,
                 group=group_val_plot,
                 element=element_val_plot,
                 lp_width_um=lp_width_um_plot,
                 magnification=current_magnification,
-            )
-            if fig:
+            ):
                 st.pyplot(fig)
                 # Download button
                 buf = io.BytesIO()
@@ -2517,9 +2496,9 @@ def _display_combined_analysis_interface(
                 )
             except Exception as e:
                 st.warning(f"⚠️ Could not display ROI preview: {e!s}")
-        else:  # No ROI selected
+        else:
             st.info("👆 **Select an ROI above** to view analysis results")
-    
+
     return (
         selected_group,
         selected_element,
@@ -2616,15 +2595,13 @@ def _update_session_state_and_trigger_analysis(
 
     roi_rotation_for_analysis = st.session_state.get(roi_rotation_key, 0)
 
-    should_analyze = (
+    if should_analyze := (
         st.session_state.get(settings_changed_key, False)
         and current_selected_roi_tuple is not None
         and roi_is_valid
         and group_for_trigger is not None
         and element_for_trigger is not None
-    )
-
-    if should_analyze:
+    ):
         with st.spinner("🔄 Analyzing image..."):
             try:
                 img_proc = ImageProcessor(usaf_target=st.session_state.usaf_target)
@@ -2739,9 +2716,7 @@ def collect_analysis_data():
             roi_rotation = analysis_results.get("roi_rotation", 0)
             data["ROI Rotation"].append(f"{roi_rotation * 90}°")
 
-    # Create DataFrame
-    df = pd.DataFrame(data)
-    return df
+    return pd.DataFrame(data)
 
 
 def run_usaf_analyzer():
@@ -2793,7 +2768,7 @@ def _display_images_and_management_tab():
     """Combined upload and management functionality in one streamlined interface."""
     # Top row: Upload and status
     upload_col, status_col, manage_col = st.columns([2, 1, 1])
-    
+
     with upload_col:
         st.markdown("**📁 Upload Images**")
         if new_uploaded_files := st.file_uploader(
@@ -2813,27 +2788,24 @@ def _display_images_and_management_tab():
                 if new_file_name not in file_names:
                     st.session_state.uploaded_files_list.append(file)
                     st.success(f"✅ **Added:** {new_file_name}")
-    
+
     with status_col:
         st.markdown("**📊 Status**")
         if st.session_state.uploaded_files_list:
             st.info(f"**{len(st.session_state.uploaded_files_list)}** loaded")
-            analyzed_count = sum(
-                1
-                for idx, uploaded_file in enumerate(
-                    st.session_state.uploaded_files_list
-                )
-                if st.session_state.get(
-                    get_image_session_keys(idx, uploaded_file)["analysis_results"]
-                )
-            )
+            analyzed_count = sum(bool(st.session_state.get(
+                                                 get_image_session_keys(idx, uploaded_file)["analysis_results"]
+                                             ))
+                             for idx, uploaded_file in enumerate(
+                                                 st.session_state.uploaded_files_list
+                                             ))
             if analyzed_count > 0:
                 st.success(f"**{analyzed_count}** analyzed")
             else:
                 st.warning("**None analyzed**")
         else:
             st.info("**No images**")
-    
+
     with manage_col:
         st.markdown("**🗂️ Management**")
         # Auto-load default image if no images present
@@ -2845,7 +2817,7 @@ def _display_images_and_management_tab():
         ):
             st.session_state.uploaded_files_list.append(default_image_path)
             st.session_state.default_image_added = True
-            st.info(f"📷 Default loaded")
+            st.info("📷 Default loaded")
 
         if st.button("🗑️ Clear All", use_container_width=True, type="secondary"):
             st.session_state.uploaded_files_list = []
@@ -2856,12 +2828,12 @@ def _display_images_and_management_tab():
                     del st.session_state[key]
             st.success("✅ **All images cleared**")
             st.rerun()
-    
+
     # Bottom section: Loaded images list (only if there are images)
     if st.session_state.uploaded_files_list:
         st.markdown("---")
         st.markdown("**📋 Loaded Images**")
-        
+
         # Create a more compact display
         for idx, uploaded_file in enumerate(st.session_state.uploaded_files_list):
             filename = (
@@ -2875,7 +2847,7 @@ def _display_images_and_management_tab():
             )
             keys = get_image_session_keys(idx, uploaded_file)
             has_results = st.session_state.get(keys["analysis_results"])
-            
+
             # Use columns for a more compact layout
             img_col1, img_col2, img_col3 = st.columns([3, 1, 1])
             with img_col1:

@@ -172,10 +172,9 @@ def create_standard_measurement_form(
             for field_name, field_config in right_fields:
                 form_data[field_name] = _create_form_field(field_name, field_config)
 
-        # Submit button
-        submitted = st.form_submit_button("Add Measurement", type="primary")
-
-        if submitted:
+        if submitted := st.form_submit_button(
+            "Add Measurement", type="primary"
+        ):
             # Validate form data if validation config provided
             if validation_config:
                 validation_results = validate_form_data(form_data, validation_config)
@@ -196,11 +195,11 @@ def _create_form_field(field_name: str, field_config: Dict[str, Any]) -> Any:
         return st.number_input(
             field_config["label"],
             min_value=field_config.get("min_value", 0),
-            max_value=field_config.get("max_value", None),
+            max_value=field_config.get("max_value"),
             value=field_config.get("value", 0),
             step=field_config.get("step", 1),
             help=field_config.get("help", ""),
-            format=field_config.get("format", None),
+            format=field_config.get("format"),
         )
     elif field_type == "text":
         return st.text_input(

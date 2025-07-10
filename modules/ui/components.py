@@ -179,8 +179,7 @@ def get_image_path(image_name):
     base_dir = os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     )
-    image_path = os.path.join(base_dir, "assets", "images", image_name)
-    return image_path
+    return os.path.join(base_dir, "assets", "images", image_name)
 
 
 def display_image(image_name, caption=None, width=None):

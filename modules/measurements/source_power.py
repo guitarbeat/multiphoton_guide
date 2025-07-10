@@ -46,8 +46,7 @@ def render_source_power_form():
         with quick_cols[i]:
             mw = quick_form.number_input(f"{current} mA (Power in mW)", min_value=0.0, step=1.0, format="%.1f", key=f"quick_mw_{current}")  # Clarified units
             quick_mw_values.append(mw)
-    quick_submit = quick_form.form_submit_button("Add Quick Measurements")
-    if quick_submit:
+    if quick_submit := quick_form.form_submit_button("Add Quick Measurements"):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         for i, current in enumerate(quick_pump_currents):
             mw = quick_mw_values[i]
@@ -76,7 +75,7 @@ def render_source_power_form():
             st.session_state.source_power_submitted = True
             st.rerun()
     # --- End Quick Measurement Entry ---
-    
+
     # Load existing data
     source_power_df = load_dataframe(SOURCE_POWER_FILE, pd.DataFrame())
 
@@ -98,15 +97,14 @@ def render_source_power_form():
             "Unknown",                                             # Fan Status
             ""                                                     # Notes
         ]
-    
+
     # Convert Date column to datetime if it exists and is string type
-    if not source_power_df.empty and "Date" in source_power_df.columns:
-        if source_power_df["Date"].dtype == 'object':  # String type
-            try:
-                source_power_df["Date"] = pd.to_datetime(source_power_df["Date"])
-            except:
-                # If conversion fails, keep as string and use text column config
-                pass
+    if not source_power_df.empty and "Date" in source_power_df.columns and source_power_df["Date"].dtype == 'object':
+        try:
+            source_power_df["Date"] = pd.to_datetime(source_power_df["Date"])
+        except Exception:
+            # If conversion fails, keep as string and use text column config
+            pass
 
     # Create column configuration for the data editor
     column_config = {
@@ -162,7 +160,7 @@ def render_source_power_form():
             help="Optional notes about the measurement"
         )
     }
-    
+
     # Add Date column configuration based on data type
     if not source_power_df.empty and "Date" in source_power_df.columns:
         if pd.api.types.is_datetime64_any_dtype(source_power_df["Date"]):
@@ -203,13 +201,13 @@ def render_source_power_form():
                 (edited_df["Pulse Width (fs)"] > 0) |
                 (edited_df["Grating Position"].str.strip() != "")
             ].copy()
-            
+
             # Validate required fields
             if not filtered_df.empty:
                 # Check for missing values in critical columns
                 missing_power = filtered_df["Measured Power (mW)"].isna() | (filtered_df["Measured Power (mW)"] <= 0)
                 missing_current = filtered_df["Pump Current (mA)"].isna() | (filtered_df["Pump Current (mA)"] <= 0)
-                
+
                 if missing_power.any() or missing_current.any():
                     st.error("Please ensure all rows have valid Pump Current and Measured Power values.")
                 else:
@@ -219,11 +217,11 @@ def render_source_power_form():
                     filtered_df["Grating Position"] = filtered_df["Grating Position"].fillna("")
                     filtered_df["Fan Status"] = filtered_df["Fan Status"].fillna("Unknown")
                     filtered_df["Notes"] = filtered_df["Notes"].fillna("")
-                    
+
                     # Convert datetime back to string format for storage consistency
                     if "Date" in filtered_df.columns and pd.api.types.is_datetime64_any_dtype(filtered_df["Date"]):
                         filtered_df["Date"] = filtered_df["Date"].dt.strftime("%Y-%m-%d %H:%M:%S")
-                    
+
                     # Save the data
                     save_dataframe(filtered_df, SOURCE_POWER_FILE)
                     st.session_state.source_power_submitted = True
@@ -235,10 +233,10 @@ def render_source_power_form():
     # Show expected power info
     if not edited_df.empty and len(edited_df) > 0:
         st.subheader("Expected Power Reference (mW)")  # Clarified units
-        
+
         # Load SOP data to show equation
         sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
-        
+
         # Check for column names (backward compatibility)
         power_col = None
         if not sop_df.empty and "Pump Current (mA)" in sop_df.columns:
@@ -246,7 +244,7 @@ def render_source_power_form():
                 power_col = "Expected Power (mW)"
             elif "Expected Power (W)" in sop_df.columns:
                 power_col = "Expected Power (W)"
-        
+
         if power_col is not None:
             # Filter to current study if available
             if "Study Name" in sop_df.columns:
@@ -257,15 +255,15 @@ def render_source_power_form():
                     filtered_sop_df = sop_df
             else:
                 filtered_sop_df = sop_df
-                
+
             # Get data for fit
             curr_sop = filtered_sop_df["Pump Current (mA)"].astype(float).values
             power_sop = filtered_sop_df[power_col].astype(float).values
-            
+
             # Convert W to mW if needed for consistency
             if power_col == "Expected Power (W)":
                 power_sop = power_sop * 1000  # Convert W to mW
-            
+
             # Calculate fit if enough data points
             if len(curr_sop) >= 3:
                 fit_params = exponential_fit(curr_sop, power_sop)
@@ -279,7 +277,7 @@ def render_source_power_form():
             if pd.notna(row["Pump Current (mA)"]) and row["Pump Current (mA)"] > 0:
                 expected = get_expected_power(row["Pump Current (mA)"])
                 expected_powers.append(f"{row['Pump Current (mA)']} mA → {expected:.0f} mW expected")  # Units explicit
-        
+
         if expected_powers:
             st.caption("**Current Entries:** " + " | ".join(expected_powers))
 

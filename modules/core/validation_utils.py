@@ -297,11 +297,11 @@ def display_form_validation_results(
     """
     all_valid = True
 
-    for field_name, result in results.items():
+    for result in results.values():
         if not result.is_valid:
             all_valid = False
             display_validation_message(result, UIMessageType.ERROR)
-        elif show_success and result.is_valid:
+        elif show_success:
             display_validation_message(result, UIMessageType.SUCCESS)
 
     return all_valid
@@ -359,10 +359,12 @@ def create_validation_summary(results: Dict[str, ValidationResult]) -> Dict[str,
         "total_fields": len(results),
         "valid_count": len(valid_fields),
         "invalid_count": len(invalid_fields),
-        "all_valid": len(invalid_fields) == 0,
+        "all_valid": not invalid_fields,
         "valid_fields": valid_fields,
         "invalid_fields": invalid_fields,
         "error_messages": [
-            result.message for result in results.values() if not result.is_valid
+            result.message
+            for result in results.values()
+            if not result.is_valid
         ],
     }

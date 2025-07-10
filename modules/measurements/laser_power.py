@@ -63,7 +63,6 @@ def render_quick_laser_power_entry():
             st.session_state.quick_modulations = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
             quick_modulations = st.session_state.quick_modulations
 
-    quick_entries = []
     quick_form = st.form(key="quick_laser_power_form")
     quick_cols = quick_form.columns(len(quick_modulations))
     quick_mw_values = []
@@ -71,9 +70,9 @@ def render_quick_laser_power_entry():
         with quick_cols[i]:
             mw = quick_form.number_input(f"{mod}% (Power in mW)", min_value=0.0, step=0.1, format="%.1f", key=f"quick_laser_mw_{mod}")
             quick_mw_values.append(mw)
-    quick_submit = quick_form.form_submit_button("Add Quick Measurements")
-    if quick_submit:
+    if quick_submit := quick_form.form_submit_button("Add Quick Measurements"):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        quick_entries = []
         for i, mod in enumerate(quick_modulations):
             mw = quick_mw_values[i]
             if mw > 0:
@@ -135,19 +134,19 @@ def render_laser_power_tab(use_sidebar_values=False):
             Edit the Standard Operating Procedure (SOP) values for expected power output at different pump current levels.
             These values represent the expected performance of your system and will be used as a reference for comparison.
             """)
-            
+
             # Load SOP data from Supabase
             sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
-            
+
             # If empty, create a dataframe with the required columns
             if sop_df.empty:
                 sop_df = pd.DataFrame(columns=SOP_POWER_VS_PUMP_COLUMNS)
-                
+
             # Filter to current study
             filtered_sop_df = filter_dataframe(
                 sop_df, {"Study Name": st.session_state.study_name}
             )
-            
+
             # Create an editable data frame
             edited_sop_df = st.data_editor(
                 filtered_sop_df,
@@ -193,7 +192,7 @@ def render_laser_power_tab(use_sidebar_values=False):
                 },
                 key="sop_editor"
             )
-            
+
             if st.button("💾 Save SOP Changes"):
                 if not edited_sop_df.equals(filtered_sop_df):
                     # Make sure Study Name is set for all rows
@@ -201,10 +200,10 @@ def render_laser_power_tab(use_sidebar_values=False):
                         edited_sop_df["Study Name"].fillna(st.session_state.study_name, inplace=True)
                     else:
                         edited_sop_df["Study Name"] = st.session_state.study_name
-                    
+
                     # Save the SOP data
                     save_dataframe(edited_sop_df, SOP_POWER_VS_PUMP_FILE)
-                    
+
                     # Calculate and save exponential fit parameters if we have enough data points
                     if len(edited_sop_df) >= 3:
                         try:
@@ -212,10 +211,10 @@ def render_laser_power_tab(use_sidebar_values=False):
                             sorted_df = edited_sop_df.sort_values("Pump Current (mA)")
                             pump_currents = sorted_df["Pump Current (mA)"].astype(float).values
                             powers = sorted_df["Expected Power (mW)"].astype(float).values
-                            
+
                             # Calculate exponential fit
                             fit_params = exponential_fit(pump_currents, powers)
-                            
+
                             # Add metadata
                             metadata = {
                                 "study_name": st.session_state.study_name,
@@ -223,10 +222,10 @@ def render_laser_power_tab(use_sidebar_values=False):
                                 "fit_type": "exponential",
                                 "notes": f"Auto-calculated from SOP data with {len(edited_sop_df)} points"
                             }
-                            
+
                             # Save fit parameters
                             save_fit_parameters("sop_power_vs_pump", fit_params, metadata)
-                            
+
                             # Show the fit equation
                             equation = f"Power (mW) = {fit_params['a']:.1f} × e^({fit_params['b']:.5f} × Current) + {fit_params['c']:.1f}"
                             st.success(f"SOP data and fit saved successfully! Exponential fit: {equation}")
@@ -239,14 +238,14 @@ def render_laser_power_tab(use_sidebar_values=False):
                     st.rerun()
                 else:
                     st.info("No changes to save.")
-            
+
             # Show a plot of the SOP data
             if not edited_sop_df.empty and "Pump Current (mA)" in edited_sop_df.columns and "Expected Power (mW)" in edited_sop_df.columns:
                 st.subheader("SOP Power Curve")
-                
+
                 # Sort by pump current for proper plotting
                 plot_df = edited_sop_df.sort_values("Pump Current (mA)")
-                
+
                 # Create a plot function to pass to create_plot
                 def plot_sop_data(fig, ax):
                     ax.plot(
@@ -262,11 +261,11 @@ def render_laser_power_tab(use_sidebar_values=False):
                     ax.set_title("Expected Power vs. Pump Current")
                     ax.grid(True, linestyle='--', alpha=0.7)
                     ax.legend()
-                
+
                 # Pass the plot function to create_plot
                 fig = create_plot(plot_sop_data)
                 st.pyplot(fig)
-                
+
         with tab_theory:
             render_source_power_theory_and_procedure()
 
@@ -282,7 +281,7 @@ def render_laser_power_tab(use_sidebar_values=False):
 
     if st.session_state.get("source_power_submitted", False):
         add_to_rig_log(
-            "Source Power Measurement", f"Measured source power", "Measurement"
+            "Source Power Measurement", "Measured source power", "Measurement"
         )
         # Reset the flag
         st.session_state.source_power_submitted = False
@@ -351,15 +350,14 @@ def render_simplified_measurement_form(use_sidebar_values=False):
             0.0,                                                   # Measured Power (mW)
             ""                                                     # Notes
         ]
-    
+
     # Convert Date column to datetime if it exists and is string type
-    if not laser_power_df.empty and "Date" in laser_power_df.columns:
-        if laser_power_df["Date"].dtype == 'object':  # String type
-            try:
-                laser_power_df["Date"] = pd.to_datetime(laser_power_df["Date"])
-            except:
-                # If conversion fails, keep as string and use text column config
-                pass
+    if not laser_power_df.empty and "Date" in laser_power_df.columns and laser_power_df["Date"].dtype == 'object':
+        try:
+            laser_power_df["Date"] = pd.to_datetime(laser_power_df["Date"])
+        except Exception:
+            # If conversion fails, keep as string and use text column config
+            pass
 
     # Create column configuration for the data editor
     column_config = {
@@ -457,13 +455,13 @@ def render_simplified_measurement_form(use_sidebar_values=False):
                 (edited_df["Measured Power (mW)"] > 0) | 
                 (edited_df["Notes"].str.strip() != "")
             ].copy()
-            
+
             # Validate required fields
             if not filtered_df.empty:
                 # Check for missing values in critical columns
                 missing_power = filtered_df["Measured Power (mW)"].isna() | (filtered_df["Measured Power (mW)"] <= 0)
                 missing_modulation = filtered_df["Modulation (%)"].isna() | (filtered_df["Modulation (%)"] <= 0)
-                
+
                 if missing_power.any() or missing_modulation.any():
                     st.error("Please ensure all rows have valid Modulation and Measured Power values.")
                 else:
@@ -473,11 +471,11 @@ def render_simplified_measurement_form(use_sidebar_values=False):
                     filtered_df["Measurement Mode"] = filtered_df["Measurement Mode"].fillna("Stationary")
                     filtered_df["Fill Fraction (%)"] = filtered_df["Fill Fraction (%)"].fillna(100.0)
                     filtered_df["Notes"] = filtered_df["Notes"].fillna("")
-                    
+
                     # Convert datetime back to string format for storage consistency
                     if "Date" in filtered_df.columns and pd.api.types.is_datetime64_any_dtype(filtered_df["Date"]):
                         filtered_df["Date"] = filtered_df["Date"].dt.strftime("%Y-%m-%d %H:%M:%S")
-                    
+
                     # Save the data
                     save_dataframe(filtered_df, LASER_POWER_FILE)
                     st.session_state.laser_power_submitted = True

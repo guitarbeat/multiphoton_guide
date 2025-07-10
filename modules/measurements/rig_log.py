@@ -25,7 +25,7 @@ def render_rig_log_tab():
 
     create_header(
         "Microscope Log",
-        f"Track maintenance, calibration, and modifications to ensure reproducibility",
+        "Track maintenance, calibration, and modifications to ensure reproducibility",
     )
 
     # Load existing data using the template function
@@ -45,10 +45,7 @@ def render_rig_log_tab():
             render_rig_log_introduction()
 
         with stats_col:
-            # Quick stats about the log
-            if not rig_log_df.empty:
-                pass  # Removed Log Overview and metrics
-
+            pass
         st.markdown("---")
         render_rig_log_table(rig_log_df)
         st.markdown("---")
@@ -63,12 +60,10 @@ def render_rig_log_tab():
             # Button to hide form
             if st.button("↑ Hide Form", key="hide_form"):
                 st.session_state.show_entry_form = False
-        else:
-            # Show button to expand form
-            if st.button(
+        elif st.button(
                 "📝 Add New Log Entry", key="show_form", use_container_width=True
             ):
-                st.session_state.show_entry_form = True
+            st.session_state.show_entry_form = True
 
     with tab2:
         render_rig_log_visualization(rig_log_df)
