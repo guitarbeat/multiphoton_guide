@@ -44,12 +44,11 @@ from modules.ui.theme import get_colors
 
 def render_quick_laser_power_entry():
     """Render a quick entry form for laser power measurements at the sample (Power in mW, Modulation in %)."""
-    st.subheader("Quick Measurement Entry (Power in mW, Modulation in %)")  # Units clarified
+    st.subheader("Quick Measurement Entry (mW, % Modulation)")
     if "quick_modulations" not in st.session_state:
         st.session_state.quick_modulations = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     quick_modulations = st.session_state.quick_modulations
 
-    # Add row and reset buttons
     col_add, col_reset = st.columns([1, 1])
     with col_add:
         if st.button("Add Row", key="add_more_quick_mod_rows"):
@@ -68,7 +67,7 @@ def render_quick_laser_power_entry():
     quick_mw_values = []
     for i, mod in enumerate(quick_modulations):
         with quick_cols[i]:
-            mw = quick_form.number_input(f"{mod}% (Power in mW)", min_value=0.0, step=0.1, format="%.1f", key=f"quick_laser_mw_{mod}")  # Units clarified
+            mw = quick_form.number_input(f"{mod}% (mW)", min_value=0.0, step=0.1, format="%.1f", key=f"quick_laser_mw_{mod}")
             quick_mw_values.append(mw)
     if quick_submit := quick_form.form_submit_button("Add Quick Measurements"):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -90,9 +89,7 @@ def render_quick_laser_power_entry():
                 }
                 quick_entries.append(entry)
         if quick_entries:
-            # Load existing data
             laser_power_df = load_dataframe(LASER_POWER_FILE, pd.DataFrame())
-            # Append new entries
             new_df = pd.DataFrame(quick_entries)
             combined_df = pd.concat([laser_power_df, new_df], ignore_index=True)
             save_dataframe(combined_df, LASER_POWER_FILE)
@@ -288,42 +285,25 @@ def render_laser_power_tab(use_sidebar_values=False):
 
 
 def render_laser_power_theory_and_procedure():
-    """Render the combined theory and procedure sections for laser power measurement. All power values are in mW, modulation is in percent as set in ScanImage."""
+    """Render concise theory and procedure for laser power measurement."""
     st.markdown(
         """
-        ### Introduction & Theory
-        Measuring and monitoring laser power at the sample is critical in multiphoton microscopy for maintaining sample integrity and data quality.
+        **Why measure laser power at the sample?**
+        - Laser power affects data quality and sample safety.
+        - Too much power causes photobleaching and damage.
+        - Use consistent settings for reproducible results.
 
-        Fluorescence emission is proportional to the square of the average laser power, so small changes in laser power can result in large changes to your data. Exposing your sample to excessive laser power can cause photobleaching and photodamage, altering your sample and measurements.
+        **How to measure:**
+        1. Place the power meter under the objective and center it.
+        2. Set measurement mode (stationary or scanning). If scanning, set fill fraction.
+        3. Start at 0% modulation. Increase in 5–10% steps. Record power (mW) at each step.
+        4. Continue to 100% or max safe power.
+        5. Plot modulation (%) vs. measured power (mW). The slope (mW/% modulation) helps monitor system health.
 
-        There are two types of laser-induced photodamage in multiphoton microscopy:
-        1. **Local heating** of the imaged area, which is linearly related to average laser power (in mW).
-        2. **Photochemical degradation** (bleaching or ablation), which is nonlinearly related to average laser power.
-
-        Knowing the laser power (in mW) and the modulation percentage (as set in ScanImage) is essential for consistency between experiments, minimizing photodamage, and monitoring system health.
-
-        ---
-
-        ### Measurement Procedure
-        1. **Prepare the power meter**
-           - Place the power meter sensor under the objective.
-           - Ensure the sensor is centered in the field of view.
-        2. **Configure the microscope**
-           - Select the measurement mode (stationary or scanning).
-           - If scanning, set the temporal fill fraction.
-        3. **Take measurements**
-           - Start at 0% modulation (ScanImage power percentage) and increase in 5-10% increments.
-           - Record the measured power (in mW) at each modulation level.
-           - Continue until reaching 100% or the maximum safe power.
-        4. **Calculate the power/modulation ratio**
-           - Plot modulation percentage (ScanImage) vs. measured power (mW).
-           - Calculate the slope of the linear relationship (units: mW/% modulation).
-           - This ratio is useful for system monitoring over time.
-
-        **CRITICAL:** Always measure with the same objective, as transmission efficiency varies between objectives.
-
-        **CRITICAL:** For consistent measurements, use the same measurement mode (stationary or scanning) each time.
-    """
+        **Tips:**
+        - Always use the same objective for measurements.
+        - Use the same measurement mode each time.
+        """
     )
 
 
@@ -590,24 +570,12 @@ def render_laser_power_visualization():
     with st.popover("📊 Understanding This Plot", use_container_width=True):
         st.markdown(
             """
-        This plot shows the relationship between laser modulation percentage (as set in ScanImage, 0-100%) and measured power at the sample (in mW).
-        
-        **Key insights:**
-        - The slope represents the power/modulation ratio (mW per % modulation).
-        - A linear relationship indicates proper laser and modulator function.
-        - Deviations from linearity may indicate issues with the laser or power modulator.
-        - Monitoring this ratio over time helps detect system degradation.
-        
-        **Typical values:**
-        - Slope values (mW/%) vary by laser and objective.
-        - For a given setup, this value should remain stable over time.
-        - Significant changes may indicate alignment issues or component degradation.
-        
-        **Units:**
-        - X-axis: Modulation (%) (ScanImage Power %)
-        - Y-axis: Measured Power (mW)
-        - Slope: mW/% (Power per % Modulation)
-        """
+            This plot shows measured power (mW) vs. modulation (%) set in ScanImage.
+            - The slope (mW/% modulation) shows system efficiency.
+            - A straight line means the system is working properly.
+            - Deviations may mean alignment or hardware issues.
+            - Track this over time to catch problems early.
+            """
         )
 
 
