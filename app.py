@@ -48,7 +48,7 @@ def initialize_session_state():
 
     # Initialize current page if not set
     if "current_page" not in st.session_state:
-        st.session_state.current_page = "Fiber Laser Power Measurements"
+        st.session_state.current_page = "Power"
 
 
 def apply_sidebar_styling():
