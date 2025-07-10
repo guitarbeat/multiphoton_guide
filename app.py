@@ -226,25 +226,27 @@ def main():
     pages = {
         "Microscope Tools": [
             {
-                "title": "Fiber Laser Power Measurements",
+                "title": "Power",
                 "icon": "🔍",
                 "function": lambda: render_laser_power_tab(use_sidebar_values=True),
-            },
-            {
-                "title": "Signal Optimization Protocols",
-                "icon": "⚡",
-                "function": render_pulse_and_fluorescence_tab,
             },
         ],
         "Analysis Tools": [
             {
-                "title": "USAF Target Analyzer",
+                "title": "USAF",
                 "icon": "🎯",
                 "function": run_usaf_analyzer,
             },
         ],
         "Documentation": [
             {"title": "Rig Log", "icon": "📝", "function": render_rig_log_tab},
+        ],
+        "Reference": [
+            {
+                "title": "Optimize",
+                "icon": "⚡",
+                "function": render_pulse_and_fluorescence_tab,
+            },
         ],
     }
 
@@ -262,47 +264,33 @@ def main():
             with st.container():
                 st.image(logo_path, use_container_width=True)
 
-        st.caption("Standardized multiphoton QC")
+        st.caption(
+            "Standardized measurements for monitoring and comparing multiphoton microscope systems"
+        )
 
         st.markdown("---")
 
         # Only render session info in the sidebar
-        # Minimal session info display
-        st.markdown(
-            f"""
-            <div class="session-info">
-                <div>{st.session_state.study_name}</div>
-                <div>{st.session_state.researcher}</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        render_session_info()
 
+        # Render session setup form in the sidebar (always visible)
+        # render_session_setup_form()  # Removed as requested
+
+        # Add navigation at the bottom of the sidebar
         st.markdown('<div class="nav-container">', unsafe_allow_html=True)
-        # Minimal navigation, no headings
-        nav_labels = {
-            "Fiber Laser Power Measurements": "🔍 Power",
-            "USAF Target Analyzer": "🎯 Analyze",
-            "Rig Log": "📝 Log",
-            "Signal Optimization Protocols": "📚 Reference",
-        }
-        # Define the order for navigation buttons
-        nav_order = [
-            "Fiber Laser Power Measurements",
-            "USAF Target Analyzer",
-            "Rig Log",
-            "Signal Optimization Protocols",
-        ]
-        # Flatten all pages into a list for ordering
-        all_pages = {page["title"]: page for section in pages.values() for page in section}
-        for page_title in nav_order:
-            page = all_pages.get(page_title)
-            if page:
+        st.subheader("Navigation")
+
+        # Create custom navigation links
+        for section, section_pages in pages.items():
+            st.markdown(f"**{section}**")
+            for page in section_pages:
+                # Check if this is the current page
                 is_active = st.session_state.current_page == page["title"]
                 button_style = "primary" if is_active else "secondary"
-                label = nav_labels.get(page["title"], page["icon"])
+
+                # Create a button for each page
                 if st.button(
-                    label,
+                    f"{page['icon']} {page['title']}",
                     key=f"nav_{page['title']}",
                     use_container_width=True,
                     type=button_style,
@@ -310,6 +298,7 @@ def main():
                 ):
                     st.session_state.current_page = page["title"]
                     st.rerun()
+
         st.markdown("</div>", unsafe_allow_html=True)
 
     # Get the function for the current page
