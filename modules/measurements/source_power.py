@@ -523,6 +523,53 @@ def render_source_power_visualization():
         ]
     )
 
+    # --- New: Time Series Plot ---
+    st.subheader("Time Series: Source Power Over Time")
+    if "Date" in filtered_df.columns and not filtered_df["Date"].isna().all():
+        # Ensure Date is datetime
+        if filtered_df["Date"].dtype == 'object':
+            try:
+                filtered_df["Date"] = pd.to_datetime(filtered_df["Date"])
+            except Exception:
+                pass
+        # Sort by date
+        ts_df = filtered_df.sort_values("Date")
+        import matplotlib.dates as mdates
+        def plot_time_series(fig, ax):
+            scatter = ax.scatter(
+                ts_df["Date"],
+                ts_df["Measured Power (mW)"],
+                c=ts_df["Pump Current (mA)"],
+                cmap="viridis",
+                s=60,
+                alpha=0.8,
+                label=None
+            )
+            ax.set_xlabel("Date/Time")
+            ax.set_ylabel("Measured Power (mW)")
+            ax.set_title("Measured Power Over Time (colored by Pump Current)")
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d\n%H:%M'))
+            fig.autofmt_xdate()
+            cbar = fig.colorbar(scatter, ax=ax, label="Pump Current (mA)")
+            ax.grid(True, linestyle="--", alpha=0.5)
+        ts_plot = create_plot(plot_time_series)
+        st.pyplot(ts_plot)
+        with st.popover("📈 Understanding This Time Series", use_container_width=True):
+            st.markdown(
+                """
+                This plot shows the measured source power (in mW) over time, with each point colored by the pump current (in mA).
+                
+                **How to use:**
+                - Track system stability and performance trends over time
+                - Identify any sudden drops or increases in power
+                - See how power at different pump currents changes with date/time
+                
+                **Tip:** Hover or zoom in to see details for each measurement.
+                """
+            )
+    else:
+        st.info("No valid date/time data available for time series plot.")
+
     # Create power vs current plot
     def plot_power_vs_current(fig, ax):
         # Get data
