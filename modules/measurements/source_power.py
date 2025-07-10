@@ -20,7 +20,7 @@ from modules.ui.theme import get_colors
 def render_source_power_form():
     """Render the source power measurement editable dataframe."""
     # --- Quick Measurement Entry ---
-    st.subheader("Quick Measurement Entry")
+    st.subheader("Quick Measurement Entry (Power in mW)")  # Clarified units
     if "quick_pump_currents" not in st.session_state:
         st.session_state.quick_pump_currents = [1000, 1250, 1500, 1750, 2000]
     quick_pump_currents = st.session_state.quick_pump_currents
@@ -44,7 +44,7 @@ def render_source_power_form():
     quick_mw_values = []
     for i, current in enumerate(quick_pump_currents):
         with quick_cols[i]:
-            mw = quick_form.number_input(f"{current} mA", min_value=0.0, step=1.0, format="%.1f", key=f"quick_mw_{current}")
+            mw = quick_form.number_input(f"{current} mA (Power in mW)", min_value=0.0, step=1.0, format="%.1f", key=f"quick_mw_{current}")  # Clarified units
             quick_mw_values.append(mw)
     quick_submit = quick_form.form_submit_button("Add Quick Measurements")
     if quick_submit:
@@ -80,7 +80,7 @@ def render_source_power_form():
     # Load existing data
     source_power_df = load_dataframe(SOURCE_POWER_FILE, pd.DataFrame())
 
-    st.subheader("Source Power Measurements")
+    st.subheader("Source Power Measurements (All power values in mW)")  # Clarified units
 
     # Initialize with default structure if empty
     if source_power_df.empty:
@@ -136,11 +136,11 @@ def render_source_power_form():
             help="Operating temperature"
         ),
         "Measured Power (mW)": st.column_config.NumberColumn(
-            "Measured Power (mW)",
+            "Measured Power (mW)",  # Units explicit
             min_value=0.0,
             step=1.0,
             format="%.0f",
-            help="Power measured at the source"
+            help="Power measured at the source (in mW)"  # Clarified units
         ),
         "Pulse Width (fs)": st.column_config.NumberColumn(
             "Pulse Width (fs)",
@@ -234,7 +234,7 @@ def render_source_power_form():
 
     # Show expected power info
     if not edited_df.empty and len(edited_df) > 0:
-        st.subheader("Expected Power Reference")
+        st.subheader("Expected Power Reference (mW)")  # Clarified units
         
         # Load SOP data to show equation
         sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
@@ -264,7 +264,7 @@ def render_source_power_form():
             
             # Convert W to mW if needed for consistency
             if power_col == "Expected Power (W)":
-                power_sop = power_sop * 1000
+                power_sop = power_sop * 1000  # Convert W to mW
             
             # Calculate fit if enough data points
             if len(curr_sop) >= 3:
@@ -278,14 +278,14 @@ def render_source_power_form():
         for _, row in edited_df.iterrows():
             if pd.notna(row["Pump Current (mA)"]) and row["Pump Current (mA)"] > 0:
                 expected = get_expected_power(row["Pump Current (mA)"])
-                expected_powers.append(f"{row['Pump Current (mA)']} mA → {expected:.0f} mW expected")
+                expected_powers.append(f"{row['Pump Current (mA)']} mA → {expected:.0f} mW expected")  # Units explicit
         
         if expected_powers:
             st.caption("**Current Entries:** " + " | ".join(expected_powers))
 
 
 def get_expected_power(current):
-    """Interpolate expected power based on pump current using SOP data from Supabase."""
+    """Interpolate expected power based on pump current using SOP data from Supabase. Returns power in mW."""
     # Load SOP data from Supabase
     sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
     
@@ -300,7 +300,7 @@ def get_expected_power(current):
     
     # If no SOP data exists or missing required columns, use default values
     if sop_df.empty or "Pump Current (mA)" not in sop_df.columns or power_col is None:
-        # Default values as fallback (converted to mW)
+        # Default values as fallback (all in mW)
         currents = np.array(
             [
                 0,
@@ -325,24 +325,24 @@ def get_expected_power(current):
         )
         powers = np.array(
             [
-                0.0,
-                0.0,
-                200.0,
-                200.0,
-                900.0,
-                1400.0,
-                2000.0,
-                2300.0,
-                3200.0,
-                3800.0,
-                4400.0,
-                4800.0,
-                5700.0,
-                6300.0,
-                7000.0,
-                7500.0,
-                8000.0,
-                8200.0,
+                0.0,    # mW
+                0.0,    # mW
+                200.0,  # mW
+                200.0,  # mW
+                900.0,  # mW
+                1400.0, # mW
+                2000.0, # mW
+                2300.0, # mW
+                3200.0, # mW
+                3800.0, # mW
+                4400.0, # mW
+                4800.0, # mW
+                5700.0, # mW
+                6300.0, # mW
+                7000.0, # mW
+                7500.0, # mW
+                8000.0, # mW
+                8200.0, # mW
             ]
         )
     else:
@@ -366,7 +366,7 @@ def get_expected_power(current):
         
         # Convert W to mW if needed for consistency
         if power_col == "Expected Power (W)":
-            powers = powers * 1000
+            powers = powers * 1000  # Convert W to mW
         
         # Add zero point if not present
         if currents[0] > 0:
@@ -381,33 +381,33 @@ def get_expected_power(current):
     # Try to use exponential fit if we have enough points (preferred)
     if len(currents) >= 3:
         try:
-            # Use exponential fit (preferred for laser power curves)
+            # Use exponential fit (preferred for laser power curves, returns mW)
             fit_params = exponential_fit(currents, powers)
             
             # Apply the exponential model to get result
             result = fit_params["a"] * np.exp(fit_params["b"] * current_clipped) + fit_params["c"]
         except Exception:
-            # Fallback to cubic spline or linear interpolation
+            # Fallback to cubic spline or linear interpolation (all in mW)
             if len(currents) >= 4:
                 try:
-                    cs = CubicSpline(currents, powers, bc_type="natural")
+                    cs = CubicSpline(currents, powers, bc_type="natural")  # mW
                     result = cs(current_clipped)
                 except Exception:
-                    # Fallback to linear interpolation
+                    # Fallback to linear interpolation (mW)
                     result = np.interp(current_clipped, currents, powers)
             else:
-                # Linear interpolation for few points
+                # Linear interpolation for few points (mW)
                 result = np.interp(current_clipped, currents, powers)
     elif len(currents) >= 4:
         try:
-            # Use cubic spline if exponential fit isn't possible but we have enough points
+            # Use cubic spline if exponential fit isn't possible but we have enough points (mW)
             cs = CubicSpline(currents, powers, bc_type="natural")
             result = cs(current_clipped)
         except Exception:
-            # Fallback to linear interpolation
+            # Fallback to linear interpolation (mW)
             result = np.interp(current_clipped, currents, powers)
     else:
-        # Linear interpolation for few points
+        # Linear interpolation for few points (mW)
         result = np.interp(current_clipped, currents, powers)
     
     # Convert the result to a Python native type to ensure JSON serialization works
@@ -420,7 +420,7 @@ def get_expected_power(current):
 
 
 def render_source_power_theory_and_procedure(theory_only=False, procedure_only=False):
-    """Render the theory and/or procedure sections for source power measurement."""
+    """Render the theory and/or procedure sections for source power measurement. All power values are in mW unless otherwise noted."""
     if not procedure_only:
         st.markdown(
             """
@@ -433,7 +433,8 @@ def render_source_power_theory_and_procedure(theory_only=False, procedure_only=F
             - Optimize laser performance
             - Maintain system stability
             
-            The source power is primarily controlled by the pump current, with typical values ranging from 2000-8000 mA. The relationship between pump current and output power should be linear within the operating range.
+            The source power is primarily controlled by the pump current, with typical values ranging from 2000-8000 mA. The relationship between pump current and output power should be linear within the operating range.  
+            **All power values below are in mW unless otherwise noted.**
         """
         )
     if not theory_only:
@@ -481,8 +482,8 @@ def render_source_power_theory_and_procedure(theory_only=False, procedure_only=F
 
 
 def render_source_power_visualization():
-    """Render visualizations for source power measurements."""
-    st.subheader("Source Power Analysis")
+    """Render visualizations for source power measurements. All power values are in mW."""
+    st.subheader("Source Power Analysis (Power in mW)")  # Clarified units
 
     # Load existing data
     source_power_df = load_dataframe(SOURCE_POWER_FILE, pd.DataFrame())
@@ -508,15 +509,15 @@ def render_source_power_visualization():
     create_metric_row(
         [
             {
-                "label": "Latest Power",
+                "label": "Latest Power (mW)",  # Units explicit
                 "value": f"{filtered_df['Measured Power (mW)'].iloc[-1]:.0f} mW",
             },
             {
-                "label": "Pump Current",
+                "label": "Pump Current (mA)",
                 "value": f"{filtered_df['Pump Current (mA)'].iloc[-1]} mA",
             },
             {
-                "label": "Power Ratio",
+                "label": "Power Ratio (Measured/Expected)",  # Units explicit
                 "value": f"{filtered_df['Measured Power (mW)'].iloc[-1] / get_expected_power(filtered_df['Pump Current (mA)'].iloc[-1]):.2f}",
             },
         ]
@@ -526,7 +527,7 @@ def render_source_power_visualization():
     def plot_power_vs_current(fig, ax):
         # Get data
         x = filtered_df["Pump Current (mA)"].values
-        y = filtered_df["Measured Power (mW)"].values
+        y = filtered_df["Measured Power (mW)"].values  # mW
 
         # Plot data points
         ax.scatter(x, y, color="#4BA3C4", s=50, alpha=0.7, label="Measurements")
@@ -549,7 +550,7 @@ def render_source_power_visualization():
             
             # Convert W to mW if needed for consistency
             if power_col == "Expected Power (W)":
-                power_sop = power_sop * 1000
+                power_sop = power_sop * 1000  # Convert W to mW
             
             # Sort by current for plotting
             sort_indices = np.argsort(curr_sop)
@@ -558,7 +559,7 @@ def render_source_power_visualization():
             
             # Plot the SOP points
             ax.scatter(curr_sop, power_sop, color="#BF5701", s=60, marker='s', 
-                      label="SOP Data Points")
+                      label="SOP Data Points (mW)")  # Units explicit
             
             # Create exponential fit for SOP data
             if len(curr_sop) >= 3:
@@ -574,11 +575,11 @@ def render_source_power_visualization():
                     y_curve, 
                     color="#BF5701", 
                     linestyle="-", 
-                    label=f"Exp Fit: {fit_params['a']:.3f}*e^({fit_params['b']:.5f}*x) + {fit_params['c']:.3f}"
+                    label=f"Exp Fit: {fit_params['a']:.3f}*e^({fit_params['b']:.5f}*x) + {fit_params['c']:.3f} (mW)"  # Units explicit
                 )
                 
                 # Display formula and R²
-                equation_text = f"Power = {fit_params['a']:.3f} × e^({fit_params['b']:.5f} × Current) + {fit_params['c']:.3f}"
+                equation_text = f"Power (mW) = {fit_params['a']:.3f} × e^({fit_params['b']:.5f} × Current) + {fit_params['c']:.3f}"
                 r_squared_text = f"R² = {fit_params['r_squared']:.4f}"
                 ax.text(0.05, 0.95, equation_text + "\n" + r_squared_text,
                       transform=ax.transAxes, fontsize=9,
@@ -587,27 +588,27 @@ def render_source_power_visualization():
             else:
                 # Just connect the dots if not enough points for fitting
                 ax.plot(curr_sop, power_sop, color="#BF5701", linestyle="--", 
-                      label="Expected Values")
+                      label="Expected Values (mW)")  # Units explicit
         else:
             # Fallback to hardcoded expected values if no SOP data (converted to mW)
             expected_x = [2000, 4000, 6000, 8000]
-            expected_y = [200, 2300, 4800, 7500]
+            expected_y = [200, 2300, 4800, 7500]  # mW
             ax.plot(
                 expected_x,
                 expected_y,
                 color="#BF5701",
                 linestyle="--",
-                label="Expected Values",
+                label="Expected Values (mW)",  # Units explicit
             )
 
         # Add labels and title
         ax.set_xlabel("Pump Current (mA)")
-        ax.set_ylabel("Measured Power (mW)")
-        ax.set_title("Source Power vs. Pump Current")
+        ax.set_ylabel("Measured Power (mW)")  # Units explicit
+        ax.set_title("Source Power vs. Pump Current (Power in mW)")  # Units explicit
         
         # Set reasonable axis limits
         ax.set_xlim(0, max(filtered_df["Pump Current (mA)"].max() * 1.1, 8500))
-        ax.set_ylim(0, max(filtered_df["Measured Power (mW)"].max() * 1.1, 8000.0))
+        ax.set_ylim(0, max(filtered_df["Measured Power (mW)"].max() * 1.1, 8000.0))  # mW
 
         # Add grid and legend
         ax.grid(True, linestyle="--", alpha=0.7)
@@ -621,7 +622,7 @@ def render_source_power_visualization():
     with st.popover("📊 Understanding This Plot", use_container_width=True):
         st.markdown(
             """
-        This plot shows the relationship between pump current and measured power at the source.
+        This plot shows the relationship between pump current and measured power at the source (all power values in mW).
         
         **Key insights:**
         - The exponential curve shows the expected power values at different current levels
