@@ -28,8 +28,7 @@ from modules.ui.components import create_header, create_info_box
 class BaseMeasurementModule(ABC):
     """Abstract base class for measurement modules.
 
-    This class defines the standard structure that all measurement modules should follow,
-    providing a consistent interface and reducing code duplication.
+    Defines the standard structure for all measurement modules, providing a consistent interface and reducing code duplication.
     """
 
     def __init__(self, module_name: str, data_file_type: str):
@@ -60,7 +59,7 @@ class BaseMeasurementModule(ABC):
     def render_tips(self) -> None:
         """Render tips and best practices (optional override)."""
         create_info_box(
-            "Override render_tips() method to provide module-specific tips."
+            "Override render_tips() to provide module-specific tips."
         )
 
     def render_tab(self, subtitle: str = "", use_sidebar_values: bool = False) -> None:
@@ -291,7 +290,7 @@ def create_standard_visualization_section(
     )
 
     if df is None or df.empty:
-        st.info("Add measurements to see analysis and visualizations")
+        st.info("Add measurements to see analysis and visualizations.")
         return
 
     # Display metrics if function provided
@@ -344,13 +343,13 @@ def create_module_status_indicator(
     """
     if has_data:
         if data_count > 0:
-            st.success(f"✅ {module_name}: {data_count} measurements recorded")
+            st.success(f"✅ {module_name}: {data_count} measurements recorded.")
             if last_updated:
                 st.caption(f"Last updated: {last_updated}")
         else:
-            st.info(f"📊 {module_name}: Ready for measurements")
+            st.info(f"📊 {module_name}: Ready to record measurements.")
     else:
-        st.warning(f"⚠️ {module_name}: No data available")
+        st.warning(f"⚠️ {module_name}: No data available.")
 
 
 # Common validation configurations for different measurement types

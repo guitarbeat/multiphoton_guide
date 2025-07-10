@@ -26,57 +26,57 @@ def render_fluorescence_theory_and_procedure():
     with st.expander("📖 Introduction & Theory", expanded=True):
         st.markdown(
             """
-            Fluorescence signals are commonly expressed in **arbitrary units** or relative scales such as **dF/F ratio**, which mask any degradation in signal magnitude over time. This practice can lead to vastly different signal strengths between laboratories following seemingly similar protocols, without realizing the discrepancy exists. Such variations compromise the **reproducibility** of quantitative measurements across different imaging systems and research groups.
+            Fluorescence signals are often reported in **arbitrary units** or as a **dF/F ratio**, which can hide signal degradation over time. This practice can result in large differences in signal strength between labs using similar protocols, often without realizing it. Such variation undermines the **reproducibility** of quantitative measurements across imaging systems and research groups.
 
-            **Low signal magnitudes** inevitably lead to noisier, less precise measurements that limit the quality of scientific conclusions. Without a standardized method to evaluate quantitative signal magnitudes, laboratories may miss critical opportunities for improving their primary data quality through systematic optimization of imaging parameters and hardware performance.
+            **Low signal magnitudes** lead to noisier, less precise measurements and limit the quality of scientific conclusions. Without a standardized way to evaluate signal magnitude, labs may miss key opportunities to improve data quality by optimizing imaging parameters and hardware.
 
-            We strongly recommend reporting fluorescence signals in **absolute physical units** such as **detected photon counts per second**. This standardized approach offers a consistent framework to demonstrate signal levels across different systems, making it invaluable for **longitudinal system performance monitoring**, **inter-laboratory comparisons**, and **establishing quantitative benchmarks** for multiphoton microscopy applications.
+            We strongly recommend reporting fluorescence signals in **absolute physical units** such as **detected photon counts per second**. This standardization provides a consistent framework for comparing signal levels across systems, supporting **long-term system monitoring**, **inter-lab comparisons**, and **quantitative benchmarks** for multiphoton microscopy.
 
-            While direct photon counting requires specialized electronics not available on most systems, we can exploit the fundamental **signal-noise statistics** of photon detection to accurately estimate detector photon sensitivity. This approach enables translation of detected signals from arbitrary units into estimated **absolute photon counts**, providing the quantitative foundation necessary for rigorous scientific comparisons.
+            Direct photon counting requires specialized electronics, but you can use the fundamental **signal-noise statistics** of photon detection to estimate detector photon sensitivity. This lets you convert detected signals from arbitrary units to estimated **absolute photon counts**, providing a solid foundation for rigorous scientific comparison.
         """
         )
 
         with st.expander("🔬 Photon Transfer Curve Theory Details"):
             st.markdown(
                 """
-                The **Photon Transfer Curve (PTC)** represents a powerful characterization tool for imaging detectors that exploits the fundamental relationship between signal and noise in photon-limited imaging systems. This technique provides quantitative insight into detector performance and enables absolute calibration of fluorescence measurements.
+                The **Photon Transfer Curve (PTC)** is a powerful tool for characterizing imaging detectors. It uses the fundamental relationship between signal and noise in photon-limited systems to provide quantitative insight into detector performance and enables absolute calibration of fluorescence measurements.
 
-                **Photon Shot Noise** follows **Poisson statistics**, where the variance of photon arrivals equals the mean number of photons detected. This fundamental relationship forms the theoretical basis for the PTC method. For an ideal detector operating in the photon-limited regime, the **signal-variance relationship** demonstrates that variance of the detected signal is directly proportional to the mean signal intensity.
+                **Photon shot noise** follows **Poisson statistics**: the variance of photon arrivals equals the mean number of photons detected. For an ideal detector in the photon-limited regime, the **variance of the detected signal is directly proportional to the mean signal intensity**.
 
-                The **photon sensitivity** parameter K represents the conversion factor between digital units and actual photons detected. Mathematically, for a detector with photon sensitivity K (expressed in digital units per photon), the relationship becomes:
+                The **photon sensitivity** parameter K is the conversion factor between digital units and actual photons detected. For a detector with photon sensitivity K (in digital units per photon):
 
                 **Variance = K × Mean + Offset**
 
-                Where **Variance** represents the pixel-to-pixel or frame-to-frame variance, **Mean** indicates the average signal intensity, **K** is the photon sensitivity, and **Offset** accounts for electronic noise sources. By measuring pairs of mean and variance values across different intensity levels and plotting them, we can determine K from the **slope of the linear fit**.
+                Here, **Variance** is the pixel-to-pixel or frame-to-frame variance, **Mean** is the average signal intensity, **K** is the photon sensitivity, and **Offset** accounts for electronic noise. By measuring mean and variance pairs at different intensities and plotting them, you can determine K from the **slope of the linear fit**.
 
-                Once the photon sensitivity K is established through PTC analysis, any measured signal can be converted from arbitrary units to **absolute photon counts** using the simple relationship: **Photons = Signal / K**. This conversion provides the quantitative foundation necessary for rigorous scientific analysis and cross-system comparisons.
+                Once you know K from PTC analysis, you can convert any measured signal from arbitrary units to **absolute photon counts**: **Photons = Signal / K**. This conversion is the basis for rigorous scientific analysis and cross-system comparisons.
             """
             )
 
     with st.expander("📋 Measurement Procedure", expanded=True):
         st.markdown(
             """
-            ### Systematic Protocol for Absolute Fluorescence Signal Estimation
+            ### Protocol for Absolute Fluorescence Signal Estimation
 
-            Begin by preparing a **fluorescent sample** that provides uniform fluorescence across the field of view. A fluorescent slide or coverslip with fluorescent beads works well for this purpose. Alternatively, biological samples with regions of different but stable intensities can be used, though uniform samples provide more reliable calibration data.
+            1. **Prepare a fluorescent sample** that provides uniform fluorescence across the field of view. A fluorescent slide or coverslip with beads is ideal. Biological samples with stable regions can work, but uniform samples are best for calibration.
 
-            **Configure the microscope** by setting the detector gain to a fixed value throughout the measurement process. Ensure the detector is operating within its **linear response range** and disable any automatic gain control, temporal averaging, or other signal processing features that might affect the noise characteristics of the measurements.
+            2. **Set up the microscope.** Fix the detector gain for all measurements. Make sure the detector operates in its **linear range**. Turn off any automatic gain, temporal averaging, or signal processing that could affect noise.
 
-            **Acquire calibration data** by capturing approximately **500 consecutive frames** of the same field of view to provide sufficient statistical power for variance calculations. Select multiple **regions of interest** with different intensity levels to cover the dynamic range of your detector. For each region, measure both the **mean intensity** and **variance** across the frame sequence.
+            3. **Acquire calibration data.** Capture about **500 consecutive frames** of the same field. Select several **regions of interest** at different intensities to cover your detector’s dynamic range. For each region, measure the **mean intensity** and **variance** across frames.
 
-            **Calculate photon sensitivity** using the frame-to-frame difference method to isolate quantum noise from other sources. For consecutive frames X and X', compute the mean as ½(X + X') and variance as ½(X' - X)². This approach effectively eliminates correlated noise sources while preserving the photon shot noise characteristics essential for accurate PTC analysis.
+            4. **Calculate photon sensitivity.** Use the frame-to-frame difference method to isolate quantum noise. For consecutive frames X and X', compute the mean as ½(X + X') and variance as ½(X' - X)². This removes correlated noise and preserves photon shot noise for accurate PTC analysis.
 
-            **Plot the Photon Transfer Curve** by graphing variance versus mean intensity for all measured regions. **Fit a linear regression** to the data points, ensuring the relationship remains linear across your measurement range. The **slope of this line** represents the photon sensitivity K in digital units per photon, while the y-intercept indicates the electronic noise floor of your detector system.
+            5. **Plot the Photon Transfer Curve.** Graph variance versus mean intensity for all regions. **Fit a linear regression** to the data. The **slope** is the photon sensitivity K (digital units per photon); the **y-intercept** is the electronic noise floor.
 
-            **Convert signals to photon counts** using the determined photon sensitivity. For any measured signal intensity S, the corresponding **photon count N** is calculated as N = S / K. This provides absolute photon counts that are independent of detector settings and enable quantitative comparisons across different imaging sessions and systems.
+            6. **Convert signals to photon counts.** For any measured signal S, calculate photon count N as N = S / K. This gives absolute photon counts, independent of detector settings, for quantitative comparison across sessions and systems.
         """
         )
 
         st.warning(
-            "**CRITICAL:** Ensure the detector operates in its **linear range** throughout the measurement. Saturation causes variance to decrease at high intensities, invalidating the PTC analysis."
+            "**CRITICAL:** Keep the detector in its **linear range** for all measurements. Saturation causes variance to decrease at high intensities and invalidates PTC analysis."
         )
         st.warning(
-            "**CRITICAL:** Acquire **multiple frames** of identical fields to separate temporal quantum noise from spatial variations in fluorescence intensity."
+            "**CRITICAL:** Acquire **multiple frames** of the same field to separate quantum noise from spatial variations in intensity."
         )
 
 
@@ -133,14 +133,20 @@ def render_fluorescence_visualization():
     with st.popover("📊 Understanding the Photon Transfer Curve", use_container_width=True):
         st.markdown(
             """
-            The **Photon Transfer Curve** demonstrates the fundamental relationship between signal intensity and detection noise in photon-limited imaging systems. The **linear relationship** confirms that your detector is operating in the photon-limited regime where quantum shot noise dominates.
+            The **Photon Transfer Curve** shows the fundamental relationship between signal intensity and detection noise in photon-limited imaging. A **linear relationship** confirms your detector is operating in the photon-limited regime, where quantum shot noise dominates.
 
-            **Key parameters** derived from PTC analysis include the **photon sensitivity K** (slope), which quantifies how many digital units correspond to each detected photon, and the **electronic noise floor** (y-intercept), which represents detector noise independent of signal level.
+            **Key parameters:**
+            - **Photon sensitivity K (slope):** How many digital units correspond to each detected photon.
+            - **Electronic noise floor (y-intercept):** Detector noise independent of signal level.
 
-            **Practical applications** of PTC analysis enable conversion of arbitrary intensity units to absolute photon counts using the relationship **Photons = Intensity / K**. For example, with K = 0.25, a measured intensity of 100 digital units corresponds to **400 detected photons**.
+            **Use PTC analysis to convert intensity units to absolute photon counts:**
+            - **Photons = Intensity / K**
+            - Example: With K = 0.25, an intensity of 100 digital units means **400 detected photons**.
 
-            **System monitoring** using PTC analysis allows detection of performance changes over time. **Decreasing photon sensitivity** may indicate PMT degradation, while **increasing electronic noise** suggests detector or amplifier issues requiring attention.
-        """
+            **Monitor your system:**
+            - **Decreasing photon sensitivity** may mean PMT degradation.
+            - **Increasing electronic noise** may signal detector or amplifier issues.
+            """
         )
 
     # Enhanced photon calculator with additional features
@@ -155,7 +161,7 @@ def render_fluorescence_visualization():
                 max_value=10.0,
                 value=0.25,
                 step=0.01,
-                help="Digital units per photon from PTC analysis"
+                help="Digital units per photon from PTC analysis."
             )
         with col2:
             intensity = st.number_input(
@@ -164,24 +170,24 @@ def render_fluorescence_visualization():
                 max_value=10000, 
                 value=100, 
                 step=10,
-                help="Measured signal in digital units"
+                help="Measured signal in digital units."
             )
 
         photon_count = intensity / k_value if k_value > 0 else 0
-        photon_rate = photon_count * 1000  # Assuming 1ms integration time
+        photon_rate = photon_count * 1000  # Assumes 1 ms integration time
 
         col1, col2 = st.columns(2)
         with col1:
             st.metric("Estimated Photon Count", f"{photon_count:.1f} photons")
         with col2:
-            st.metric("Photon Rate (1ms)", f"{photon_rate:.0f} photons/s")
+            st.metric("Photon Rate (1 ms)", f"{photon_rate:.0f} photons/s")
 
         st.markdown(
             """
             **Formula:** Photons = Intensity / K
             
-            This calculator converts arbitrary intensity units to **absolute photon counts** using the photon sensitivity determined from PTC analysis. The photon rate assumes a 1 millisecond integration time and can be scaled for different exposure durations.
-        """
+            This calculator converts intensity units to **absolute photon counts** using the photon sensitivity from PTC analysis. The photon rate assumes a 1 ms integration time and can be scaled for other exposure durations.
+            """
         )
 
 

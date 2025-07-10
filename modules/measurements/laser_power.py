@@ -49,7 +49,7 @@ def render_quick_laser_power_entry():
         st.session_state.quick_modulations = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     quick_modulations = st.session_state.quick_modulations
 
-    # Add more rows and reset buttons
+    # Add row and reset buttons
     col_add, col_reset = st.columns([1, 1])
     with col_add:
         if st.button("Add Row", key="add_more_quick_mod_rows"):
@@ -482,7 +482,7 @@ def render_simplified_measurement_form(use_sidebar_values=False):
                     st.success(f"Saved {len(filtered_df)} laser power measurements.")
                     st.rerun()
             else:
-                st.info("No changes to save.")
+                st.info("No valid measurements to save. Please enter at least one measurement.")
 
 
 def render_laser_power_visualization():
