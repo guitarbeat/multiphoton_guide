@@ -262,33 +262,47 @@ def main():
             with st.container():
                 st.image(logo_path, use_container_width=True)
 
-        st.caption(
-            "Standardized measurements for monitoring and comparing multiphoton microscope systems"
-        )
+        st.caption("Standardized multiphoton QC")
 
         st.markdown("---")
 
         # Only render session info in the sidebar
-        render_session_info()
+        # Minimal session info display
+        st.markdown(
+            f"""
+            <div class="session-info">
+                <div>{st.session_state.study_name}</div>
+                <div>{st.session_state.researcher}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-        # Render session setup form in the sidebar (always visible)
-        # render_session_setup_form()  # Removed as requested
-
-        # Add navigation at the bottom of the sidebar
         st.markdown('<div class="nav-container">', unsafe_allow_html=True)
-        st.subheader("Navigation")
-
-        # Create custom navigation links
-        for section, section_pages in pages.items():
-            st.markdown(f"**{section}**")
-            for page in section_pages:
-                # Check if this is the current page
+        # Minimal navigation, no headings
+        nav_labels = {
+            "Fiber Laser Power Measurements": "🔍 Power",
+            "USAF Target Analyzer": "🎯 Analyze",
+            "Rig Log": "📝 Log",
+            "Signal Optimization Protocols": "📚 Reference",
+        }
+        # Define the order for navigation buttons
+        nav_order = [
+            "Fiber Laser Power Measurements",
+            "USAF Target Analyzer",
+            "Rig Log",
+            "Signal Optimization Protocols",
+        ]
+        # Flatten all pages into a list for ordering
+        all_pages = {page["title"]: page for section in pages.values() for page in section}
+        for page_title in nav_order:
+            page = all_pages.get(page_title)
+            if page:
                 is_active = st.session_state.current_page == page["title"]
                 button_style = "primary" if is_active else "secondary"
-
-                # Create a button for each page
+                label = nav_labels.get(page["title"], page["icon"])
                 if st.button(
-                    f"{page['icon']} {page['title']}",
+                    label,
                     key=f"nav_{page['title']}",
                     use_container_width=True,
                     type=button_style,
@@ -296,7 +310,6 @@ def main():
                 ):
                     st.session_state.current_page = page["title"]
                     st.rerun()
-
         st.markdown("</div>", unsafe_allow_html=True)
 
     # Get the function for the current page
