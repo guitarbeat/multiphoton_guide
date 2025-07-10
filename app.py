@@ -48,7 +48,7 @@ def initialize_session_state():
 
     # Initialize current page if not set
     if "current_page" not in st.session_state:
-        st.session_state.current_page = "Laser Power Measurements"
+        st.session_state.current_page = "Fiber Laser Power Measurements"
 
 
 def apply_sidebar_styling():
@@ -167,7 +167,7 @@ def render_laser_inputs():
 def render_measurement_inputs():
     """Render measurement mode, sensor model, and fill fraction input fields."""
     # Only show fill fraction for Laser Power at the Sample page
-    if st.session_state.current_page == "Laser Power at the Sample":
+    if st.session_state.current_page == "Fiber Laser Power Measurements":
         fill_fraction = st.session_state.fill_fraction
         if st.session_state.measurement_mode == "Scanning":
             fill_fraction = st.number_input(
@@ -226,7 +226,7 @@ def main():
     pages = {
         "Microscope Tools": [
             {
-                "title": "Laser Power Measurements",
+                "title": "Fiber Laser Power Measurements",
                 "icon": "🔍",
                 "function": lambda: render_laser_power_tab(use_sidebar_values=True),
             },

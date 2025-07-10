@@ -103,13 +103,9 @@ def render_quick_laser_power_entry():
 
 
 def render_laser_power_tab(use_sidebar_values=False):
-    """Render the laser power measurement tab content.
+    """Render the fiber laser power measurement tab content."""
 
-    Args:
-        use_sidebar_values: If True, use values from the sidebar instead of showing duplicate form fields.
-    """
-
-    create_header("Laser Power Measurements (at Sample)")  # Clarified context
+    create_header("Fiber Laser Power Measurements (at Sample)")  # Clarified context
 
     # Create tabs for different measurement locations
     source_tab, sample_tab = st.tabs(
@@ -337,7 +333,7 @@ def render_simplified_measurement_form(use_sidebar_values=False):
     # Load existing data
     laser_power_df = load_dataframe(LASER_POWER_FILE, pd.DataFrame())
 
-    st.subheader("Laser Power Measurements (at Sample, Power in mW, Modulation in %)")  # Clarified units
+    st.subheader("Fiber Laser Power Measurements (at Sample, Power in mW, Modulation in %)")  # Clarified units
 
     # Initialize with default structure if empty
     if laser_power_df.empty:
