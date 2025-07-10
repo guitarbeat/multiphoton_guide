@@ -20,7 +20,7 @@ from modules.ui.theme import get_colors
 def render_source_power_form():
     """Render the source power measurement editable dataframe."""
     # --- Quick Measurement Entry ---
-    st.subheader("Quick Measurement Entry (Power in mW)")  # Clarified units
+    st.subheader("Quick Measurement Entry (Power in mW)")  # Units clarified
     if "quick_pump_currents" not in st.session_state:
         st.session_state.quick_pump_currents = [1000, 1250, 1500, 1750, 2000]
     quick_pump_currents = st.session_state.quick_pump_currents
@@ -28,7 +28,7 @@ def render_source_power_form():
     # Add more rows button
     col_add, col_reset = st.columns([1, 1])
     with col_add:
-        if st.button("Add More Rows", key="add_more_quick_rows"):
+        if st.button("Add Row", key="add_more_quick_rows"):
             last_val = quick_pump_currents[-1] if quick_pump_currents else 2000
             next_val = last_val + 250
             quick_pump_currents.append(next_val)
@@ -44,7 +44,7 @@ def render_source_power_form():
     quick_mw_values = []
     for i, current in enumerate(quick_pump_currents):
         with quick_cols[i]:
-            mw = quick_form.number_input(f"{current} mA (Power in mW)", min_value=0.0, step=1.0, format="%.1f", key=f"quick_mw_{current}")  # Clarified units
+            mw = quick_form.number_input(f"{current} mA (Power in mW)", min_value=0.0, step=1.0, format="%.1f", key=f"quick_mw_{current}")  # Units clarified
             quick_mw_values.append(mw)
     if quick_submit := quick_form.form_submit_button("Add Quick Measurements"):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -71,7 +71,7 @@ def render_source_power_form():
             new_df = pd.DataFrame(quick_entries)
             combined_df = pd.concat([source_power_df, new_df], ignore_index=True)
             save_dataframe(combined_df, SOURCE_POWER_FILE)
-            st.success(f"Added {len(quick_entries)} quick measurements!")
+            st.success(f"Added {len(quick_entries)} quick measurements.")
             st.session_state.source_power_submitted = True
             st.rerun()
     # --- End Quick Measurement Entry ---
@@ -79,7 +79,7 @@ def render_source_power_form():
     # Load existing data
     source_power_df = load_dataframe(SOURCE_POWER_FILE, pd.DataFrame())
 
-    st.subheader("Source Power Measurements (All power values in mW)")  # Clarified units
+    st.subheader("Source Power Measurements (All values in mW)")  # Units clarified
 
     # Initialize with default structure if empty
     if source_power_df.empty:
@@ -94,7 +94,7 @@ def render_source_power_form():
             0.0,                                                   # Measured Power (mW)
             0,                                                     # Pulse Width (fs)
             "",                                                    # Grating Position
-            "Unknown",                                             # Fan Status
+            "Unknown",                                            # Fan Status
             ""                                                     # Notes
         ]
 
@@ -111,19 +111,19 @@ def render_source_power_form():
         "Study Name": st.column_config.TextColumn(
             "Study Name",
             default=st.session_state.study_name,
-            help="Name of the study"
+            help="Name of the study."
         ),
         "Wavelength (nm)": st.column_config.NumberColumn(
             "Wavelength (nm)",
             default=st.session_state.wavelength,
-            help="Wavelength setting"
+            help="Wavelength setting."
         ),
         "Pump Current (mA)": st.column_config.NumberColumn(
             "Pump Current (mA)",
             min_value=0,
             max_value=8000,
             step=250,
-            help="Current setting for the pump diode"
+            help="Current setting for the pump diode."
         ),
         "Temperature (°C)": st.column_config.NumberColumn(
             "Temperature (°C)",
@@ -131,33 +131,33 @@ def render_source_power_form():
             max_value=50.0,
             step=0.1,
             format="%.1f",
-            help="Operating temperature"
+            help="Operating temperature."
         ),
         "Measured Power (mW)": st.column_config.NumberColumn(
             "Measured Power (mW)",  # Units explicit
             min_value=0.0,
             step=1.0,
             format="%.0f",
-            help="Power measured at the source (in mW)"  # Clarified units
+            help="Power measured at the source (in mW)."
         ),
         "Pulse Width (fs)": st.column_config.NumberColumn(
             "Pulse Width (fs)",
             min_value=0,
             step=1,
-            help="Pulse width in femtoseconds"
+            help="Pulse width in femtoseconds."
         ),
         "Grating Position": st.column_config.TextColumn(
             "Grating Position",
-            help="Position of the grating"
+            help="Position of the grating."
         ),
         "Fan Status": st.column_config.SelectboxColumn(
             "Fan Status",
             options=["Running", "Stopped", "Unknown"],
-            help="Status of the cooling fan"
+            help="Status of the cooling fan."
         ),
         "Notes": st.column_config.TextColumn(
             "Notes",
-            help="Optional notes about the measurement"
+            help="Optional notes about the measurement."
         )
     }
 
@@ -166,18 +166,18 @@ def render_source_power_form():
         if pd.api.types.is_datetime64_any_dtype(source_power_df["Date"]):
             column_config["Date"] = st.column_config.DatetimeColumn(
                 "Date",
-                help="Date and time of measurement"
+                help="Date and time of measurement."
             )
         else:
             column_config["Date"] = st.column_config.TextColumn(
                 "Date",
-                help="Date and time of measurement (YYYY-MM-DD HH:MM:SS)"
+                help="Date and time of measurement (YYYY-MM-DD HH:MM:SS)."
             )
     else:
         # Default for new dataframes
         column_config["Date"] = st.column_config.DatetimeColumn(
             "Date",
-            help="Date and time of measurement"
+            help="Date and time of measurement."
         )
 
     # Display editable dataframe
@@ -193,10 +193,10 @@ def render_source_power_form():
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
         if st.button("💾 Save Changes", use_container_width=True, key="save_source_power_changes"):
-            # Remove empty rows (rows where key measurement fields are empty/zero)
+            # Remove empty rows (rows where key measurement fields are empty or zero)
             filtered_df = edited_df[
-                (edited_df["Pump Current (mA)"] > 0) | 
-                (edited_df["Measured Power (mW)"] > 0) | 
+                (edited_df["Pump Current (mA)"] > 0) |
+                (edited_df["Measured Power (mW)"] > 0) |
                 (edited_df["Notes"].str.strip() != "") |
                 (edited_df["Pulse Width (fs)"] > 0) |
                 (edited_df["Grating Position"].str.strip() != "")
@@ -225,14 +225,14 @@ def render_source_power_form():
                     # Save the data
                     save_dataframe(filtered_df, SOURCE_POWER_FILE)
                     st.session_state.source_power_submitted = True
-                    st.success(f"Saved {len(filtered_df)} source power measurements!")
+                    st.success(f"Saved {len(filtered_df)} source power measurements.")
                     st.rerun()
             else:
                 st.warning("No valid measurements to save.")
 
     # Show expected power info
     if not edited_df.empty and len(edited_df) > 0:
-        st.subheader("Expected Power Reference (mW)")  # Clarified units
+        st.subheader("Expected Power Reference (mW)")  # Units clarified
 
         # Load SOP data to show equation
         sop_df = load_dataframe(SOP_POWER_VS_PUMP_FILE, pd.DataFrame())
@@ -296,53 +296,15 @@ def get_expected_power(current):
             power_col = "Expected Power (W)"
             # Convert W to mW for consistency
     
-    # If no SOP data exists or missing required columns, use default values
+    # If no SOP data exists or required columns are missing, use default values
     if sop_df.empty or "Pump Current (mA)" not in sop_df.columns or power_col is None:
         # Default values as fallback (all in mW)
-        currents = np.array(
-            [
-                0,
-                1000,
-                1500,
-                2000,
-                2500,
-                3000,
-                3500,
-                4000,
-                4500,
-                5000,
-                5500,
-                6000,
-                6500,
-                7000,
-                7500,
-                8000,
-                8500,
-                9000,
-            ]
-        )
-        powers = np.array(
-            [
-                0.0,    # mW
-                0.0,    # mW
-                200.0,  # mW
-                200.0,  # mW
-                900.0,  # mW
-                1400.0, # mW
-                2000.0, # mW
-                2300.0, # mW
-                3200.0, # mW
-                3800.0, # mW
-                4400.0, # mW
-                4800.0, # mW
-                5700.0, # mW
-                6300.0, # mW
-                7000.0, # mW
-                7500.0, # mW
-                8000.0, # mW
-                8200.0, # mW
-            ]
-        )
+        currents = np.array([
+            0, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000
+        ])
+        powers = np.array([
+            0.0, 0.0, 200.0, 200.0, 900.0, 1400.0, 2000.0, 2300.0, 3200.0, 3800.0, 4400.0, 4800.0, 5700.0, 6300.0, 7000.0, 7500.0, 8000.0, 8200.0
+        ])
     else:
         # Filter to current study if available
         if "Study Name" in sop_df.columns:
@@ -424,14 +386,14 @@ def render_source_power_theory_and_procedure(theory_only=False, procedure_only=F
             """
             ### Fiber Laser Source Power
             
-            The fiber laser source power is a critical parameter that affects both the imaging quality and the overall system performance. Understanding and monitoring the source power helps:
+            The fiber laser source power is a critical parameter that affects both imaging quality and overall system performance. Monitoring and understanding the source power helps to:
             
             - Ensure consistent imaging conditions
             - Detect potential system issues early
             - Optimize laser performance
             - Maintain system stability
             
-            The source power is primarily controlled by the pump current, with typical values ranging from 2000-8000 mA. The relationship between pump current and output power should be linear within the operating range.  
+            The source power is primarily controlled by the pump current, typically ranging from 2000 to 8000 mA. The relationship between pump current and output power should be approximately linear within the operating range.  
             **All power values below are in mW unless otherwise noted.**
         """
         )
@@ -440,20 +402,20 @@ def render_source_power_theory_and_procedure(theory_only=False, procedure_only=F
             """
             ### Procedure for Measuring Source Power
             
-            1. **Start-up Sequence**
-               - Turn key to "on" on the fiber laser controller box
-               - Turn on pump temperature controller (I/O switch)
-               - Start Arroyo control software and set temperature to 25°C
-               - Turn on pump power controller
-               - Press red button on controller box to enable seed laser
-               - **VERIFY** that the TEC fan is spinning before proceeding
+            1. **Startup Sequence**
+               - Turn the key to "on" on the fiber laser controller box.
+               - Turn on the pump temperature controller (I/O switch).
+               - Start the Arroyo control software and set the temperature to 25°C.
+               - Turn on the pump power controller.
+               - Press the red button on the controller box to enable the seed laser.
+               - **VERIFY** that the TEC fan is spinning before proceeding.
             
             2. **Power Measurement**
-               - Position power meter between F-Shutter and F-HWP2
-               - Open shutter ("enable")
-               - Engage pump diode (press "Output" button)
-               - Ramp up pump current in 250 mA steps
-               - Record power at each current level
+               - Position the power meter between F-Shutter and F-HWP2.
+               - Open the shutter ("enable").
+               - Engage the pump diode (press the "Output" button).
+               - Increase the pump current in 250 mA steps.
+               - Record the power at each current level.
             
             3. **Expected Power Levels**
                - ~200 mW at 2000 mA
@@ -462,7 +424,7 @@ def render_source_power_theory_and_procedure(theory_only=False, procedure_only=F
                - ~7500 mW at 8000 mA
             
             4. **Pulse Width Control** (for reference)
-               - Use grating pair (F-G1 & F-G2) to adjust pulse width
+               - Use the grating pair (F-G1 & F-G2) to adjust the pulse width.
                - Typical positions for shortest pulse:
                  * 6.625 @ 4000 mA
                  * 4.75 @ 6000 mA
@@ -472,22 +434,22 @@ def render_source_power_theory_and_procedure(theory_only=False, procedure_only=F
         st.warning(
             """
         **CRITICAL CHECKS:**
-        - Always ensure the TEC fan is spinning before increasing pump current
-        - Do not raise pump current if power seems low at previous checkpoints
-        - Monitor temperature (should be ~25°C)
+        - Always ensure the TEC fan is spinning before increasing the pump current.
+        - Do not increase the pump current if the power is low at previous checkpoints.
+        - Monitor temperature (should be ~25°C).
         """
         )
 
 
 def render_source_power_visualization():
     """Render visualizations for source power measurements. All power values are in mW."""
-    st.subheader("Source Power Analysis (Power in mW)")  # Clarified units
+    st.subheader("Source Power Analysis (Power in mW)")  # Units clarified
 
     # Load existing data
     source_power_df = load_dataframe(SOURCE_POWER_FILE, pd.DataFrame())
 
     if source_power_df.empty:
-        st.info("Add measurements to see analysis")
+        st.info("Add measurements to see analysis.")
         return
 
     # Filter data for current study and wavelength
@@ -500,7 +462,7 @@ def render_source_power_visualization():
     )
 
     if filtered_df.empty:
-        st.info("No measurements found for current study and wavelength")
+        st.info("No measurements found for the current study and wavelength.")
         return
 
     # Display metrics
@@ -558,15 +520,15 @@ def render_source_power_visualization():
                 This plot shows the measured source power (in mW) over time, with each point colored by the pump current (in mA).
                 
                 **How to use:**
-                - Track system stability and performance trends over time
-                - Identify any sudden drops or increases in power
-                - See how power at different pump currents changes with date/time
+                - Track system stability and performance trends over time.
+                - Identify any sudden drops or increases in power.
+                - Observe how power at different pump currents changes with date/time.
                 
                 **Tip:** Hover or zoom in to see details for each measurement.
                 """
             )
     else:
-        st.info("No valid date/time data available for time series plot.")
+        st.info("No valid date/time data available for the time series plot.")
 
     # Create power vs current plot
     def plot_power_vs_current(fig, ax):
@@ -670,14 +632,14 @@ def render_source_power_visualization():
         This plot shows the relationship between pump current and measured power at the source (all power values in mW).
         
         **Key insights:**
-        - The exponential curve shows the expected power values at different current levels
+        - The exponential curve shows the expected power values at different current levels.
         - The curve follows the form: Power = a × e^(b × Current) + c
-        - Exponential behavior is expected due to the physics of laser gain media
+        - Exponential behavior is expected due to the physics of laser gain media.
         - Deviations from expected values may indicate:
           * Alignment issues
           * Component degradation
           * Temperature control problems
-        - Regular monitoring helps detect system changes over time
+        - Regular monitoring helps detect system changes over time.
         
         **Typical values:**
         - ~200 mW at 2000 mA
