@@ -42,6 +42,66 @@ from modules.ui.components import create_header, create_metric_row, create_plot
 from modules.ui.theme import get_colors
 
 
+def render_quick_laser_power_entry():
+    """Render a quick entry form for laser power measurements at the sample (Power in mW, Modulation in %)."""
+    st.subheader("Quick Measurement Entry (Power in mW, Modulation in %)")
+    if "quick_modulations" not in st.session_state:
+        st.session_state.quick_modulations = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    quick_modulations = st.session_state.quick_modulations
+
+    # Add more rows and reset buttons
+    col_add, col_reset = st.columns([1, 1])
+    with col_add:
+        if st.button("Add More Rows", key="add_more_quick_mod_rows"):
+            last_val = quick_modulations[-1] if quick_modulations else 100
+            next_val = min(last_val + 10, 100)
+            if next_val <= 100:
+                quick_modulations.append(next_val)
+                st.session_state.quick_modulations = quick_modulations
+    with col_reset:
+        if st.button("Reset Rows", key="reset_quick_mod_rows"):
+            st.session_state.quick_modulations = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+            quick_modulations = st.session_state.quick_modulations
+
+    quick_entries = []
+    quick_form = st.form(key="quick_laser_power_form")
+    quick_cols = quick_form.columns(len(quick_modulations))
+    quick_mw_values = []
+    for i, mod in enumerate(quick_modulations):
+        with quick_cols[i]:
+            mw = quick_form.number_input(f"{mod}% (Power in mW)", min_value=0.0, step=0.1, format="%.1f", key=f"quick_laser_mw_{mod}")
+            quick_mw_values.append(mw)
+    quick_submit = quick_form.form_submit_button("Add Quick Measurements")
+    if quick_submit:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        for i, mod in enumerate(quick_modulations):
+            mw = quick_mw_values[i]
+            if mw > 0:
+                entry = {
+                    "Study Name": st.session_state.study_name,
+                    "Date": now,
+                    "Wavelength (nm)": st.session_state.wavelength,
+                    "Researcher": st.session_state.get("researcher", ""),
+                    "Sensor Model": st.session_state.get("sensor_model", ""),
+                    "Measurement Mode": st.session_state.get("measurement_mode", "Stationary"),
+                    "Fill Fraction (%)": st.session_state.get("fill_fraction", 100.0),
+                    "Modulation (%)": mod,
+                    "Measured Power (mW)": mw,
+                    "Notes": "Quick entry"
+                }
+                quick_entries.append(entry)
+        if quick_entries:
+            # Load existing data
+            laser_power_df = load_dataframe(LASER_POWER_FILE, pd.DataFrame())
+            # Append new entries
+            new_df = pd.DataFrame(quick_entries)
+            combined_df = pd.concat([laser_power_df, new_df], ignore_index=True)
+            save_dataframe(combined_df, LASER_POWER_FILE)
+            st.success(f"Added {len(quick_entries)} quick measurements!")
+            st.session_state.laser_power_submitted = True
+            st.rerun()
+
+
 def render_laser_power_tab(use_sidebar_values=False):
     """Render the laser power measurement tab content.
 
@@ -57,9 +117,10 @@ def render_laser_power_tab(use_sidebar_values=False):
     )
 
     with sample_tab:
+        # Quick Measurement Entry at the top
+        render_quick_laser_power_entry()
         # Create main layout with the measurement form prominently displayed at the top
         render_simplified_measurement_form(use_sidebar_values)
-
         # Show combined theory and procedure below the form
         st.markdown("---")
         render_laser_power_theory_and_procedure()
