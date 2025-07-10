@@ -1,358 +1,0 @@
-
-[     UTC     ] Logs for foilview.streamlit.app/
-────────────────────────────────────────────────────────────────────────────────────────
-[23:02:22] 🚀 Starting up repository: 'multiphoton_guide', branch: 'main', main module: 'app.py'
-[23:02:22] 🐙 Cloning repository...
-[23:02:27] 🐙 Cloning into '/mount/src/multiphoton_guide'...
-Warning: Permanently added the ED25519 host key for IP address '140.82.116.4' to the list of known hosts.
-
-[23:02:27] 🐙 Cloned repository!
-[23:02:27] 🐙 Pulling code changes from Github...
-[23:02:28] 📦 Processing dependencies...
-[23:02:28] 📦 Apt dependencies were installed from /mount/src/multiphoton_guide/packages.txt using apt-get.
-Hit:1 http://deb.debian.org/debian bullseye InRelease
-Get:2 http://deb.debian.org/debian-security bullseye-security InRelease [27.2 kB]
-Get:3 http://deb.debian.org/debian bullseye-updates InRelease [44.0 kB]
-Get:4 https://packages.microsoft.com/debian/11/prod bullseye InRelease [3650 B]
-Get:5 http://deb.debian.org/debian-security bullseye-security/main amd64 Packages [384 kB]
-Get:6 https://packages.microsoft.com/debian/11/prod bullseye/main amd64 Packages [199 kB]
-Get:7 https://packages.microsoft.com/debian/11/prod bullseye/main arm64 Packages [49.0 kB]
-Fetched 707 kB in 1s (818 kB/s)
-Reading package lists...[2025-07-09 23:02:30.280477] 
-Reading package lists...[2025-07-09 23:02:30.822107] 
-Building dependency tree...[2025-07-09 23:02:31.009344] 
-Reading state information...[2025-07-09 23:02:31.009831] 
-The following additional packages will be installed:
-  libcairo2 liblcms2-2 libnspr4 libnss3 libopenjp2-7 libpixman-1-0
-  libpoppler102 libxcb-render0 libxcb-shm0 libxrender1 poppler-data
-Suggested packages:
-  liblcms2-utils ghostscript fonts-japanese-mincho | fonts-ipafont-mincho
-  fonts-japanese-gothic | fonts-ipafont-gothic fonts-arphic-ukai
-  fonts-arphic-uming fonts-nanum
-The following NEW packages will be installed:
-  libcairo2 liblcms2-2 libnspr4 libnss3 libopenjp2-7 libpixman-1-0
-  libpoppler102 libxcb-render0 libxcb-shm0 libxrender1 poppler-data
-  poppler-utils
-0 upgraded, 12 newly installed, 0 to remove and 1 not upgraded.
-Need to get 6690 kB of archives.
-After this operation, 26.7 MB of additional disk space will be used.
-Get:1 http://deb.debian.org/debian bullseye/main amd64 poppler-data all 0.4.10-1 [1602 kB]
-Get:2 http://deb.debian.org/debian bullseye/main amd64 libpixman-1-0 amd64 0.40.0-1.1~deb11u1 [543 kB]
-Get:3 http://deb.debian.org/debian bullseye/main amd64 libxcb-render0 amd64 1.14-3 [111 kB]
-Get:4 http://deb.debian.org/debian bullseye/main amd64 libxcb-shm0 amd64 1.14-3 [101 kB]
-Get:5 http://deb.debian.org/debian bullseye/main amd64 libxrender1 amd64 1:0.9.10-1 [33.0 kB]
-Get:6 http://deb.debian.org/debian bullseye/main amd64 libcairo2 amd64 1.16.0-5 [694 kB]
-Get:7 http://deb.debian.org/debian bullseye/main amd64 liblcms2-2 amd64 2.12~rc1-2 [150 kB]
-Get:8 http://deb.debian.org/debian bullseye/main amd64 libnspr4 amd64 2:4.29-1 [112 kB]
-Get:9 http://deb.debian.org/debian-security bullseye-security/main amd64 libnss3 amd64 2:3.61-1+deb11u4 [1304 kB]
-Get:10 http://deb.debian.org/debian-security bullseye-security/main amd64 libopenjp2-7 amd64 2.4.0-3+deb11u1 [172 kB]
-Get:11 http://deb.debian.org/debian-security bullseye-security/main amd64 libpoppler102 amd64 20.09.0-3.1+deb11u2 [1677 kB]
-Get:12 http://deb.debian.org/debian-security bullseye-security/main amd64 poppler-utils amd64 20.09.0-3.1+deb11u2 [189 kB]
-debconf: delaying package configuration, since apt-utils is not installed
-Fetched 6690 kB in 0s (41.6 MB/s)
-Selecting previously unselected package poppler-data.
-(Reading database ... [2025-07-09 23:02:31.796016] (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%[2025-07-09 23:02:31.798981] (Reading database ... 70%[2025-07-09 23:02:31.801452] (Reading database ... 75%[2025-07-09 23:02:31.804124] (Reading database ... 80%[2025-07-09 23:02:31.806151] (Reading database ... 85%[2025-07-09 23:02:31.807427] (Reading database ... 90%[2025-07-09 23:02:31.809297] (Reading database ... 95%[2025-07-09 23:02:31.812155] (Reading database ... 100%(Reading database ... 22039 files and directories currently installed.)
-Preparing to unpack .../00-poppler-data_0.4.10-1_all.deb ...
-Unpacking poppler-data (0.4.10-1) ...
-Selecting previously unselected package libpixman-1-0:amd64.
-Preparing to unpack .../01-libpixman-1-0_0.40.0-1.1~deb11u1_amd64.deb ...
-Unpacking libpixman-1-0:amd64 (0.40.0-1.1~deb11u1) ...
-Selecting previously unselected package libxcb-render0:amd64.
-Preparing to unpack .../02-libxcb-render0_1.14-3_amd64.deb ...
-Unpacking libxcb-render0:amd64 (1.14-3) ...
-Selecting previously unselected package libxcb-shm0:amd64.
-Preparing to unpack .../03-libxcb-shm0_1.14-3_amd64.deb ...
-Unpacking libxcb-shm0:amd64 (1.14-3) ...
-Selecting previously unselected package libxrender1:amd64.
-Preparing to unpack .../04-libxrender1_1%3a0.9.10-1_amd64.deb ...
-Unpacking libxrender1:amd64 (1:0.9.10-1) ...
-Selecting previously unselected package libcairo2:amd64.
-Preparing to unpack .../05-libcairo2_1.16.0-5_amd64.deb ...
-Unpacking libcairo2:amd64 (1.16.0-5) ...
-Selecting previously unselected package liblcms2-2:amd64.
-Preparing to unpack .../06-liblcms2-2_2.12~rc1-2_amd64.deb ...
-Unpacking liblcms2-2:amd64 (2.12~rc1-2) ...
-Selecting previously unselected package libnspr4:amd64.
-Preparing to unpack .../07-libnspr4_2%3a4.29-1_amd64.deb ...
-Unpacking libnspr4:amd64 (2:4.29-1) ...
-Selecting previously unselected package libnss3:amd64.
-Preparing to unpack .../08-libnss3_2%3a3.61-1+deb11u4_amd64.deb ...
-Unpacking libnss3:amd64 (2:3.61-1+deb11u4) ...
-Selecting previously unselected package libopenjp2-7:amd64.
-Preparing to unpack .../09-libopenjp2-7_2.4.0-3+deb11u1_amd64.deb ...
-Unpacking libopenjp2-7:amd64 (2.4.0-3+deb11u1) ...
-Selecting previously unselected package libpoppler102:amd64.
-Preparing to unpack .../10-libpoppler102_20.09.0-3.1+deb11u2_amd64.deb ...
-Unpacking libpoppler102:amd64 (20.09.0-3.1+deb11u2) ...
-Selecting previously unselected package poppler-utils.
-Preparing to unpack .../11-poppler-utils_20.09.0-3.1+deb11u2_amd64.deb ...
-Unpacking poppler-utils (20.09.0-3.1+deb11u2) ...
-Setting up liblcms2-2:amd64 (2.12~rc1-2) ...
-Setting up libpixman-1-0:amd64 (0.40.0-1.1~deb11u1) ...
-Setting up libxrender1:amd64 (1:0.9.10-1) ...
-Setting up libxcb-render0:amd64 (1.14-3) ...
-Setting up libxcb-shm0:amd64 (1.14-3) ...
-Setting up libcairo2:amd64 (1.16.0-5) ...
-Setting up poppler-data (0.4.10-1) ...
-Setting up libnspr4:amd64 (2:4.29-1) ...
-Setting up libopenjp2-7:amd64 (2.4.0-3+deb11u1) ...
-Setting up libnss3:amd64 (2:3.61-1+deb11u4) ...
-Setting up libpoppler102:amd64 (20.09.0-3.1+deb11u2) ...
-Setting up poppler-utils (20.09.0-3.1+deb11u2) ...
-Processing triggers for libc-bin (2.31-13+deb11u13) ...
-
-──────────────────────────────────────── uv ───────────────────────────────────────────
-
-Using uv pip install.
-Using Python 3.11.13 environment at /home/adminuser/venv
-Resolved 80 packages in 822ms
-Prepared 80 packages in 4.00s
-Installed 80 packages in 382ms
- + altair==5.5.0
- + annotated-types==0.7.0
- + anyio==4.9.0
- + attrs==25.3.0
- + blinker==1.9.0
- + cachetools==6.1.0
- + certifi==2025.7.9
- + charset-normalizer==3.4.2
- + click==8.2.1
- + contourpy==1.3.2
- + cycler==0.12.1
- + deprecation==2.1.0
- + fonttools==4.58.5
- + gitdb==4.0.12
- + gitpython==3.1.44
- + gotrue==2.12.3
- + greenlet==3.2.3
- + h11==0.16.0
- + h2==4.2.0
- + hpack==4.1.0
- + httpcore==1.0.9
- + httpx==0.28.1
- + hyperframe==6.1.0
- + idna==3.10
- + imageio==2.37.0
- + jinja2==3.1.6
- + joblib==1.5.1
- + jsonschema==4.24.0
- + jsonschema-specifications==2025.4.1
- + kiwisolver==1.4.8
- + lazy-loader==0.4
- + markupsafe==3.0.2
- + matplotlib==3.10.3
- + narwhals==1.46.0
- + networkx==3.5
- + numpy==2.3.1
- + opencv-python-headless==4.11.0.86
- + packaging==25.0
- + pandas==2.3.1
- + pillow==11.3.0
- + postgrest==1.1.1
- + protobuf==6.31.1
- + pyarrow==20.0.0
- + pydantic==2.11.7
- + pydantic-core==2.33.2
- + pydeck==0.9.1
- + pyjwt==2.10.1
- + pyparsing==3.2.3
- + python-dateutil==2.9.0.post0
- + pytz==2025.2
- + realtime==2.5.3
- + referencing==0.36.2
- + requests==2.32.4
- + rpds-py==0.26.0
- + scikit-image==0.25.2
- + scikit-learn==1.7.0
- + scipy==1.16.0
- + six==1.17.0
- + smmap==5.0.2
- + sniffio==1.3.1
- + sqlalchemy==2.0.41
- + storage3==0.12.0
- + streamlit==1.46.1
- + streamlit-image-coordinates==0.3.1
- + streamlit-nested-layout==0.1.4
- + streamlit-pdf-viewer==0.0.26
- + strenum==0.4.15
- + supabase==2.16.0
- + supafunc==0.10.1
- + tenacity==9.1.2
- + threadpoolctl==3.6.0
- + tifffile==2025.6.11
- + toml==0.10.2
- + tornado==6.5.1
- + typing-extensions==4.14.1
- + typing-inspection==0.4.1
- + tzdata==2025.2
- + urllib3==2.5.0
- + watchdog==6.0.0
- + websockets==15.0.1
-Checking if Streamlit is installed
-Found Streamlit version 1.46.1 in the environment
-Installing rich for an improved exception logging
-Using uv pip install.
-Using Python 3.11.13 environment at /home/adminuser/venv
-Resolved 4 packages in 139ms
-Prepared 4 packages in 131ms
-Installed 4 packages in 17ms
- + markdown-it-py==3.0.0
- + mdurl[2025-07-09 23:02:41.125146] ==0.1.2
- + pygments==2.19.2
- + rich==14.0.0
-
-────────────────────────────────────────────────────────────────────────────────────────
-
-[23:02:41] 🐍 Python dependencies were installed from /mount/src/multiphoton_guide/requirements.txt using uv.
-[23:02:41] 📦 WARN: More than one requirements file detected in the repository. Available options: uv /mount/src/multiphoton_guide/requirements.txt, poetry /mount/src/multiphoton_guide/pyproject.toml. Used: uv with /mount/src/multiphoton_guide/requirements.txt
-Check if streamlit is installed
-Streamlit is already installed
-[23:02:42] 📦 Processed dependencies!
-
-
-
-[23:13:46] 🐙 Pulling code changes from Github...
-[23:13:49] 📦 Processing dependencies...
-[23:13:49] 📦 Apt dependencies were installed from /mount/src/multiphoton_guide/packages.txt using apt-get.
-
-─────────────────────────────────────── poetry ─────────────────────────────────────────
-
-/mount/src/multiphoton_guide /mount/src/multiphoton_guide
-Installing dependencies from lock file
-
-pyproject.toml changed significantly since poetry.lock was last generated. Run `poetry lock` to fix the lock file.
-/mount/src/multiphoton_guide
-
-────────────────────────────────────────────────────────────────────────────────────────
-
-[23:13:51] ❗️ installer returned a non-zero exit code
-[23:14:18] 🐙 Pulling code changes from Github...
-[23:14:19] 📦 Processing dependencies...
-[23:14:19] 📦 Apt dependencies were installed from /mount/src/multiphoton_guide/packages.txt using apt-get.
-
-─────────────────────────────────────── poetry ─────────────────────────────────────────
-
-/mount/src/multiphoton_guide /mount/src/multiphoton_guide
-Installing dependencies from lock file
-
-pyproject.toml changed significantly since poetry.lock was last generated. Run `poetry lock` to fix the lock file.
-/mount/src/multiphoton_guide
-
-────────────────────────────────────────────────────────────────────────────────────────
-
-[23:14:21] ❗️ installer returned a non-zero exit code
-[23:15:05] 🖥 Provisioning machine...
-[23:15:10] 🎛 Preparing system...
-[23:15:09] 🚀 Starting up repository: 'multiphoton_guide', branch: 'main', main module: 'app.py'
-[23:15:09] 🐙 Cloning repository...
-[23:15:12] 🐙 Cloning into '/mount/src/multiphoton_guide'...
-Warning: Permanently added the ED25519 host key for IP address '140.82.116.4' to the list of known hosts.
-
-[23:15:12] 🐙 Cloned repository!
-[23:15:12] 🐙 Pulling code changes from Github...
-[23:15:13] 📦 Processing dependencies...
-[23:15:13] 📦 Apt dependencies were installed from /mount/src/multiphoton_guide/packages.txt using apt-get.
-Hit:1 http://deb.debian.org/debian bullseye InRelease
-Get:2 http://deb.debian.org/debian-security bullseye-security InRelease [27.2 kB]
-Get:3 http://deb.debian.org/debian bullseye-updates InRelease [44.0 kB]
-Get:4 https://packages.microsoft.com/debian/11/prod bullseye InRelease [3650 B]
-Get:5 http://deb.debian.org/debian-security bullseye-security/main amd64 Packages [384 kB]
-Get:6 https://packages.microsoft.com/debian/11/prod bullseye/main arm64 Packages [49.0 kB]
-Get:7 https://packages.microsoft.com/debian/11/prod bullseye/main amd64 Packages [199 kB]
-[23:15:15] ⛓ Spinning up manager process...
-Fetched 707 kB in 1s (1022 kB/s)
-Reading package lists...[2025-07-09 23:15:15.900310] 
-Reading package lists...[2025-07-09 23:15:16.624622] 
-Building dependency tree...[2025-07-09 23:15:16.792723] 
-Reading state information...[2025-07-09 23:15:16.793115] 
-The following additional packages will be installed:
-  libcairo2 liblcms2-2 libnspr4 libnss3 libopenjp2-7 libpixman-1-0
-  libpoppler102 libxcb-render0 libxcb-shm0 libxrender1 poppler-data
-Suggested packages:
-  liblcms2-utils ghostscript fonts-japanese-mincho | fonts-ipafont-mincho
-  fonts-japanese-gothic | fonts-ipafont-gothic fonts-arphic-ukai
-  fonts-arphic-uming fonts-nanum
-The following NEW packages will be installed:
-  libcairo2 liblcms2-2 libnspr4 libnss3 libopenjp2-7 libpixman-1-0
-  libpoppler102 libxcb-render0 libxcb-shm0 libxrender1 poppler-data
-  poppler-utils
-0 upgraded, 12 newly installed, 0 to remove and 1 not upgraded.
-Need to get 6690 kB of archives.
-After this operation, 26.7 MB of additional disk space will be used.
-Get:1 http://deb.debian.org/debian bullseye/main amd64 poppler-data all 0.4.10-1 [1602 kB]
-Get:2 http://deb.debian.org/debian bullseye/main amd64 libpixman-1-0 amd64 0.40.0-1.1~deb11u1 [543 kB]
-Get:3 http://deb.debian.org/debian bullseye/main amd64 libxcb-render0 amd64 1.14-3 [111 kB]
-Get:4 http://deb.debian.org/debian bullseye/main amd64 libxcb-shm0 amd64 1.14-3 [101 kB]
-Get:5 http://deb.debian.org/debian bullseye/main amd64 libxrender1 amd64 1:0.9.10-1 [33.0 kB]
-Get:6 http://deb.debian.org/debian bullseye/main amd64 libcairo2 amd64 1.16.0-5 [694 kB]
-Get:7 http://deb.debian.org/debian bullseye/main amd64 liblcms2-2 amd64 2.12~rc1-2 [150 kB]
-Get:8 http://deb.debian.org/debian bullseye/main amd64 libnspr4 amd64 2:4.29-1 [112 kB]
-Get:9 http://deb.debian.org/debian-security bullseye-security/main amd64 libnss3 amd64 2:3.61-1+deb11u4 [1304 kB]
-Get:10 http://deb.debian.org/debian-security bullseye-security/main amd64 libopenjp2-7 amd64 2.4.0-3+deb11u1 [172 kB]
-Get:11 http://deb.debian.org/debian-security bullseye-security/main amd64 libpoppler102 amd64 20.09.0-3.1+deb11u2 [1677 kB]
-Get:12 http://deb.debian.org/debian-security bullseye-security/main amd64 poppler-utils amd64 20.09.0-3.1+deb11u2 [189 kB]
-debconf: delaying package configuration, since apt-utils is not installed
-Fetched 6690 kB in 0s (42.7 MB/s)
-Selecting previously unselected package poppler-data.
-(Reading database ... [2025-07-09 23:15:17.517495] (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%[2025-07-09 23:15:17.520310] (Reading database ... 70%[2025-07-09 23:15:17.521833] (Reading database ... 75%[2025-07-09 23:15:17.523340] (Reading database ... 80%[2025-07-09 23:15:17.525201] (Reading database ... 85%[2025-07-09 23:15:17.526833] (Reading database ... 90%[2025-07-09 23:15:17.528447] (Reading database ... 95%[2025-07-09 23:15:17.529824] (Reading database ... 100%(Reading database ... 22039 files and directories currently installed.)
-Preparing to unpack .../00-poppler-data_0.4.10-1_all.deb ...
-Unpacking poppler-data (0.4.10-1) ...
-Selecting previously unselected package libpixman-1-0:amd64.
-Preparing to unpack .../01-libpixman-1-0_0.40.0-1.1~deb11u1_amd64.deb ...
-Unpacking libpixman-1-0:amd64 (0.40.0-1.1~deb11u1) ...
-Selecting previously unselected package libxcb-render0:amd64.
-Preparing to unpack .../02-libxcb-render0_1.14-3_amd64.deb ...
-Unpacking libxcb-render0:amd64 (1.14-3) ...
-Selecting previously unselected package libxcb-shm0:amd64.
-Preparing to unpack .../03-libxcb-shm0_1.14-3_amd64.deb ...
-Unpacking libxcb-shm0:amd64 (1.14-3) ...
-Selecting previously unselected package libxrender1:amd64.
-Preparing to unpack .../04-libxrender1_1%3a0.9.10-1_amd64.deb ...
-Unpacking libxrender1:amd64 (1:0.9.10-1) ...
-Selecting previously unselected package libcairo2:amd64.
-Preparing to unpack .../05-libcairo2_1.16.0-5_amd64.deb ...
-Unpacking libcairo2:amd64 (1.16.0-5) ...
-Selecting previously unselected package liblcms2-2:amd64.
-Preparing to unpack .../06-liblcms2-2_2.12~rc1-2_amd64.deb ...
-Unpacking liblcms2-2:amd64 (2.12~rc1-2) ...
-Selecting previously unselected package libnspr4:amd64.
-Preparing to unpack .../07-libnspr4_2%3a4.29-1_amd64.deb ...
-Unpacking libnspr4:amd64 (2:4.29-1) ...
-Selecting previously unselected package libnss3:amd64.
-Preparing to unpack .../08-libnss3_2%3a3.61-1+deb11u4_amd64.deb ...
-Unpacking libnss3:amd64 (2:3.61-1+deb11u4) ...
-Selecting previously unselected package libopenjp2-7:amd64.
-Preparing to unpack .../09-libopenjp2-7_2.4.0-3+deb11u1_amd64.deb ...
-Unpacking libopenjp2-7:amd64 (2.4.0-3+deb11u1) ...
-Selecting previously unselected package libpoppler102:amd64.
-Preparing to unpack .../10-libpoppler102_20.09.0-3.1+deb11u2_amd64.deb ...
-Unpacking libpoppler102:amd64 (20.09.0-3.1+deb11u2) ...
-Selecting previously unselected package poppler-utils.
-Preparing to unpack .../11-poppler-utils_20.09.0-3.1+deb11u2_amd64.deb ...
-Unpacking poppler-utils (20.09.0-3.1+deb11u2) ...
-Setting up liblcms2-2:amd64 (2.12~rc1-2) ...
-Setting up libpixman-1-0:amd64 (0.40.0-1.1~deb11u1) ...
-Setting up libxrender1:amd64 (1:0.9.10-1) ...
-Setting up libxcb-render0:amd64 (1.14-3) ...
-Setting up libxcb-shm0:amd64 (1.14-3) ...
-Setting up libcairo2:amd64 (1.16.0-5) ...
-Setting up poppler-data (0.4.10-1) ...
-Setting up libnspr4:amd64 (2:4.29-1) ...
-Setting up libopenjp2-7:amd64 (2.4.0-3+deb11u1) ...
-Setting up libnss3:amd64 (2:3.61-1+deb11u4) ...
-Setting up libpoppler102:amd64 (20.09.0-3.1+deb11u2) ...
-Setting up poppler-utils (20.09.0-3.1+deb11u2) ...
-Processing triggers for libc-bin (2.31-13+deb11u13) ...
-
-─────────────────────────────────────── poetry ─────────────────────────────────────────
-
-/mount/src/multiphoton_guide /mount/src/multiphoton_guide
-Installing dependencies from lock file
-
-pyproject.toml changed significantly since poetry.lock was last generated. Run `poetry lock` to fix the lock file.
-/mount/src/multiphoton_guide
-
-────────────────────────────────────────────────────────────────────────────────────────
-
-[23:15:21] ❗️ installer returned a non-zero exit code
-[23:15:21] ❗️ Error during processing dependencies! Please fix the error and push an update, or try restarting the app.
