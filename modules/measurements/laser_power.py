@@ -49,7 +49,7 @@ def render_laser_power_tab(use_sidebar_values=False):
         use_sidebar_values: If True, use values from the sidebar instead of showing duplicate form fields.
     """
 
-    create_header("Laser Power Measurements")
+    create_header("Laser Power Measurements (at Sample)")  # Clarified context
 
     # Create tabs for different measurement locations
     source_tab, sample_tab = st.tabs(
@@ -232,7 +232,7 @@ def render_laser_power_tab(use_sidebar_values=False):
 
 
 def render_laser_power_theory_and_procedure():
-    """Render the combined theory and procedure sections for laser power measurement."""
+    """Render the combined theory and procedure sections for laser power measurement. All power values are in mW, modulation is in percent as set in ScanImage."""
     st.markdown(
         """
         ### Introduction & Theory
@@ -241,10 +241,10 @@ def render_laser_power_theory_and_procedure():
         Fluorescence emission is proportional to the average laser power squared, so small changes in laser power can result in large changes to your data. Exposing your sample to excessive laser power can cause photobleaching and photodamage, altering your sample and measurements.
         
         There are two types of laser-induced photodamage in multiphoton microscopy:
-        1. **Local heating** of the imaged area, which is linearly related to average laser power
+        1. **Local heating** of the imaged area, which is linearly related to average laser power (in mW)
         2. **Photochemical degradation** (bleaching or ablation), which is nonlinearly related to average laser power
         
-        Knowing the laser power is essential for consistency between experiments, for minimizing photodamage, and for monitoring system health.
+        Knowing the laser power (in mW) and the modulation percentage (as set in ScanImage) is essential for consistency between experiments, for minimizing photodamage, and for monitoring system health.
         
         ---
         
@@ -256,12 +256,12 @@ def render_laser_power_theory_and_procedure():
            - Select measurement mode (stationary or scanning)
            - If scanning, set the temporal fill fraction
         3. **Take measurements**
-           - Start at 0% modulation and increase in 5-10% increments
-           - Record the measured power at each modulation level
+           - Start at 0% modulation (ScanImage power percentage) and increase in 5-10% increments
+           - Record the measured power (in mW) at each modulation level
            - Continue until reaching 100% or maximum safe power
         4. **Calculate the power/modulation ratio**
-           - Plot modulation percentage vs. measured power
-           - Calculate the slope of the linear relationship
+           - Plot modulation percentage (ScanImage) vs. measured power (mW)
+           - Calculate the slope of the linear relationship (units: mW/% modulation)
            - This ratio is useful for system monitoring over time
         
         **CRITICAL:** Always measure with the same objective, as transmission efficiency varies between objectives.
@@ -272,11 +272,11 @@ def render_laser_power_theory_and_procedure():
 
 
 def render_simplified_measurement_form(use_sidebar_values=False):
-    """Render the editable dataframe for laser power measurements."""
+    """Render the editable dataframe for laser power measurements. All power values are in mW, modulation is in percent as set in ScanImage."""
     # Load existing data
     laser_power_df = load_dataframe(LASER_POWER_FILE, pd.DataFrame())
 
-    st.subheader("Laser Power Measurements")
+    st.subheader("Laser Power Measurements (at Sample, Power in mW, Modulation in %)")  # Clarified units
 
     # Initialize with default structure if empty
     if laser_power_df.empty:
@@ -347,7 +347,7 @@ def render_simplified_measurement_form(use_sidebar_values=False):
             max_value=100,
             step=1,
             format="%.0f",
-            help="Percentage of maximum laser power",
+            help="Power percentage as set in ScanImage (0-100%)",
             width="small",
         ),
         "Measured Power (mW)": st.column_config.NumberColumn(
@@ -355,7 +355,7 @@ def render_simplified_measurement_form(use_sidebar_values=False):
             min_value=0.0,
             step=0.1,
             format="%.1f",
-            help="Power measured at the sample",
+            help="Power measured at the sample (in mW)",
             width="small",
         ),
         "Notes": st.column_config.TextColumn(
@@ -431,8 +431,8 @@ def render_simplified_measurement_form(use_sidebar_values=False):
 
 
 def render_laser_power_visualization():
-    """Render visualizations for laser power measurements."""
-    st.subheader("Power Analysis")
+    """Render visualizations for laser power measurements. All power values are in mW, modulation is in percent as set in ScanImage."""
+    st.subheader("Power Analysis (Power in mW, Modulation in %)")  # Clarified units
 
     # Check if we have measurements in session state first
     has_measurements = False
@@ -484,8 +484,8 @@ def render_laser_power_visualization():
     # Display metrics
     create_metric_row(
         [
-            {"label": "Average Power", "value": f"{power_stats['mean']:.2f} mW"},
-            {"label": "Maximum Power", "value": f"{power_stats['max']:.2f} mW"},
+            {"label": "Average Power (mW)", "value": f"{power_stats['mean']:.2f} mW"},  # Units explicit
+            {"label": "Maximum Power (mW)", "value": f"{power_stats['max']:.2f} mW"},  # Units explicit
             {"label": "Measurements", "value": power_stats["count"]},
         ]
     )
@@ -493,14 +493,14 @@ def render_laser_power_visualization():
     # Create power vs modulation plot
     def plot_power_vs_modulation(fig, ax):
         # Get data
-        x = measurements_df["Modulation (%)"].values
-        y = measurements_df["Measured Power (mW)"].values
+        x = measurements_df["Modulation (%)"].values  # %
+        y = measurements_df["Measured Power (mW)"].values  # mW
 
         # Calculate regression
         reg = linear_regression(x, y)
 
         # Plot data points
-        ax.scatter(x, y, color="#4BA3C4", s=50, alpha=0.7, label="Measurements")
+        ax.scatter(x, y, color="#4BA3C4", s=50, alpha=0.7, label="Measurements (mW vs %)")  # Units explicit
 
         # Plot regression line
         x_line = np.linspace(0, max(x) * 1.1, 100)
@@ -511,13 +511,13 @@ def render_laser_power_visualization():
             color="#BF5701",
             linestyle="-",
             linewidth=2,
-            label=f'Slope: {reg["slope"]:.3f} mW/%',
+            label=f'Slope: {reg["slope"]:.3f} mW/% (Power per % Modulation)'
         )
 
         # Add labels and title
-        ax.set_xlabel("Modulation (%)")
-        ax.set_ylabel("Measured Power (mW)")
-        ax.set_title("Power vs. Modulation")
+        ax.set_xlabel("Modulation (%) (ScanImage Power %)")  # Clarified
+        ax.set_ylabel("Measured Power (mW)")  # Units explicit
+        ax.set_title("Measured Power vs. Modulation Percentage (mW vs %)")  # Clarified
 
         # Add grid and legend
         ax.grid(True, linestyle="--", alpha=0.7)
@@ -535,7 +535,7 @@ def render_laser_power_visualization():
     with st.popover("📊 Understanding This Plot", use_container_width=True):
         st.markdown(
             """
-        This plot shows the relationship between laser modulation percentage and measured power at the sample.
+        This plot shows the relationship between laser modulation percentage (as set in ScanImage, 0-100%) and measured power at the sample (in mW).
         
         **Key insights:**
         - The slope represents the power/modulation ratio (mW per % modulation)
@@ -544,9 +544,14 @@ def render_laser_power_visualization():
         - Monitoring this ratio over time helps detect system degradation
         
         **Typical values:**
-        - Slope values vary by laser and objective
+        - Slope values (mW/%) vary by laser and objective
         - For a given setup, this value should remain stable over time
         - Significant changes may indicate alignment issues or component degradation
+        
+        **Units:**
+        - X-axis: Modulation (%) (ScanImage Power %)
+        - Y-axis: Measured Power (mW)
+        - Slope: mW/% (Power per % Modulation)
         """
         )
 
