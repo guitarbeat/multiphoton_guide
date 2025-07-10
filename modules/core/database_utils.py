@@ -14,7 +14,8 @@ def get_supabase_client() -> Client:
         raise RuntimeError("Supabase connection is not configured correctly") from exc
 
 def _sanitize_table_name(name: str) -> str:
-    return Path(name).stem
+    # Always prefix with 'foil_' to avoid conflicts
+    return 'foil_' + Path(name).stem
 
 def save_dataframe_to_table(
     df: pd.DataFrame, table_name: str, if_exists: str = "replace"
